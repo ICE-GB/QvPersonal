@@ -21,7 +21,7 @@ class ProtocolGUIInterface : public Gui::PluginGUIInterface
 {
   public:
     explicit ProtocolGUIInterface(){};
-    ~ProtocolGUIInterface(){};
+    virtual ~ProtocolGUIInterface() override = default;
     QList<PLUGIN_GUI_COMPONENT_TYPE> GetComponents() const override
     {
         return {

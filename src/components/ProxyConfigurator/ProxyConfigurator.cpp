@@ -7,22 +7,20 @@
 #include <Plugin/PluginAPIHost.hpp>
 #include <QHostAddress>
 #include <Qv2rayBaseLibrary.hpp>
+#include <vector>
 
 #ifdef Q_OS_WIN
-//
 #include <Windows.h>
 //
 #include <WinInet.h>
 #include <ras.h>
 #include <raserror.h>
-#include <vector>
 #endif
 
 #define QV_MODULE_NAME "SystemProxy"
 
 namespace Qv2ray::components::proxy
 {
-
     using ProcessArgument = QPair<QString, QStringList>;
 #ifdef Q_OS_MACOS
     QStringList macOSgetNetworkServices()
@@ -316,7 +314,7 @@ namespace Qv2ray::components::proxy
         QList<ProcessArgument> actions;
         actions << ProcessArgument{ "gsettings", { "set", "org.gnome.system.proxy", "mode", "manual" } };
         //
-        bool isKDE = qEnvironmentVariable("XDG_SESSION_DESKTOP") == "KDE" || qEnvironmentVariable("XDG_SESSION_DESKTOP") == "plasma";
+        bool isKDE = qEnvironmentVariable("XDG_SESSION_DESKTOP") == QLatin1String("KDE") || qEnvironmentVariable("XDG_SESSION_DESKTOP") == "plasma";
         const auto configPath = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
 
         //
@@ -373,20 +371,14 @@ namespace Qv2ray::components::proxy
             // for KDE:
             if (isKDE)
             {
-                actions << ProcessArgument{ "kwriteconfig5",
-                                            { "--file", configPath + "/kioslaverc", //
-                                              "--group", "Proxy Settings",          //
-                                              "--key", "ProxyType", "1" } };
+                actions << ProcessArgument{ "kwriteconfig5", { "--file", configPath + "/kioslaverc", "--group", "Proxy Settings", "--key", "ProxyType", "1" } };
             }
         }
 
         // Notify kioslaves to reload system proxy configuration.
         if (isKDE)
         {
-            actions << ProcessArgument{ "dbus-send",
-                                        { "--type=signal", "/KIO/Scheduler",                 //
-                                          "org.kde.KIO.Scheduler.reparseSlaveConfiguration", //
-                                          "string:''" } };
+            actions << ProcessArgument{ "dbus-send", { "--type=signal", "/KIO/Scheduler", "org.kde.KIO.Scheduler.reparseSlaveConfiguration", "string:''" } };
         }
         // Execute them all!
         //
@@ -398,7 +390,7 @@ namespace Qv2ray::components::proxy
             // execute and get the code
             const auto returnCode = QProcess::execute(action.first, action.second);
             // print out the commands and result codes
-            QvDebug() << action.first << action.second.join(";") << returnCode;
+            QvDebug() << action.first << action.second.join(';') << returnCode;
             // give the code back
             results << (returnCode == QProcess::NormalExit);
         }
