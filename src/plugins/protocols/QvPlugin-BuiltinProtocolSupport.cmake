@@ -23,7 +23,7 @@ ADD_SOURCE(inbound socksin)
 #ADD_SOURCE(inbound vless)
 #ADD_SOURCE(inbound vmess)
 
-add_library(${PROTOCOL_PLUGIN_TARGET} MODULE
+add_library(${PROTOCOL_PLUGIN_TARGET} SHARED
     ${PLUGIN_UI_SOURCE}
     ${CMAKE_CURRENT_LIST_DIR}/resx.qrc
     ${CMAKE_CURRENT_LIST_DIR}/../common/CommonTypes.hpp

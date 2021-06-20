@@ -1,6 +1,6 @@
 set(SUBSCRIPTION_PLUGIN_TARGET QvPlugin-BuiltinSubscriptionSupport)
 
-add_library(${SUBSCRIPTION_PLUGIN_TARGET} MODULE
+add_library(${SUBSCRIPTION_PLUGIN_TARGET} SHARED
     ${CMAKE_CURRENT_LIST_DIR}/resx.qrc
     ${CMAKE_CURRENT_LIST_DIR}/BuiltinSubscriptionAdapter.cpp
     ${CMAKE_CURRENT_LIST_DIR}/BuiltinSubscriptionAdapter.hpp
