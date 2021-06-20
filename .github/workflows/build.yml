@@ -26,14 +26,17 @@ jobs:
             cc: "cl.exe", cxx: "cl.exe",
             arch: "win64_msvc2019_64",
             has_msvc: true,
+            vcpkgTriplet: x64-windows
           }
         - {
             name: "Ubuntu", artifact: "Linux",
             os: ubuntu-latest,
+            vcpkgTriplet: x64-linux
           }
         - {
             name: "macOS", artifact: "macOS",
             os: macos-latest,
+            vcpkgTriplet: x64-osx
           }
  
 
@@ -60,6 +63,7 @@ jobs:
       with:
         vcpkgArguments: protobuf openssl
         vcpkgGitCommitId: 08214e18eeb146542944067c35d77faca8962be5
+        vcpkgTriplet: ${{ matrix.config.vcpkgTriplet }}
   
     - name: Build
       run: |
