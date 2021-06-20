@@ -54,8 +54,7 @@ set(QV2RAY_QV2RAYBASE_PROVIDER        "module" CACHE STRING "Qv2rayBase Provider
 set(QV2RAY_SINGLEAPPLICATION_PROVIDER "module" CACHE STRING "SingleApplication Provider")
 set(QV2RAY_QNODEEDITOR_PROVIDER       "module" CACHE STRING "QNodeEditor Provider")
 
-option(QV2RAY_HAS_BUILTIN_PLUGINS "Build with builtin plugins" ON)
-option(QV2RAY_HAS_BUILTIN_THEMES "Build with built-in themes" ON)
+option(QV2RAY_HAS_BUILTIN_THEMES  "Build with builtin themes" ON)
 
 # ==================================================================================
 # Default Core/Assets Path
@@ -105,15 +104,11 @@ endif()
 find_package(Protobuf REQUIRED)
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${CMAKE_SOURCE_DIR}/assets/v2ray_geosite.proto)
 
-
 # ==================================================================================
 # Qv2ray Builtin Plugins
 # ==================================================================================
-if(QV2RAY_HAS_BUILTIN_PLUGINS)
-    include(src/plugins/protocols/QvPlugin-BuiltinProtocolSupport.cmake)
-    include(src/plugins/subscription-adapters/QvPlugin-BuiltinSubscriptionAdapters.cmake)
-endif()
-
+include(src/plugins/protocols/QvPlugin-BuiltinProtocolSupport.cmake)
+include(src/plugins/subscription-adapters/QvPlugin-BuiltinSubscriptionAdapters.cmake)
 
 # ==================================================================================
 # Qv2ray
@@ -154,7 +149,12 @@ qt6_add_executable(qv2ray
     ${UISTYLE_QRCS}
     ${CMAKE_CURRENT_LIST_DIR}/assets/icons/resources.qrc)
 
-qv2ray_add_plugin_moc_sources(qv2ray)
+if(BUILD_SHARED_LIBS)
+    # This is a dirty hack, in the static lib build, these generated sources
+    # would have been included by Qv2rayBase, however in a shared build, those
+    # symbols are not exported, we need to have our own.
+    qv2ray_add_plugin_moc_sources(qv2ray)
+endif()
 
 target_compile_definitions(qv2ray PRIVATE -DQV2RAY_VERSION_STRING="${CMAKE_PROJECT_VERSION}")
 target_include_directories(qv2ray PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
