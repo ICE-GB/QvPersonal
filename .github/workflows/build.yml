@@ -77,12 +77,14 @@ jobs:
         cmake --build . --parallel
 
     - name: Install
+      if: false
       run: |
         cd build
         cmake --install .
 
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v2.2.3
+      if: false
       with:
         name: Qv2ray-${{ matrix.config.artifact }}.zip
         path: build/installed
