@@ -75,6 +75,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 find_package(Threads REQUIRED)
+find_package(OpenSSL REQUIRED)
 find_package(Qt6 COMPONENTS Core Widgets Svg Gui Network REQUIRED)
 
 set(QAPPLICATION_CLASS "QApplication")
