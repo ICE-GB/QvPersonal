@@ -98,6 +98,7 @@ bool Qv2rayApplication::Initialize()
     }
 
     baseLibrary->Initialize(StartupArguments.noPlugins ? Qv2rayBase::START_NO_PLUGINS : Qv2rayBase::START_NORMAL, this);
+    GlobalConfig = new (std::remove_reference_t<decltype(*GlobalConfig)>);
 
 #ifdef Q_OS_LINUX
     connect(this, &QGuiApplication::commitDataRequest,
@@ -322,6 +323,7 @@ void Qv2rayApplication::ShowTrayMessage(const QString &m, int msecs)
 
 bool Qv2rayApplication::isDarkMode()
 {
+    return true;
 }
 
 void Qv2rayApplication::onMessageReceived(quint32 clientId, QByteArray _msg)

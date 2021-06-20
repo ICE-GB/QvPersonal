@@ -18,7 +18,7 @@ struct HTTPSOCKSUserObject
     Bindable<QString> pass;
     Bindable<int> level{ 0 };
     QJS_FUNC_JSON(P(user, pass, level))
-    bool operator==(const HTTPSOCKSUserObject &) const = default;
+    QJS_FUNC_COMPARE(HTTPSOCKSUserObject, user, pass, level);
 };
 
 //
@@ -28,7 +28,8 @@ struct SocksServerObject
     Bindable<QString> address{ "0.0.0.0" };
     Bindable<int> port = 0;
     Bindable<QList<HTTPSOCKSUserObject>> users;
-    QJS_FUNC_JSON(P(address, port, users))
+    QJS_FUNC_JSON(P(address, port, users));
+    QJS_FUNC_COMPARE(SocksServerObject, address, port, users);
 };
 
 //
@@ -39,6 +40,7 @@ struct HttpServerObject
     Bindable<int> port = 0;
     Bindable<QList<HTTPSOCKSUserObject>> users;
     QJS_FUNC_JSON(P(address, port, users))
+    QJS_FUNC_COMPARE(HttpServerObject, address, port, users);
 };
 
 //
@@ -50,6 +52,7 @@ struct ShadowSocksServerObject
     Bindable<QString> password;
     Bindable<int> port{ 0 };
     QJS_FUNC_JSON(P(method, address, port, password))
+    QJS_FUNC_COMPARE(ShadowSocksServerObject, method, address, port, password)
 };
 
 //
@@ -62,13 +65,14 @@ struct VLESSServerObject
         Bindable<QString> encryption{ "none" };
         Bindable<QString> flow;
         QJS_FUNC_JSON(P(encryption, id, flow))
-        bool operator==(const UserObject &) const = default;
+        QJS_FUNC_COMPARE(UserObject, encryption, id, flow)
     };
 
     Bindable<QString> address;
     Bindable<int> port = 0;
     Bindable<QList<UserObject>> users;
     QJS_FUNC_JSON(P(address, port, users))
+    QJS_FUNC_COMPARE(VLESSServerObject, address, port, users)
 };
 
 //
@@ -83,10 +87,12 @@ struct VMessServerObject
         Bindable<QString> security{ "auto" };
         Bindable<int> level{ 0 };
         QJS_FUNC_JSON(F(id, alterId, security, level))
+        QJS_FUNC_COMPARE(UserObject, id, alterId, security, level)
     };
 
     Bindable<QString> address;
     Bindable<int> port{ 0 };
     Bindable<QList<UserObject>> users;
     QJS_FUNC_JSON(F(address, port, users))
+    QJS_FUNC_COMPARE(VMessServerObject, address, port, users)
 };

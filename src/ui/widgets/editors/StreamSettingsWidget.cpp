@@ -59,8 +59,8 @@ void StreamSettingsWidget::SetStreamObject(const Qv2ray::Models::StreamSettingsO
     // TCP
     {
         tcpHeaderTypeCB->setCurrentText(stream.tcpSettings->header->type);
-        tcpRequestTxt->setPlainText(JsonToString(stream.tcpSettings->header->request.toJson()));
-        tcpRespTxt->setPlainText(JsonToString(stream.tcpSettings->header->response.toJson()));
+        tcpRequestTxt->setPlainText(JsonToString(stream.tcpSettings->header->request->toJson()));
+        tcpRespTxt->setPlainText(JsonToString(stream.tcpSettings->header->response->toJson()));
     }
     // HTTP
     {

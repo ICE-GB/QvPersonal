@@ -108,13 +108,13 @@ namespace Qv2ray::Models
 
     struct Qv2rayConnectionConfig
     {
-        Bindable<bool> BypassBittorrent = false;
-        Bindable<bool> ForceDirectConnection = false;
+        Bindable<bool> BypassBittorrent{ false };
+        Bindable<bool> ForceDirectConnection{ false };
         Bindable<DNSObject> DNSConfig;
         Bindable<FakeDNSObject> FakeDNSConfig;
         Bindable<RouteMatrixConfig> RouteConfig;
         Bindable<int> OutboundMark;
-        QJS_FUNC_JSON(F(BypassBittorrent, ForceDirectConnection, DNSConfig, FakeDNSConfig, RouteConfig))
+        QJS_FUNC_JSON(F(BypassBittorrent, ForceDirectConnection, DNSConfig, FakeDNSConfig, RouteConfig, OutboundMark))
     };
 
     struct Qv2rayApplicationConfigObject

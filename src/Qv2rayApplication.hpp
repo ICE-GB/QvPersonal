@@ -105,7 +105,7 @@ class Qv2rayApplication
     Qv2rayBase::Qv2rayBaseLibrary *baseLibrary;
 };
 
-Q_GLOBAL_STATIC(Qv2ray::Models::Qv2rayApplicationConfigObject, GlobalConfig)
+inline Qv2ray::Models::Qv2rayApplicationConfigObject *GlobalConfig;
 
 #define QvApp static_cast<Qv2rayApplication *>(qApp)
 #define qvAppTrayIcon (*(QvApp->TrayIcon()))

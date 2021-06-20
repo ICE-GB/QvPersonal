@@ -1,7 +1,7 @@
 #pragma once
 #include <QObject>
 
-#define QvMessageBusConnect() connect(&UIMessageBus, &QvMessageBusObject::QvSendMessage, this, &std::remove_cvref_t<decltype(*this)>::on_QvMessageReceived)
+#define QvMessageBusConnect() connect(&UIMessageBus, &QvMessageBusObject::QvSendMessage, this, &std::remove_reference_t<decltype(*this)>::on_QvMessageReceived)
 
 #define QvMessageBusSlotSig const QvMBMessage &msg
 #define QvMessageBusSlotIdentifier on_QvMessageReceived
