@@ -268,18 +268,18 @@ namespace Qv2ray::components::proxy
 #else
         if (!hasHTTP && !hasSOCKS)
         {
-            Qv// LOG() << "Nothing?";
+            QvLog() << "Nothing?";
             return;
         }
 
         if (hasHTTP)
         {
-            Qv// LOG() << "Qv2ray will set system proxy to use HTTP";
+            QvLog() << "Qv2ray will set system proxy to use HTTP";
         }
 
         if (hasSOCKS)
         {
-            Qv// LOG() << "Qv2ray will set system proxy to use SOCKS";
+            QvLog() << "Qv2ray will set system proxy to use SOCKS";
         }
 #endif
 
@@ -397,7 +397,7 @@ namespace Qv2ray::components::proxy
 
         if (results.count(true) != actions.size())
         {
-            Qv// LOG() << "Something wrong when setting proxies.";
+            QvLog() << "Something wrong when setting proxies.";
         }
 #else
 
