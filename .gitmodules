@@ -7,10 +7,9 @@
 [submodule "3rdparty/qt-qrcode"]
 	path = 3rdparty/qt-qrcode
 	url = https://github.com/danielsanfr/qt-qrcode
-[submodule "3rdparty/QNodeEditor"]
-	path = 3rdparty/QNodeEditor
-	url = git@github.com:moodyhunter/QNodeEditor.git
-
 [submodule "src/Qv2rayBase"]
 	path = src/Qv2rayBase
-	url = git@github.com:moodyhunter/Qv2rayBase
+	url = https://github.com/moodyhunter/Qv2rayBase
+[submodule "3rdparty/QNodeEditor"]
+	path = 3rdparty/QNodeEditor
+	url = https://github.com/moodyhunter/QNodeEditor

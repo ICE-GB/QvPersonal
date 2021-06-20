@@ -1,0 +1,83 @@
+name: Build for Desktop
+
+on:
+  push:
+  pull_request:
+    branches: [ master ]
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    env:
+      CC: ${{ matrix.config.cc }}
+      CXX: ${{ matrix.config.cxx }}
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+        - {
+            name: "Windows MSVC", artifact: "Windows-MSVC",
+            os: windows-latest,
+            cc: "cl.exe", cxx: "cl.exe",
+            arch: "win64_msvc2019_64",
+            has_msvc: true,
+          }
+        - {
+            name: "Ubuntu", artifact: "Linux",
+            os: ubuntu-latest,
+          }
+        - {
+            name: "macOS", artifact: "macOS",
+            os: macos-latest,
+          }
+ 
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
+
+    - name: Install ninja-build tool
+      uses: seanmiddleditch/gha-setup-ninja@v3
+
+    - name: Install MSVC compiler
+      if: matrix.config.has_msvc
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2.13.2
+      with:
+        version: 6.1.0
+        arch: ${{ matrix.config.arch }}
+
+    - name: run-vcpkg
+      uses: lukka/run-vcpkg@v7.3
+      with:
+        vcpkgArguments: protobuf openssl
+  
+    - name: Build
+      run: |
+        mkdir build; cd build
+        cmake .. \
+          -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_INSTALL_PREFIX=installed \
+          -DBUILD_TESTING=OFF \
+          -GNinja
+        cmake --build . --parallel
+
+    - name: Install
+      run: |
+        cd build
+        cmake --install .
+
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v2.2.3
+      with:
+        name: Qv2ray-${{ matrix.config.artifact }}.zip
+        path: build/installed
