@@ -25,7 +25,7 @@ inline void BLACK(QWidget *obj)
     obj->setPalette(qApp->palette());
 }
 
-#define QV2RAY_COLORSCHEME_ROOT_X(isDark) (QStringLiteral(":/assets/icons/") + ((isDark) ? "ui_dark/" : "ui_light/"))
+#define QV2RAY_COLORSCHEME_ROOT_X(isDark) (QStringLiteral(":/") + ((isDark) ? "ui_dark/" : "ui_light/"))
 #define QV2RAY_COLORSCHEME_FILE(file) (QV2RAY_COLORSCHEME_ROOT_X(GlobalConfig->appearanceConfig->DarkModeUI) + file + ".svg")
 #define Q_TRAYICON(name) (QPixmap(QV2RAY_COLORSCHEME_ROOT_X(GlobalConfig->appearanceConfig->DarkModeTrayIcon) + "glyph-" + name + ".png"))
 

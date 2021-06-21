@@ -482,7 +482,6 @@ void MainWindow::on_activatedTray(QSystemTrayIcon::ActivationReason reason)
 
 void MainWindow::Action_Exit()
 {
-    QvBaselib->ProfileManager()->StopConnection();
     QvApp->quit();
 }
 
@@ -726,30 +725,25 @@ void MainWindow::OnVCoreLogAvailable(const ConnectionGroupPair &id, const QStrin
 
 void MainWindow::OnEditRequested(const ConnectionId &id)
 {
-    auto outBoundRoot = QvBaselib->ProfileManager()->GetConnection(id);
-    ProfileContent root;
-    bool isChanged;
-
+    auto original = QvBaselib->ProfileManager()->GetConnection(id);
     if (IsComplexConfig(id))
     {
         QvLog() << "INFO: Opening route editor.";
-        RouteEditor routeWindow(outBoundRoot, this);
-        root = routeWindow.OpenEditor();
-        isChanged = routeWindow.result() == QDialog::Accepted;
+        RouteEditor editor(original, this);
+        ProfileContent root = editor.OpenEditor();
+        if (editor.result() == QDialog::Accepted)
+            QvBaselib->ProfileManager()->UpdateConnection(id, root);
     }
     else
     {
         QvLog() << "INFO: Opening single connection edit window.";
-        auto out = outBoundRoot.outbounds.first();
-        OutboundEditor w(out, this);
-        auto outbound = w.OpenEditor();
-        isChanged = w.result() == QDialog::Accepted;
-        root.outbounds[0] = outbound;
-    }
-
-    if (isChanged)
-    {
-        QvBaselib->ProfileManager()->UpdateConnection(id, root);
+        OutboundObject out;
+        if (!original.outbounds.isEmpty())
+            out = original.outbounds.constFirst();
+        OutboundEditor editor(out, this);
+        ProfileContent root{ editor.OpenEditor() };
+        if (editor.result() == QDialog::Accepted)
+            QvBaselib->ProfileManager()->UpdateConnection(id, root);
     }
 }
 void MainWindow::OnEditJsonRequested(const ConnectionId &id)

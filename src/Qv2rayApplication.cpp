@@ -27,6 +27,7 @@ Qv2rayApplication::Qv2rayApplication(int &argc, char *argv[]) : SingleApplicatio
 
 Qv2rayApplication::~Qv2rayApplication()
 {
+    delete baseLibrary;
 }
 
 Qv2rayExitReason Qv2rayApplication::GetExitReason() const
@@ -44,8 +45,8 @@ QStringList Qv2rayApplication::CheckPrerequisites()
         const auto osslCurVersion = QSslSocket::sslLibraryVersionString();
         QvLog() << "Current OpenSSL version:" << osslCurVersion;
         QvLog() << "Required OpenSSL version:" << osslReqVersion;
-        errors << "Qv2ray cannot run without OpenSSL.";
-        errors << "This is usually caused by using the wrong version of OpenSSL";
+        errors << QStringLiteral("Qv2ray cannot run without OpenSSL.");
+        errors << QStringLiteral("This is usually caused by using the wrong version of OpenSSL");
         errors << "Required=" + osslReqVersion + "Current=" + osslCurVersion;
     }
     return errors;
@@ -97,7 +98,7 @@ bool Qv2rayApplication::Initialize()
         return false;
     }
 
-    baseLibrary->Initialize(StartupArguments.noPlugins ? Qv2rayBase::START_NO_PLUGINS : Qv2rayBase::START_NORMAL, this);
+    const auto result = baseLibrary->Initialize(StartupArguments.noPlugins ? Qv2rayBase::START_NO_PLUGINS : Qv2rayBase::START_NORMAL, this);
     GlobalConfig = new (std::remove_reference_t<decltype(*GlobalConfig)>);
 
 #ifdef Q_OS_LINUX
@@ -113,17 +114,12 @@ bool Qv2rayApplication::Initialize()
 
 #ifdef Q_OS_WIN
     SetCurrentDirectory(QCoreApplication::applicationDirPath().toStdWString().c_str());
-
-#pragma message("TODO")
-    // Set special font in Windows
-//    QFont font;
-//    font.setPointSize(9);
-//    font.setFamily("Microsoft YaHei");
-//    QGuiApplication::setFont(font);
+    // Set font
+    QFont font;
+    font.setPointSize(9);
+    font.setFamily("Microsoft YaHei");
+    QGuiApplication::setFont(font);
 #endif
-
-#pragma message("TODO")
-    //    LocateConfiguration();
     return true;
 }
 
@@ -142,7 +138,7 @@ Qv2rayExitReason Qv2rayApplication::RunQv2ray()
         {
             const auto url = QUrl::fromUserInput(link);
             const auto command = url.host();
-            auto subcommands = url.path().split("/");
+            auto subcommands = url.path().split(QStringLiteral("/"));
             subcommands.removeAll("");
             QMap<QString, QString> args;
             for (const auto &kvp : QUrlQuery(url).queryItems())
@@ -183,19 +179,11 @@ QSystemTrayIcon **Qv2rayApplication::TrayIcon()
 
 void Qv2rayApplication::quitInternal()
 {
-    // Do not change the order.
-#pragma message("TODO")
-    QvBaselib->ProfileManager()->StopConnection();
-    //    RouteManager->SaveRoutes();
-    QvBaselib->ProfileManager()->SaveConnectionConfig();
-    //    SaveGlobalSettings();
-    {
-        delete mainWindow;
-        delete hTray;
-        delete StyleManager;
-        delete GUIPluginHost;
-    }
-    delete baseLibrary;
+    delete mainWindow;
+    delete hTray;
+    delete StyleManager;
+    delete GUIPluginHost;
+    QvBaselib->Shutdown();
 }
 
 bool Qv2rayApplication::parseCommandLine(QString *errorMessage, bool *canContinue)

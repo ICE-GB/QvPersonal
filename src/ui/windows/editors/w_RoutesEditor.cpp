@@ -119,7 +119,9 @@ RouteEditor::RouteEditor(ProfileContent connection, QWidget *parent) : QvDialog(
     domainStrategyCombo->setCurrentText(domainStrategy);
     //
     // Set default outboung combo text AFTER adding all outbounds.
-    defaultOutboundTag = root.outbounds.first().name;
+
+    if (!root.outbounds.isEmpty())
+        defaultOutboundTag = root.outbounds.first().name;
     defaultOutboundCombo->setCurrentText(defaultOutboundTag);
     //
     const auto browserForwarder = root.options["browserForwarder"].toObject();

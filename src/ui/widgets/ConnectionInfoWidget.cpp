@@ -35,7 +35,7 @@ void ConnectionInfoWidget::updateColorScheme()
 #pragma message("TODO: Darkmode should be in StyleManager")
     auto isDarkTheme = GlobalConfig->appearanceConfig->DarkModeUI;
     qrPixmapBlured = BlurImage(ColorizeImage(qrPixmap, isDarkTheme ? Qt::black : Qt::white, 0.7), 35);
-    qrLabel->setPixmap(IsComplexConfig(connectionId) ? QPixmap(":/assets/icons/qv2ray.png") : (isRealPixmapShown ? qrPixmap : qrPixmapBlured));
+    qrLabel->setPixmap(IsComplexConfig(connectionId) ? QPixmap(QStringLiteral(":/assets/icons/qv2ray.png")) : (isRealPixmapShown ? qrPixmap : qrPixmapBlured));
     const auto isCurrentItem = QvBaselib->KernelManager()->CurrentConnection().connectionId == connectionId;
     connectBtn->setIcon(QIcon(isCurrentItem ? QV2RAY_COLORSCHEME_FILE("stop") : QV2RAY_COLORSCHEME_FILE("start")));
 }
@@ -79,11 +79,16 @@ void ConnectionInfoWidget::ShowDetails(const ConnectionGroupPair &idpair)
         protocolLabel->setText(GetConnectionProtocolDescription(connectionId));
         //
         groupLabel->setText(GetDisplayName(groupId));
-        auto [protocol, host, port] = GetOutboundInfoTuple(QvBaselib->ProfileManager()->GetConnection(connectionId).outbounds.first());
-        Q_UNUSED(protocol)
-        addressLabel->setText(host);
-        portLabel->setNum(port);
-        //
+
+        const auto root = QvBaselib->ProfileManager()->GetConnection(connectionId);
+        if (!root.outbounds.isEmpty())
+        {
+            auto [protocol, host, port] = GetOutboundInfoTuple(root.outbounds.first());
+            Q_UNUSED(protocol)
+            addressLabel->setText(host);
+            portLabel->setNum(port);
+        }
+
         shareLinkTxt->setCursorPosition(0);
 
 #pragma message("TODO: Darkmode should be in StyleManager")
@@ -93,7 +98,7 @@ void ConnectionInfoWidget::ShowDetails(const ConnectionGroupPair &idpair)
         qrPixmapBlured = BlurImage(ColorizeImage(qrPixmap, isDarkTheme ? QColor(Qt::black) : QColor(Qt::white), 0.7), 35);
         //
         isRealPixmapShown = false;
-        qrLabel->setPixmap(IsComplexConfig(connectionId) ? QPixmap(":/assets/icons/qv2ray.png") : qrPixmapBlured);
+        qrLabel->setPixmap(IsComplexConfig(connectionId) ? QPixmap(QStringLiteral(":/assets/icons/qv2ray.png")) : qrPixmapBlured);
         qrLabel->setScaledContents(true);
         const auto isCurrentItem = QvBaselib->KernelManager()->CurrentConnection().connectionId == connectionId;
         connectBtn->setIcon(QIcon(isCurrentItem ? QV2RAY_COLORSCHEME_FILE("stop") : QV2RAY_COLORSCHEME_FILE("start")));
@@ -102,13 +107,15 @@ void ConnectionInfoWidget::ShowDetails(const ConnectionGroupPair &idpair)
     {
         connectBtn->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("start")));
         groupNameLabel->setText(GetDisplayName(groupId));
-        QStringList shareLinks;
+
+        QString shareLinks;
         for (const auto &connection : QvBaselib->ProfileManager()->GetConnections(groupId))
         {
-            shareLinks << ConvertConfigToString(connection);
+            const auto link = ConvertConfigToString(connection);
+            shareLinks.append("\n" + link);
         }
-        //
-        groupShareTxt->setPlainText(shareLinks.join(NEWLINE));
+
+        groupShareTxt->setPlainText(shareLinks);
         const auto &groupMetaData = QvBaselib->ProfileManager()->GetGroupObject(groupId);
         groupSubsLinkTxt->setText(groupMetaData.subscription_config.isSubscription ? groupMetaData.subscription_config.address : tr("Not a subscription"));
     }

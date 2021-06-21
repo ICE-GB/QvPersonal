@@ -29,7 +29,6 @@ namespace Qv2ray::ui::widgets::models
 
         inline QModelIndex GetConnectionPairIndex(const ConnectionGroupPair &id) const
         {
-            auto x = QHashPrivate::calculateHash(id, 0);
             return model->indexFromItem(pairs.value(id));
         }
 
@@ -50,7 +49,7 @@ namespace Qv2ray::ui::widgets::models
       private:
         QTreeView *parentView;
         QStandardItemModel *model;
-        //
+
         QHash<GroupId, QStandardItem *> groups;
         QHash<ConnectionGroupPair, QStandardItem *> pairs;
         QHash<ConnectionId, QList<QStandardItem *>> connections;

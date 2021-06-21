@@ -61,9 +61,13 @@ void JsonEditor::on_jsonEditor_textChanged()
 {
     auto string = jsonEditor->toPlainText();
     auto VerifyResult = VerifyJsonString(string);
-    jsonValidateStatus->setText(*VerifyResult);
 
     if (VerifyResult)
+    {
+        jsonValidateStatus->setText(*VerifyResult);
+        RED(jsonEditor);
+    }
+    else
     {
         BLACK(jsonEditor);
         final = JsonFromString(string);
@@ -71,19 +75,20 @@ void JsonEditor::on_jsonEditor_textChanged()
         jsonTree->expandAll();
         jsonTree->resizeColumnToContents(0);
     }
-    else
-    {
-        RED(jsonEditor);
-    }
 }
 
 void JsonEditor::on_formatJsonBtn_clicked()
 {
     auto string = jsonEditor->toPlainText();
     auto VerifyResult = VerifyJsonString(string);
-    jsonValidateStatus->setText(*VerifyResult);
 
     if (VerifyResult)
+    {
+        jsonValidateStatus->setText(*VerifyResult);
+        RED(jsonEditor);
+        QvBaselib->Warn(tr("Syntax Errors"), tr("Please fix the JSON errors or remove the comments before continue"));
+    }
+    else
     {
         BLACK(jsonEditor);
         jsonEditor->setPlainText(JsonToString(JsonFromString(string)));
@@ -91,11 +96,6 @@ void JsonEditor::on_formatJsonBtn_clicked()
         jsonTree->setModel(&model);
         jsonTree->expandAll();
         jsonTree->resizeColumnToContents(0);
-    }
-    else
-    {
-        RED(jsonEditor);
-        QvBaselib->Warn(tr("Syntax Errors"), tr("Please fix the JSON errors or remove the comments before continue"));
     }
 }
 
