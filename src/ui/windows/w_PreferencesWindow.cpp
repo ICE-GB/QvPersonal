@@ -65,7 +65,6 @@ PreferencesWindow::PreferencesWindow(QWidget *parent) : QvDialog("PreferenceWind
     BaselibConfig.loadJson(QvBaselib->GetConfig()->toJson());
     //
     AppConfig.appearanceConfig->UITheme.ReadWriteBind(themeCombo, "currentText", &QComboBox::currentIndexChanged);
-    AppConfig.appearanceConfig->DarkModeUI.ReadWriteBind(darkThemeCB, "checked", &QCheckBox::stateChanged);
     AppConfig.appearanceConfig->DarkModeTrayIcon.ReadWriteBind(darkTrayCB, "checked", &QCheckBox::stateChanged);
     AppConfig.appearanceConfig->Language.ReadWriteBind(languageComboBox, "currentText", &QComboBox::currentIndexChanged);
     AppConfig.behaviorConfig->QuietMode.ReadWriteBind(quietModeCB, "checked", &QCheckBox::stateChanged);
@@ -261,7 +260,7 @@ QvMessageBusSlotImpl(PreferencesWindow)
         MBShowDefaultImpl;
         MBHideDefaultImpl;
         MBRetranslateDefaultImpl;
-        case UPDATE_COLORSCHEME: break;
+        case MessageBus::UPDATE_COLORSCHEME: break;
     }
 }
 
@@ -343,7 +342,7 @@ void PreferencesWindow::on_buttonBox_accepted()
 #pragma message("TODO")
     //    SaveGlobalSettings();
 
-    UIMessageBus.EmitGlobalSignal(QvMBMessage::UPDATE_COLORSCHEME);
+    UIMessageBus->EmitGlobalSignal(MessageBus::UPDATE_COLORSCHEME);
 
 #pragma message("TODO: should or not")
     //    if (NeedRestart && !KernelInstance->CurrentConnection().isEmpty())

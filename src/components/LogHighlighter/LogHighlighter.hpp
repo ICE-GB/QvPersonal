@@ -54,14 +54,15 @@
 #include <QTextCharFormat>
 #include <QTextDocument>
 
-namespace Qv2ray::ui
+namespace Qv2ray::components::LogHighlighter
 {
-    class SyntaxHighlighter : public QSyntaxHighlighter
+    class LogHighlighter : public QSyntaxHighlighter
     {
         Q_OBJECT
 
       public:
-        explicit SyntaxHighlighter(bool darkMode, QTextDocument *parent = nullptr);
+        explicit LogHighlighter(QTextDocument *parent = nullptr);
+        void loadRules(bool darkMode);
 
       protected:
         void highlightBlock(const QString &text) override;
@@ -85,10 +86,8 @@ namespace Qv2ray::ui
         QTextCharFormat timeFormat;
         QTextCharFormat ipHostFormat;
         QTextCharFormat v2rayComponentFormat;
-        //
+
         QTextCharFormat qvAppLogFormat;
         QTextCharFormat qvAppDebugLogFormat;
     };
-} // namespace Qv2ray::ui
-
-using namespace Qv2ray::ui;
+} // namespace Qv2ray::components::LogHighlighter

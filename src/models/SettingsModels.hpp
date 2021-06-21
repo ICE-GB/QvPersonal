@@ -18,14 +18,13 @@ namespace Qv2ray::Models
             ALWAYS_OFF
         };
 
-        Bindable<UIStyleType> DarkModeUI;
         Bindable<UIStyleType> DarkModeTrayIcon;
         Bindable<QString> UITheme;
         Bindable<QString> Language;
         Bindable<qsizetype> RecentJumpListSize;
         Bindable<QList<ConnectionGroupPair>> RecentConnections;
         Bindable<int> MaximizeLogLines;
-        QJS_FUNC_JSON(F(DarkModeUI, DarkModeTrayIcon, UITheme, Language, RecentJumpListSize, RecentConnections, MaximizeLogLines))
+        QJS_FUNC_JSON(F(DarkModeTrayIcon, UITheme, Language, RecentJumpListSize, RecentConnections, MaximizeLogLines))
     };
 
     struct Qv2rayBehaviorConfig

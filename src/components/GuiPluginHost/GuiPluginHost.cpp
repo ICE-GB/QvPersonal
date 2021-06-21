@@ -5,9 +5,9 @@
 
 namespace Qv2ray::ui::common
 {
-    GuiPluginAPIHost::GuiPluginAPIHost(Qv2rayBase::Plugin::PluginAPIHost *host)
+    GuiPluginAPIHost::GuiPluginAPIHost()
     {
-        apiHost = host;
+        apiHost = QvBaselib->PluginAPIHost();
     }
 
     QList<std::pair<Qv2rayPlugin::Qv2rayInterface *, Qv2rayPlugin::Gui::PluginGUIInterface *>> GuiPluginAPIHost::GUI_QueryByComponent(

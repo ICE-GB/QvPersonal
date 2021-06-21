@@ -191,6 +191,7 @@ void MainWindow::CheckSubscriptionsUpdate()
 
 void MainWindow::updateColorScheme()
 {
+    vCoreLogHighlighter->loadRules(StyleManager->isCurrentlyDarkMode());
     qvAppTrayIcon->setIcon(QvBaselib->KernelManager()->CurrentConnection().isNull() ? Q_TRAYICON("tray") : Q_TRAYICON("tray-connected"));
     //
     importConfigButton->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("add")));

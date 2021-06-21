@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QStringList>
 
-namespace Qv2ray::ui::styles
+namespace Qv2ray::components::QvStyleManager
 {
     struct QvStyle
     {
@@ -26,13 +26,13 @@ namespace Qv2ray::ui::styles
             return styles.keys();
         }
         bool ApplyStyle(const QString &);
+        bool isCurrentlyDarkMode() const;
 
       private:
         void ReloadStyles();
         QMap<QString, QvStyle> styles;
     };
 
-    inline QvStyleManager *StyleManager = nullptr;
-} // namespace Qv2ray::ui::styles
+} // namespace Qv2ray::components::StyleManager
 
-using namespace Qv2ray::ui::styles;
+inline Qv2ray::components::QvStyleManager::QvStyleManager *StyleManager = nullptr;

@@ -2,6 +2,7 @@
 
 #include "MessageBus/MessageBus.hpp"
 #include "Qv2rayApplication.hpp"
+#include "StyleManager/StyleManager.hpp"
 
 #include <QDialog>
 #include <QGraphicsEffect>
@@ -26,7 +27,7 @@ inline void BLACK(QWidget *obj)
 }
 
 #define QV2RAY_COLORSCHEME_ROOT_X(isDark) (QStringLiteral(":/") + ((isDark) ? "ui_dark/" : "ui_light/"))
-#define QV2RAY_COLORSCHEME_FILE(file) (QV2RAY_COLORSCHEME_ROOT_X(GlobalConfig->appearanceConfig->DarkModeUI) + file + ".svg")
+#define QV2RAY_COLORSCHEME_FILE(file) (QV2RAY_COLORSCHEME_ROOT_X(StyleManager->isCurrentlyDarkMode()) + file + ".svg")
 #define Q_TRAYICON(name) (QPixmap(QV2RAY_COLORSCHEME_ROOT_X(GlobalConfig->appearanceConfig->DarkModeTrayIcon) + "glyph-" + name + ".png"))
 
 class QvDialog : public QDialog

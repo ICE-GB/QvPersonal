@@ -6,10 +6,15 @@
 #define REGEX_PORT_NUMBER R"(([0-9]|[1-9]\d{1,3}|[1-5]\d{4}|6[0-5]{2}[0-3][0-5])*)"
 #define TO_EOL "(([\\s\\S]*)|([\\d\\D]*)|([\\w\\W]*))$"
 
-namespace Qv2ray::ui
+namespace Qv2ray::components::LogHighlighter
 {
-    SyntaxHighlighter::SyntaxHighlighter(bool darkMode, QTextDocument *parent) : QSyntaxHighlighter(parent)
+    LogHighlighter::LogHighlighter(QTextDocument *parent) : QSyntaxHighlighter(parent)
     {
+    }
+
+    void LogHighlighter::loadRules(bool darkMode)
+    {
+        highlightingRules.clear();
         HighlightingRule rule;
 
         if (darkMode)
@@ -36,12 +41,12 @@ namespace Qv2ray::ui
         }
 
         dateFormat.setForeground(darkMode ? Qt::cyan : Qt::darkCyan);
-        rule.pattern = QRegularExpression("\\d\\d\\d\\d/\\d\\d/\\d\\d");
+        rule.pattern = QRegularExpression(QStringLiteral("\\d\\d\\d\\d/\\d\\d/\\d\\d"));
         rule.format = dateFormat;
         highlightingRules.append(rule);
         //
         timeFormat.setForeground(darkMode ? Qt::cyan : Qt::darkCyan);
-        rule.pattern = QRegularExpression("\\d\\d:\\d\\d:\\d\\d");
+        rule.pattern = QRegularExpression(QStringLiteral("\\d\\d:\\d\\d:\\d\\d"));
         rule.format = timeFormat;
         highlightingRules.append(rule);
         //
@@ -80,7 +85,7 @@ namespace Qv2ray::ui
         acceptedFormat.setForeground(darkGreenColor);
         acceptedFormat.setFontItalic(true);
         acceptedFormat.setFontWeight(QFont::Bold);
-        rule.pattern = QRegularExpression("\\saccepted\\s");
+        rule.pattern = QRegularExpression(QStringLiteral("\\saccepted\\s"));
         rule.format = acceptedFormat;
         highlightingRules.append(rule);
         //
@@ -94,7 +99,7 @@ namespace Qv2ray::ui
         highlightingRules.append(rule);
         //
         v2rayComponentFormat.setForeground(darkMode ? darkGreenColor : Qt::darkYellow);
-        rule.pattern = QRegularExpression(R"( (\w+\/)+\w+: )");
+        rule.pattern = QRegularExpression(QStringLiteral(R"( (\w+\/)+\w+: )"));
         rule.format = v2rayComponentFormat;
         highlightingRules.append(rule);
         //
@@ -106,22 +111,22 @@ namespace Qv2ray::ui
         failedFormat.setFontWeight(QFont::Bold);
         failedFormat.setBackground(Qt::red);
         failedFormat.setForeground(Qt::white);
-        rule.pattern = QRegularExpression("failed");
+        rule.pattern = QRegularExpression(QStringLiteral("failed"));
         rule.format = failedFormat;
         highlightingRules.append(rule);
         //
         qvAppLogFormat.setForeground(darkMode ? Qt::cyan : Qt::darkCyan);
-        rule.pattern = QRegularExpression("\\[[A-Z]*\\]:");
+        rule.pattern = QRegularExpression(QStringLiteral("\\[[A-Z]*\\]:"));
         rule.format = qvAppLogFormat;
         highlightingRules.append(rule);
         //
         qvAppDebugLogFormat.setForeground(darkMode ? Qt::yellow : Qt::darkYellow);
-        rule.pattern = QRegularExpression(R"( \[\w+\] )");
+        rule.pattern = QRegularExpression(QStringLiteral(R"( \[\w+\] )"));
         rule.format = qvAppDebugLogFormat;
         highlightingRules.append(rule);
     }
 
-    void SyntaxHighlighter::highlightBlock(const QString &text)
+    void LogHighlighter::highlightBlock(const QString &text)
     {
         for (const HighlightingRule &rule : qAsConst(highlightingRules))
         {
@@ -136,4 +141,4 @@ namespace Qv2ray::ui
 
         setCurrentBlockState(0);
     }
-} // namespace Qv2ray::ui
+} // namespace Qv2ray::components::LogHighlighter

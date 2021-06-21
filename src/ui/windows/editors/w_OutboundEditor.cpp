@@ -40,7 +40,7 @@ QvMessageBusSlotImpl(OutboundEditor)
         MBShowDefaultImpl;
         MBHideDefaultImpl;
         MBRetranslateDefaultImpl;
-        case UPDATE_COLORSCHEME: break;
+        case MessageBus::UPDATE_COLORSCHEME: break;
     }
 }
 

@@ -192,7 +192,7 @@ void SpeedWidget::UpdateSpeedPlotSettings()
     m_properties.clear();
 
     m_properties[OUTBOUND_PROXY_UP] = { tr("Proxy") + " ↑", getPen(DefaultPen.first) };
-    m_properties[OUTBOUND_PROXY_DOWN] = { tr("Proxy") + " ↓", getPen(DirectPen.second) };
+    m_properties[OUTBOUND_PROXY_DOWN] = { tr("Proxy") + " ↓", getPen(DefaultPen.second) };
 
     m_properties[OUTBOUND_DIRECT_UP] = { tr("Direct") + " ↑", getPen(DirectPen.first) };
     m_properties[OUTBOUND_DIRECT_DOWN] = { tr("Direct") + " ↓", getPen(DirectPen.second) };

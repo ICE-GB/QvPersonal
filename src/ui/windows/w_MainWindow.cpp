@@ -39,7 +39,7 @@ QvMessageBusSlotImpl(MainWindow)
         MBShowDefaultImpl;
         MBHideDefaultImpl;
         MBUpdateColorSchemeDefaultImpl;
-        case RETRANSLATE:
+        case MessageBus::RETRANSLATE:
         {
             retranslateUi(this);
             UpdateActionTranslations();
@@ -78,7 +78,7 @@ void MainWindow::OnRecentConnectionsMenuReadyToShow()
         if (QvBaselib->ProfileManager()->IsValidId(conn))
         {
             const auto name = GetDisplayName(conn.connectionId) + " (" + GetDisplayName(conn.groupId) + ")";
-            tray_RecentConnectionsMenu->addAction(name, [=]() { emit QvBaselib->ProfileManager()->StartConnection(conn); });
+            tray_RecentConnectionsMenu->addAction(name, this, [=]() { emit QvBaselib->ProfileManager()->StartConnection(conn); });
         }
     }
 }
@@ -91,18 +91,19 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     splitter->setSizes({ (int) (width() * sizeRatioA), (int) (width() * sizeRatioB) });
 
     QvMessageBusConnect();
-    //
+
     infoWidget = new ConnectionInfoWidget(this);
     connectionInfoLayout->addWidget(infoWidget);
-    //
+
     masterLogBrowser->setDocument(vCoreLogDocument);
-    vCoreLogHighlighter = new SyntaxHighlighter(GlobalConfig->appearanceConfig->DarkModeUI, masterLogBrowser->document());
+    vCoreLogHighlighter = new LogHighlighter::LogHighlighter(masterLogBrowser->document());
+
     // For charts
     speedChartWidget = new SpeedWidget(this);
     speedChart->addWidget(speedChartWidget);
-    //
+
     modelHelper = new ConnectionListHelper(connectionTreeView);
-    //
+
     this->setWindowIcon(QIcon(":/assets/icons/qv2ray.png"));
     updateColorScheme();
     UpdateActionTranslations();
@@ -117,7 +118,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
                                  tr("The kernel terminated unexpectedly:") + NEWLINE + reason + NEWLINE + NEWLINE +
                                      tr("To solve the problem, read the kernel log in the log text browser."));
             });
-    //
+
     connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnConnected, this, &MainWindow::OnConnected);
     connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnDisconnected, this, &MainWindow::OnDisconnected);
     connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnStatsAvailable, this, &MainWindow::OnStatsAvailable);
@@ -337,17 +338,17 @@ void MainWindow::ProcessCommand(QString command, QStringList commands, QMap<QStr
 {
     if (commands.isEmpty())
         return;
-    if (command == "open")
+    if (command == QLatin1String("open"))
     {
         const auto subcommand = commands.takeFirst();
         QvDialog *w;
-        if (subcommand == "preference")
+        if (subcommand == QStringLiteral("preference"))
             w = new PreferencesWindow();
-        else if (subcommand == "plugin")
+        else if (subcommand == QStringLiteral("plugin"))
             w = new PluginManageWindow();
-        else if (subcommand == "group")
+        else if (subcommand == QStringLiteral("group"))
             w = new GroupManager();
-        else if (subcommand == "import")
+        else if (subcommand == QStringLiteral("import"))
             w = new ImportConfigWindow();
         else
             return;
@@ -567,9 +568,10 @@ void MainWindow::Action_DeleteConnections()
 
 void MainWindow::on_importConfigButton_clicked()
 {
-#pragma message("TODO: Properly handle this")
     ImportConfigWindow w(this);
-    //    w.DoImport();
+    const auto &[group, connections] = w.DoImportConnections();
+    for (const auto &conn : connections)
+        QvBaselib->ProfileManager()->CreateConnection(conn, conn.name, group);
 }
 
 void MainWindow::Action_EditComplex()
@@ -970,7 +972,7 @@ void MainWindow::on_newComplexConnectionBtn_clicked()
     {
         const auto item = connectionTreeView->currentIndex();
         const auto id = item.isValid() ? GetIndexWidget(item)->Identifier().groupId : DefaultGroupId;
-        QvBaselib->ProfileManager()->CreateConnection(root, root.outbounds.first().name, id);
+        QvBaselib->ProfileManager()->CreateConnection(root, root.name, id);
     }
 }
 

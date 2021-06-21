@@ -109,7 +109,7 @@ class MainWindow
   private:
     // Charts
     SpeedWidget *speedChartWidget;
-    SyntaxHighlighter *vCoreLogHighlighter;
+    LogHighlighter::LogHighlighter *vCoreLogHighlighter;
     ConnectionInfoWidget *infoWidget;
     //
     // Declare Actions

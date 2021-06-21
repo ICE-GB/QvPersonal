@@ -11,7 +11,7 @@
 #include <CoreServices/CoreServices.h>
 #endif
 
-namespace Qv2ray::components::darkmode
+namespace Qv2ray::components::DarkModeDetector
 {
     // Referenced from github.com/keepassxreboot/keepassxc. Licensed under GPL2/3.
     // Copyright (C) 2020 KeePassXC Team <team@keepassxc.org>
@@ -35,7 +35,6 @@ namespace Qv2ray::components::darkmode
 
         return isDark;
 #endif
-
         if (!qApp || !qApp->style())
         {
             return false;

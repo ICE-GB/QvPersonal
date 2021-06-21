@@ -1,8 +1,9 @@
 #include "StyleManager.hpp"
 
 #include "Common/Utils.hpp"
+#include "DarkmodeDetector/DarkmodeDetector.hpp"
+#include "MessageBus/MessageBus.hpp"
 #include "Qv2rayApplication.hpp"
-#include "Qv2rayBaseFeatures.hpp"
 
 #include <QApplication>
 #include <QColor>
@@ -10,11 +11,14 @@
 #include <QPalette>
 #include <QStyle>
 #include <QStyleFactory>
+#include <iostream>
 
 constexpr auto QV2RAY_BUILT_IN_DARK_MODE_NAME = "Built-in Darkmode";
+constexpr auto QV2RAY_SYSTEM_STYLE = "System";
+
 #define QV_MODULE_NAME "StyleManager"
 
-namespace Qv2ray::ui::styles
+namespace Qv2ray::components::QvStyleManager
 {
     QvStyleManager::QvStyleManager(QObject *parent) : QObject(parent)
     {
@@ -25,6 +29,7 @@ namespace Qv2ray::ui::styles
     {
         styles.clear();
         styles.insert(QV2RAY_BUILT_IN_DARK_MODE_NAME, {});
+        styles.insert(QV2RAY_SYSTEM_STYLE, {});
         for (const auto &key : QStyleFactory::keys())
         {
             QvLog() << "Found factory style:" << key;
@@ -34,13 +39,13 @@ namespace Qv2ray::ui::styles
             styles.insert(key, style);
         }
 
-        for (const auto &styleDir : QvBaselib->GetAssetsPaths("uistyles"))
+        for (const auto &styleDir : QvBaselib->GetAssetsPaths(QStringLiteral("uistyles")))
         {
             for (const auto &fileInfo : QDir(styleDir).entryInfoList())
             {
                 if (!fileInfo.isFile())
                     break;
-                if (fileInfo.suffix() == "css" || fileInfo.suffix() == "qss" || fileInfo.suffix() == "qvstyle")
+                if (fileInfo.suffix() == QStringLiteral("css") || fileInfo.suffix() == QStringLiteral("qss") || fileInfo.suffix() == QStringLiteral("qvstyle"))
                 {
                     QvLog() << "Found QSS style at:" << fileInfo;
                     QvStyle style;
@@ -57,7 +62,9 @@ namespace Qv2ray::ui::styles
     {
         if (!styles.contains(style))
             return false;
-        qApp->setStyle("fusion");
+        qApp->setStyle(QStringLiteral("fusion"));
+        if (style == QV2RAY_SYSTEM_STYLE)
+            return true;
         if (style == QV2RAY_BUILT_IN_DARK_MODE_NAME)
         {
             QvLog() << "Applying built-in darkmode theme.";
@@ -89,11 +96,11 @@ namespace Qv2ray::ui::styles
             darkPalette.setColor(QPalette::BrightText, Qt::red);
             darkPalette.setColor(QPalette::HighlightedText, Qt::black);
             qApp->setPalette(darkPalette);
-            qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
+            qApp->setStyleSheet(QStringLiteral("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }"));
             return true;
         }
 
-        const auto &s = styles[style];
+        const auto s = styles.value(style);
         switch (s.Type)
         {
             case QvStyle::QVSTYLE_QSS:
@@ -106,10 +113,10 @@ namespace Qv2ray::ui::styles
             case QvStyle::QVSTYLE_FACTORY:
             {
                 QvLog() << "Applying UI style:" << s.Name;
-                const auto &_style = QStyleFactory::create(s.Name);
+                const auto _style = QStyleFactory::create(s.Name);
                 qApp->setPalette(_style->standardPalette());
                 qApp->setStyle(_style);
-                qApp->setStyleSheet("");
+                qApp->setStyleSheet(QStringLiteral(""));
                 break;
             }
             default:
@@ -117,7 +124,14 @@ namespace Qv2ray::ui::styles
                 return false;
             }
         }
+
+        UIMessageBus->EmitGlobalSignal(MessageBus::UPDATE_COLORSCHEME);
         qApp->processEvents();
         return true;
     }
-} // namespace Qv2ray::ui::styles
+
+    bool QvStyleManager::isCurrentlyDarkMode() const
+    {
+        return qApp->palette().color(QPalette::Window).lightness() < 110;
+    }
+} // namespace Qv2ray::components::QvStyleManager

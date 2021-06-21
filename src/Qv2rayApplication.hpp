@@ -36,7 +36,6 @@ struct Qv2rayStartupArguments
     };
     QList<Argument> arguments;
     QString version;
-    int buildVersion;
     QString data;
     QList<QString> links;
     QList<QString> fullArgs;
@@ -48,7 +47,7 @@ struct Qv2rayStartupArguments
     bool exitQv2ray;
     //
     QString _qvNewVersionPath;
-    QJS_FUNC_JSON(F(arguments, data, version, links, fullArgs, buildVersion))
+    QJS_FUNC_JSON(F(arguments, data, version, links, fullArgs))
 };
 
 const static inline QMap<Qv2rayBase::MessageOpt, QMessageBox::StandardButton> MessageBoxButtonMap //
@@ -77,16 +76,15 @@ class Qv2rayApplication
   public:
     Qv2rayApplication(int &argc, char *argv[]);
     virtual ~Qv2rayApplication();
-    Qv2rayExitReason GetExitReason() const;
 
-    QStringList CheckPrerequisites();
+    Qv2rayExitReason GetExitReason() const;
     bool Initialize();
     Qv2rayExitReason RunQv2ray();
+
     QSystemTrayIcon **TrayIcon();
     void ShowTrayMessage(const QString &m, int msecs = 10000);
 
-    bool isDarkMode();
-    bool isDarkTrayIconUsed();
+    QPixmap Qv2rayLogo;
 
   public:
     virtual void p_MessageBoxWarn(const QString &title, const QString &text) override;
@@ -97,9 +95,8 @@ class Qv2rayApplication
   private:
     void quitInternal();
     bool parseCommandLine(QString *errorMessage, bool *canContinue);
-    void onMessageReceived(quint32 clientId, QByteArray msg);
-    Qv2rayExitReason _exitReason;
-    bool isInitialized;
+    void onMessageReceived(quint32 clientId, const QByteArray &msg);
+    Qv2rayExitReason exitReason;
     QSystemTrayIcon *hTray;
     MainWindow *mainWindow;
     Qv2rayBase::Qv2rayBaseLibrary *baseLibrary;

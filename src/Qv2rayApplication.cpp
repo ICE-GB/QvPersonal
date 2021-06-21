@@ -1,7 +1,9 @@
 #include "Qv2rayApplication.hpp"
 
 #include "Common/Utils.hpp"
+#include "DarkmodeDetector/DarkmodeDetector.hpp"
 #include "GuiPluginHost/GuiPluginHost.hpp"
+#include "Interfaces/IStorageProvider.hpp"
 #include "Profile/KernelManager.hpp"
 #include "Profile/ProfileManager.hpp"
 #include "StyleManager/StyleManager.hpp"
@@ -15,7 +17,7 @@
 #define QV_MODULE_NAME "PlatformApplication"
 
 #ifdef QT_DEBUG
-const static inline auto QV2RAY_URL_SCHEME = QStringLiteral("qv2ray-debug");
+const static inline auto QV2RAY_URL_SCHEME = "qv2ray-debug";
 #else
 const static inline QString QV2RAY_URL_SCHEME = "qv2ray";
 #endif
@@ -23,6 +25,7 @@ const static inline QString QV2RAY_URL_SCHEME = "qv2ray";
 Qv2rayApplication::Qv2rayApplication(int &argc, char *argv[]) : SingleApplication(argc, argv, true, User | ExcludeAppPath | ExcludeAppVersion)
 {
     baseLibrary = new Qv2rayBase::Qv2rayBaseLibrary;
+    Qv2rayLogo = QPixmap{ ":/qv2ray.png" };
 }
 
 Qv2rayApplication::~Qv2rayApplication()
@@ -32,12 +35,11 @@ Qv2rayApplication::~Qv2rayApplication()
 
 Qv2rayExitReason Qv2rayApplication::GetExitReason() const
 {
-    return _exitReason;
+    return exitReason;
 }
 
-QStringList Qv2rayApplication::CheckPrerequisites()
+bool Qv2rayApplication::Initialize()
 {
-    QStringList errors;
     if (!QSslSocket::supportsSsl())
     {
         // Check OpenSSL version for auto-update and subscriptions
@@ -45,15 +47,12 @@ QStringList Qv2rayApplication::CheckPrerequisites()
         const auto osslCurVersion = QSslSocket::sslLibraryVersionString();
         QvLog() << "Current OpenSSL version:" << osslCurVersion;
         QvLog() << "Required OpenSSL version:" << osslReqVersion;
-        errors << QStringLiteral("Qv2ray cannot run without OpenSSL.");
-        errors << QStringLiteral("This is usually caused by using the wrong version of OpenSSL");
-        errors << "Required=" + osslReqVersion + "Current=" + osslCurVersion;
+        QvLog() << "Qv2ray cannot run without OpenSSL.";
+        QvLog() << "This is usually caused by using the wrong version of OpenSSL";
+        QvLog() << "Required=" << osslReqVersion << "Current=" << osslCurVersion;
+        return false;
     }
-    return errors;
-}
 
-bool Qv2rayApplication::Initialize()
-{
     QString errorMessage;
     bool canContinue;
     const auto hasError = parseCommandLine(&errorMessage, &canContinue);
@@ -86,30 +85,31 @@ bool Qv2rayApplication::Initialize()
     connect(this, &SingleApplication::receivedMessage, this, &Qv2rayApplication::onMessageReceived, Qt::QueuedConnection);
     if (isSecondary())
     {
-        StartupArguments.version = QV2RAY_VERSION_STRING;
-        //        StartupArguments.buildVersion = QV2RAY_VERSION_BUILD;
+        StartupArguments.version = QStringLiteral(QV2RAY_VERSION_STRING);
         StartupArguments.fullArgs = arguments();
         if (StartupArguments.arguments.isEmpty())
             StartupArguments.arguments << Qv2rayStartupArguments::NORMAL;
         bool status = sendMessage(JsonToString(StartupArguments.toJson(), QJsonDocument::Compact).toUtf8());
         if (!status)
             QvLog() << "Cannot send message.";
-        _exitReason = EXIT_SECONDARY_INSTANCE;
+        exitReason = EXIT_SECONDARY_INSTANCE;
         return false;
     }
 
-    const auto result = baseLibrary->Initialize(StartupArguments.noPlugins ? Qv2rayBase::START_NO_PLUGINS : Qv2rayBase::START_NORMAL, this);
-    GlobalConfig = new (std::remove_reference_t<decltype(*GlobalConfig)>);
+    Qv2rayBase::Interfaces::StorageContext ctx;
+#ifdef QT_DEBUG
+    ctx.isDebug = true;
+#else
+    ctx.isDebug = false;
+#endif
+
+    const auto result = baseLibrary->Initialize(StartupArguments.noPlugins ? Qv2rayBase::START_NO_PLUGINS : Qv2rayBase::START_NORMAL, ctx, this);
+    if (result != Qv2rayBase::NORMAL)
+        return false;
 
 #ifdef Q_OS_LINUX
-    connect(this, &QGuiApplication::commitDataRequest,
-            []
-            {
-#pragma message("TODO")
-                // RouteManager->SaveRoutes();
-                // SaveConnectionConfig();
-                //        SaveGlobalSettings();
-            });
+#pragma message("TODO Save Qv2rayApplicationConfig")
+    connect(this, &QGuiApplication::commitDataRequest, [] { QvBaselib->SaveConfigurations(); });
 #endif
 
 #ifdef Q_OS_WIN
@@ -117,21 +117,26 @@ bool Qv2rayApplication::Initialize()
     // Set font
     QFont font;
     font.setPointSize(9);
-    font.setFamily("Microsoft YaHei");
+    font.setFamily("Segoe UI Variable Display");
     QGuiApplication::setFont(font);
 #endif
+
+    GlobalConfig = new Qv2rayApplicationConfigObject;
+    GUIPluginHost = new Qv2ray::ui::common::GuiPluginAPIHost;
+    UIMessageBus = new MessageBus::QvMessageBusObject;
+    StyleManager = new QvStyleManager::QvStyleManager;
     return true;
 }
 
 Qv2rayExitReason Qv2rayApplication::RunQv2ray()
 {
     setQuitOnLastWindowClosed(false);
-    GUIPluginHost = new Qv2ray::ui::common::GuiPluginAPIHost(baseLibrary->PluginAPIHost());
-    hTray = new QSystemTrayIcon();
-    StyleManager = new QvStyleManager();
+
     StyleManager->ApplyStyle(GlobalConfig->appearanceConfig->UITheme);
-    // Show MainWindow
+
+    hTray = new QSystemTrayIcon();
     mainWindow = new MainWindow();
+
     if (StartupArguments.arguments.contains(Qv2rayStartupArguments::QV2RAY_LINK))
     {
         for (const auto &link : StartupArguments.links)
@@ -145,7 +150,7 @@ Qv2rayExitReason Qv2rayApplication::RunQv2ray()
             {
                 args.insert(kvp.first, kvp.second);
             }
-            if (command == "open")
+            if (command == QStringLiteral("open"))
             {
                 mainWindow->ProcessCommand(command, subcommands, args);
             }
@@ -168,7 +173,6 @@ Qv2rayExitReason Qv2rayApplication::RunQv2ray()
         }
     });
 #endif
-    isInitialized = true;
     return (Qv2rayExitReason) exec();
 }
 
@@ -199,18 +203,17 @@ bool Qv2rayApplication::parseCommandLine(QString *errorMessage, bool *canContinu
         filteredArgs << arg;
     }
     QCommandLineParser parser;
-    //
-    QCommandLineOption noAPIOption("noAPI", QObject::tr("Disable gRPC API subsystem"));
-    QCommandLineOption noPluginsOption("noPlugin", QObject::tr("Disable plugins feature"));
-    QCommandLineOption debugLogOption("debug", QObject::tr("Enable debug output"));
-    QCommandLineOption noAutoConnectionOption("noAutoConnection", QObject::tr("Do not automatically connect"));
-    QCommandLineOption disconnectOption("disconnect", QObject::tr("Stop current connection"));
-    QCommandLineOption reconnectOption("reconnect", QObject::tr("Reconnect last connection"));
-    QCommandLineOption exitOption("exit", QObject::tr("Exit Qv2ray"));
-    //
+    QCommandLineOption noAPIOption(QStringLiteral("noAPI"), QObject::tr("Disable gRPC API subsystem"));
+    QCommandLineOption noPluginsOption(QStringLiteral("noPlugin"), QObject::tr("Disable plugins feature"));
+    QCommandLineOption debugLogOption(QStringLiteral("debug"), QObject::tr("Enable debug output"));
+    QCommandLineOption noAutoConnectionOption(QStringLiteral("noAutoConnection"), QObject::tr("Do not automatically connect"));
+    QCommandLineOption disconnectOption(QStringLiteral("disconnect"), QObject::tr("Stop current connection"));
+    QCommandLineOption reconnectOption(QStringLiteral("reconnect"), QObject::tr("Reconnect last connection"));
+    QCommandLineOption exitOption(QStringLiteral("exit"), QObject::tr("Exit Qv2ray"));
+
     parser.setApplicationDescription(QObject::tr("Qv2ray - A cross-platform Qt frontend for V2Ray."));
     parser.setSingleDashWordOptionMode(QCommandLineParser::ParseAsLongOptions);
-    //
+
     parser.addOption(noAPIOption);
     parser.addOption(noPluginsOption);
     parser.addOption(debugLogOption);
@@ -218,7 +221,7 @@ bool Qv2rayApplication::parseCommandLine(QString *errorMessage, bool *canContinu
     parser.addOption(disconnectOption);
     parser.addOption(reconnectOption);
     parser.addOption(exitOption);
-    //
+
     const auto helpOption = parser.addHelpOption();
     const auto versionOption = parser.addVersionOption();
 
@@ -243,7 +246,7 @@ bool Qv2rayApplication::parseCommandLine(QString *errorMessage, bool *canContinu
 
     for (const auto &arg : parser.positionalArguments())
     {
-        if (arg.startsWith(QV2RAY_URL_SCHEME + "://"))
+        if (arg.startsWith(QString(QV2RAY_URL_SCHEME) + "://"))
         {
             StartupArguments.arguments << Qv2rayStartupArguments::QV2RAY_LINK;
             StartupArguments.links << arg;
@@ -306,49 +309,40 @@ Qv2rayBase::MessageOpt Qv2rayApplication::p_MessageBoxAsk(const QString &title, 
 
 void Qv2rayApplication::ShowTrayMessage(const QString &m, int msecs)
 {
-    hTray->showMessage("Qv2ray", m, QIcon(":/assets/icons/qv2ray.png"), msecs);
+    hTray->showMessage(QStringLiteral("Qv2ray"), m, QIcon(Qv2rayLogo), msecs);
 }
 
-bool Qv2rayApplication::isDarkMode()
+void Qv2rayApplication::onMessageReceived(quint32 clientId, const QByteArray &_msg)
 {
-    return true;
-}
-
-void Qv2rayApplication::onMessageReceived(quint32 clientId, QByteArray _msg)
-{
-    // Sometimes SingleApplication will send message with clientId == 0, ignore them.
+    // Sometimes SingleApplication sends message with clientId == current id, ignore that.
     if (clientId == instanceId())
-        return;
-
-    if (!isInitialized)
         return;
 
     Qv2rayStartupArguments msg;
     msg.loadJson(JsonFromString(_msg));
-    QvLog() << "Received message, version:" << msg.buildVersion << "From client ID:" << clientId;
+    QvLog() << "Received message, version:" << msg.version << "From client ID:" << clientId;
     QvLog() << _msg;
-    //
-#pragma message("TODO")
-    //    if (msg.buildVersion > QV2RAY_VERSION_BUILD)
-    //    {
-    //        const auto newPath = msg.fullArgs.first();
-    //        QString message;
-    //        message += tr("A new version of Qv2ray is starting:") + NEWLINE;
-    //        message += NEWLINE;
-    //        message += tr("New version information: ") + NEWLINE;
-    //        message += tr("Version: %1:%2").arg(msg.version).arg(msg.buildVersion) + NEWLINE;
-    //        message += tr("Path: %1").arg(newPath) + NEWLINE;
-    //        message += NEWLINE;
-    //        message += tr("Do you want to exit and launch that new version?");
 
-    //        const auto result = p_MessageBoxAsk(tr("New version detected"), message, { Qv2rayBase::MessageOpt::Yes, Qv2rayBase::MessageOpt::No });
-    //        if (result == Qv2rayBase::MessageOpt::Yes)
-    //        {
-    //            StartupArguments._qvNewVersionPath = newPath;
-    //            _exitReason = EXIT_NEW_VERSION_TRIGGER;
-    //            QCoreApplication::quit();
-    //        }
-    //    }
+    if (QVersionNumber::fromString(msg.version) > QVersionNumber::fromString(QStringLiteral(QV2RAY_VERSION_STRING)))
+    {
+        const auto newPath = msg.fullArgs.constFirst();
+        QString message;
+        message += tr("A new version of Qv2ray is starting:") + NEWLINE;
+        message += QStringLiteral(NEWLINE);
+        message += tr("New version information: ") + NEWLINE;
+        message += tr("Version: %1").arg(msg.version) + NEWLINE;
+        message += tr("Path: %1").arg(newPath) + NEWLINE;
+        message += QStringLiteral(NEWLINE);
+        message += tr("Do you want to exit and launch that new version?");
+
+        const auto result = p_MessageBoxAsk(tr("New version detected"), message, { Qv2rayBase::MessageOpt::Yes, Qv2rayBase::MessageOpt::No });
+        if (result == Qv2rayBase::MessageOpt::Yes)
+        {
+            StartupArguments._qvNewVersionPath = newPath;
+            exitReason = EXIT_NEW_VERSION_TRIGGER;
+            QCoreApplication::quit();
+        }
+    }
 
     for (const auto &argument : msg.arguments)
     {
@@ -356,7 +350,7 @@ void Qv2rayApplication::onMessageReceived(quint32 clientId, QByteArray _msg)
         {
             case Qv2rayStartupArguments::EXIT:
             {
-                _exitReason = EXIT_NORMAL;
+                exitReason = EXIT_NORMAL;
                 quit();
                 break;
             }
@@ -383,14 +377,14 @@ void Qv2rayApplication::onMessageReceived(quint32 clientId, QByteArray _msg)
                 {
                     const auto url = QUrl::fromUserInput(link);
                     const auto command = url.host();
-                    auto subcommands = url.path().split("/");
+                    auto subcommands = url.path().split('/');
                     subcommands.removeAll("");
                     QMap<QString, QString> args;
                     for (const auto &kvp : QUrlQuery(url).queryItems())
                     {
                         args.insert(kvp.first, kvp.second);
                     }
-                    if (command == "open")
+                    if (command == QStringLiteral("open"))
                     {
                         mainWindow->ProcessCommand(command, subcommands, args);
                     }

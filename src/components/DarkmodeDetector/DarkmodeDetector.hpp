@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Qv2ray::components::darkmode
+namespace Qv2ray::components::DarkModeDetector
 {
     bool isDarkMode();
 }

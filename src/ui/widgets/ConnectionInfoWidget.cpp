@@ -16,8 +16,8 @@ QvMessageBusSlotImpl(ConnectionInfoWidget)
     {
         MBRetranslateDefaultImpl;
         MBUpdateColorSchemeDefaultImpl;
-        case HIDE_WINDOWS:
-        case SHOW_WINDOWS: break;
+        case MessageBus::HIDE_WINDOWS:
+        case MessageBus::SHOW_WINDOWS: break;
     }
 }
 
@@ -32,10 +32,8 @@ void ConnectionInfoWidget::updateColorScheme()
     groupSubsLinkTxt->setStyleSheet("border-bottom: 1px solid gray; border-radius: 0px; padding: 2px; background-color: " +
                                     this->palette().color(this->backgroundRole()).name(QColor::HexRgb));
 
-#pragma message("TODO: Darkmode should be in StyleManager")
-    auto isDarkTheme = GlobalConfig->appearanceConfig->DarkModeUI;
-    qrPixmapBlured = BlurImage(ColorizeImage(qrPixmap, isDarkTheme ? Qt::black : Qt::white, 0.7), 35);
-    qrLabel->setPixmap(IsComplexConfig(connectionId) ? QPixmap(QStringLiteral(":/assets/icons/qv2ray.png")) : (isRealPixmapShown ? qrPixmap : qrPixmapBlured));
+    qrLabel->setPixmap(IsComplexConfig(connectionId) ? QvApp->Qv2rayLogo : (isRealPixmapShown ? qrPixmap : qrPixmapBlured));
+
     const auto isCurrentItem = QvBaselib->KernelManager()->CurrentConnection().connectionId == connectionId;
     connectBtn->setIcon(QIcon(isCurrentItem ? QV2RAY_COLORSCHEME_FILE("stop") : QV2RAY_COLORSCHEME_FILE("start")));
 }
@@ -43,16 +41,17 @@ void ConnectionInfoWidget::updateColorScheme()
 ConnectionInfoWidget::ConnectionInfoWidget(QWidget *parent) : QWidget(parent)
 {
     setupUi(this);
-    //
+
     QvMessageBusConnect();
     updateColorScheme();
-    //
+
     shareLinkTxt->setAutoFillBackground(true);
     shareLinkTxt->setCursor(QCursor(Qt::CursorShape::IBeamCursor));
     shareLinkTxt->installEventFilter(this);
     groupSubsLinkTxt->installEventFilter(this);
     qrLabel->installEventFilter(this);
-    //
+    qrLabel->setScaledContents(true);
+
     connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnConnected, this, &ConnectionInfoWidget::OnConnected);
     connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnDisconnected, this, &ConnectionInfoWidget::OnDisConnected);
     connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnGroupRenamed, this, &ConnectionInfoWidget::OnGroupRenamed);
@@ -74,34 +73,34 @@ void ConnectionInfoWidget::ShowDetails(const ConnectionGroupPair &idpair)
     if (isConnection)
     {
         auto shareLink = ConvertConfigToString(idpair.connectionId);
-        //
+        qrPixmap = QPixmap::fromImage(EncodeQRCode(shareLink, qrLabel->width() * devicePixelRatio()));
         shareLinkTxt->setText(shareLink);
+        shareLinkTxt->setCursorPosition(0);
         protocolLabel->setText(GetConnectionProtocolDescription(connectionId));
-        //
         groupLabel->setText(GetDisplayName(groupId));
 
-        const auto root = QvBaselib->ProfileManager()->GetConnection(connectionId);
-        if (!root.outbounds.isEmpty())
+        if (IsComplexConfig(connectionId))
         {
-            auto [protocol, host, port] = GetOutboundInfoTuple(root.outbounds.first());
-            Q_UNUSED(protocol)
-            addressLabel->setText(host);
-            portLabel->setNum(port);
+            qrLabel->setPixmap(QvApp->Qv2rayLogo);
+        }
+        else
+        {
+            const auto root = QvBaselib->ProfileManager()->GetConnection(connectionId);
+            if (!root.outbounds.isEmpty())
+            {
+                const auto &[protocol, host, port] = GetOutboundInfoTuple(root.outbounds.first());
+                Q_UNUSED(protocol)
+                addressLabel->setText(host);
+                portLabel->setNum(port);
+            }
+            qrPixmapBlured = BlurImage(ColorizeImage(qrPixmap, StyleManager->isCurrentlyDarkMode() ? QColor(Qt::black) : QColor(Qt::white), 0.7), 35);
+            qrLabel->setPixmap(qrPixmapBlured);
         }
 
-        shareLinkTxt->setCursorPosition(0);
-
-#pragma message("TODO: Darkmode should be in StyleManager")
-        auto isDarkTheme = GlobalConfig->appearanceConfig->DarkModeUI;
-        qrPixmap = QPixmap::fromImage(EncodeQRCode(shareLink, qrLabel->width() * devicePixelRatio()));
-        //
-        qrPixmapBlured = BlurImage(ColorizeImage(qrPixmap, isDarkTheme ? QColor(Qt::black) : QColor(Qt::white), 0.7), 35);
-        //
-        isRealPixmapShown = false;
-        qrLabel->setPixmap(IsComplexConfig(connectionId) ? QPixmap(QStringLiteral(":/assets/icons/qv2ray.png")) : qrPixmapBlured);
-        qrLabel->setScaledContents(true);
         const auto isCurrentItem = QvBaselib->KernelManager()->CurrentConnection().connectionId == connectionId;
         connectBtn->setIcon(QIcon(isCurrentItem ? QV2RAY_COLORSCHEME_FILE("stop") : QV2RAY_COLORSCHEME_FILE("start")));
+
+        isRealPixmapShown = false;
     }
     else
     {
@@ -197,7 +196,7 @@ bool ConnectionInfoWidget::eventFilter(QObject *object, QEvent *event)
     }
     else if (qrLabel->underMouse() && event->type() == QEvent::MouseButtonRelease)
     {
-        qrLabel->setPixmap(IsComplexConfig(connectionId) ? QPixmap(":/assets/icons/qv2ray.png") : (isRealPixmapShown ? qrPixmapBlured : qrPixmap));
+        qrLabel->setPixmap(IsComplexConfig(connectionId) ? QvApp->Qv2rayLogo : (isRealPixmapShown ? qrPixmapBlured : qrPixmap));
         isRealPixmapShown = !isRealPixmapShown;
     }
 

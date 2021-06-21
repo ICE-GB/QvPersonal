@@ -20,9 +20,9 @@ QvMessageBusSlotImpl(StreamSettingsWidget)
     switch (msg)
     {
         MBRetranslateDefaultImpl;
-        case UPDATE_COLORSCHEME:
-        case HIDE_WINDOWS:
-        case SHOW_WINDOWS: break;
+        case MessageBus::UPDATE_COLORSCHEME:
+        case MessageBus::HIDE_WINDOWS:
+        case MessageBus::SHOW_WINDOWS: break;
     }
 }
 

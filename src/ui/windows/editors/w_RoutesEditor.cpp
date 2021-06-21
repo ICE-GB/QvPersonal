@@ -62,7 +62,7 @@ void RouteEditor::updateColorScheme()
     // Setup icons according to the theme Settings->
     addInboundBtn->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("add")));
     addOutboundBtn->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("add")));
-    if (GlobalConfig->appearanceConfig->DarkModeUI)
+    if (StyleManager->isCurrentlyDarkMode())
     {
         QtNodes::NodeStyle::reset();
         QtNodes::FlowViewStyle::reset();
