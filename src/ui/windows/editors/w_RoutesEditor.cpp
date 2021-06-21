@@ -237,11 +237,9 @@ ProfileContent RouteEditor::OpenEditor()
         rules << m_rules[ruleTag];
     }
 
-    root.routing.options["domainStrategy"] = domainStrategy;
+    root.routing.options[QStringLiteral("domainStrategy")] = domainStrategy;
     root.routing.rules = rules;
 
-    // QJsonArray Outbounds
-    QJsonArray outboundsArray;
     root.outbounds.clear();
     for (const auto &out : m_outbounds)
     {
@@ -252,22 +250,22 @@ ProfileContent RouteEditor::OpenEditor()
     }
     // Process DNS
     const auto &[dns, fakedns] = dnsWidget->GetDNSObject();
-    root.options["dns"] = dns.toJson();
-    root.options["fakedns"] = fakedns.toJson();
+    root.options[QStringLiteral("dns")] = dns.toJson();
+    root.options[QStringLiteral("fakedns")] = fakedns.toJson();
     {
         // Process Browser Forwarder
         QJsonObject browserForwarder;
-        browserForwarder["listenAddr"] = bfListenIPTxt->text();
-        browserForwarder["listenPort"] = bfListenPortTxt->value();
-        root.options["browserForwarder"] = browserForwarder;
+        browserForwarder[QStringLiteral("listenAddr")] = bfListenIPTxt->text();
+        browserForwarder[QStringLiteral("listenPort")] = bfListenPortTxt->value();
+        root.options[QStringLiteral("browserForwarder")] = browserForwarder;
     }
 
     // Process Observatory
     if (!obSubjectSelectorTxt->toPlainText().isEmpty())
     {
         QJsonObject observatory;
-        observatory["subjectSelector"] = QJsonArray::fromStringList(SplitLines(obSubjectSelectorTxt->toPlainText()));
-        root.options["observatory"] = observatory;
+        observatory[QStringLiteral("subjectSelector")] = QJsonArray::fromStringList(SplitLines(obSubjectSelectorTxt->toPlainText()));
+        root.options[QStringLiteral("observatory")] = observatory;
     }
     return root;
 }
@@ -283,7 +281,7 @@ void RouteEditor::on_insertDirectBtn_clicked()
     auto tag = "Freedom_" + QString::number(QTime::currentTime().msecsSinceStartOfDay());
     OutboundObject out;
     out.name = tag;
-    out.protocol = "freedom";
+    out.outboundSettings.protocol = QStringLiteral("freedom");
     out.outboundSettings.protocolSettings = freedom;
     const auto _ = nodeDispatcher->CreateOutbound(out);
     Q_UNUSED(_)
@@ -304,7 +302,7 @@ void RouteEditor::on_addDefaultBtn_clicked()
     {
         const auto httpIn = InboundObject::Create("HTTP (Global)", "http", inConfig->ListenAddress, QString::number(inConfig->HTTPConfig->ListenPort));
 
-        httpIn.options["sniffing"] = inConfig->SOCKSConfig->Sniffing ? sniffingOn : sniffingOff;
+        httpIn.options[QStringLiteral("sniffing")] = inConfig->SOCKSConfig->Sniffing ? sniffingOn : sniffingOff;
         const auto _ = nodeDispatcher->CreateInbound(httpIn);
         Q_UNUSED(_)
     }
@@ -313,7 +311,7 @@ void RouteEditor::on_addDefaultBtn_clicked()
         const IOProtocolSettings socks{ QJsonObject{ { "udp", *inConfig->SOCKSConfig->EnableUDP }, { "ip", *inConfig->SOCKSConfig->UDPLocalAddress } } };
 
         const auto socksIn = InboundObject::Create("Socks (Global)", "socks", inConfig->ListenAddress, QString::number(inConfig->SOCKSConfig->ListenPort), socks);
-        socksIn.options["sniffing"] = inConfig->SOCKSConfig->Sniffing ? sniffingOn : sniffingOff;
+        socksIn.options[QStringLiteral("sniffing")] = inConfig->SOCKSConfig->Sniffing ? sniffingOn : sniffingOff;
         const auto _ = nodeDispatcher->CreateInbound(socksIn);
     }
 
@@ -324,25 +322,25 @@ void RouteEditor::on_addDefaultBtn_clicked()
         const IOStreamSettings streamSettings{ QJsonObject{ { "sockopt", QJsonObject{ { "tproxy", *ts->WorkingMode } } } } };
 
         {
-            const auto tProxyIn = InboundObject::Create("tProxy",                                   //
-                                                        "dokodemo-door",                            //
+            const auto tProxyIn = InboundObject::Create(QStringLiteral("tProxy"),                   //
+                                                        QStringLiteral("dokodemo-door"),            //
                                                         GlobalConfig->inboundConfig->ListenAddress, //
                                                         QString::number(ts->ListenPort),            //
                                                         tproxyInSettings,                           //
                                                         streamSettings);
-            tProxyIn.options["sniffing"] = sniffingOn;
+            tProxyIn.options[QStringLiteral("sniffing")] = sniffingOn;
             auto _ = nodeDispatcher->CreateInbound(tProxyIn);
             Q_UNUSED(_)
         }
         if (!GlobalConfig->inboundConfig->ListenAddressV6->isEmpty())
         {
-            const auto tProxyV6In = InboundObject::Create("tProxy IPv6",                                //
-                                                          "dokodemo-door",                              //
+            const auto tProxyV6In = InboundObject::Create(QStringLiteral("tProxy IPv6"),                //
+                                                          QStringLiteral("dokodemo-door"),              //
                                                           GlobalConfig->inboundConfig->ListenAddressV6, //
                                                           QString::number(ts->ListenPort),              //
                                                           tproxyInSettings,                             //
                                                           streamSettings);
-            tProxyV6In.options["sniffing"] = sniffingOn;
+            tProxyV6In.options[QStringLiteral("sniffing")] = sniffingOn;
             auto _ = nodeDispatcher->CreateInbound(tProxyV6In);
             Q_UNUSED(_)
         }
@@ -356,7 +354,7 @@ void RouteEditor::on_insertBlackBtn_clicked()
     auto tag = "BlackHole-" + GenerateRandomString(5);
     OutboundObject outbound;
     outbound.name = tag;
-    outbound.protocol = "blackhole";
+    outbound.outboundSettings.protocol = QStringLiteral("blackhole");
     const auto _ = nodeDispatcher->CreateOutbound(outbound);
     Q_UNUSED(_)
 }
@@ -435,11 +433,11 @@ void RouteEditor::on_importExistingBtn_clicked()
 
 void RouteEditor::on_linkExistingBtn_clicked()
 {
-#pragma message("TODO Correctly create outbounds")
-    const auto ImportConnection = [this](const ConnectionId &)
+    const auto ImportConnection = [this](const ConnectionId &id)
     {
-        auto _ = nodeDispatcher->CreateOutbound({});
-        Q_UNUSED(_)
+        const auto root = QvBaselib->ProfileManager()->GetConnection(id);
+        if (root.outbounds.size() > 0)
+            Q_UNUSED(nodeDispatcher->CreateOutbound(root.outbounds.constFirst()));
     };
 
     const auto cid = ConnectionId{ importConnBtn->currentData(Qt::UserRole).toString() };
@@ -476,14 +474,13 @@ void RouteEditor::on_importGroupBtn_currentIndexChanged(int)
 
 void RouteEditor::on_addBalancerBtn_clicked()
 {
-    auto _ = nodeDispatcher->CreateOutbound({});
-    Q_UNUSED(_)
+#pragma message("TODO: Outbound")
+    Q_UNUSED(nodeDispatcher->CreateOutbound({}));
 }
 
 void RouteEditor::on_addChainBtn_clicked()
 {
-    auto _ = nodeDispatcher->CreateOutbound({});
-    Q_UNUSED(_)
+    Q_UNUSED(nodeDispatcher->CreateOutbound({}));
 }
 
 void RouteEditor::on_debugPainterCB_clicked(bool checked)

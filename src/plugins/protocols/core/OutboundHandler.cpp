@@ -7,11 +7,11 @@
 
 using namespace Qv2rayPlugin;
 
-std::optional<PluginIOBoundData> BuiltinSerializer::GetOutboundInfo(const QString &protocol, const IOProtocolStreamSettings &outbound) const
+std::optional<PluginIOBoundData> BuiltinSerializer::GetOutboundInfo(const IOConnectionSettings &outbound) const
 {
     PluginIOBoundData obj;
-    obj[IOBOUND_DATA_TYPE::IO_PROTOCOL] = protocol;
-    if (protocol == "http")
+    obj[IOBOUND_DATA_TYPE::IO_PROTOCOL] = outbound.protocol;
+    if (outbound.protocol == "http")
     {
         HttpServerObject http;
         http.loadJson(outbound.protocolSettings["servers"].toArray().first());
@@ -19,7 +19,7 @@ std::optional<PluginIOBoundData> BuiltinSerializer::GetOutboundInfo(const QStrin
         obj[IOBOUND_DATA_TYPE::IO_PORT] = *http.port;
         return obj;
     }
-    else if (protocol == "socks")
+    else if (outbound.protocol == "socks")
     {
         SocksServerObject socks;
         socks.loadJson(outbound.protocolSettings["servers"].toArray().first());
@@ -27,7 +27,7 @@ std::optional<PluginIOBoundData> BuiltinSerializer::GetOutboundInfo(const QStrin
         obj[IOBOUND_DATA_TYPE::IO_PORT] = *socks.port;
         return obj;
     }
-    else if (protocol == "vmess")
+    else if (outbound.protocol == "vmess")
     {
         VMessServerObject vmess;
         vmess.loadJson(outbound.protocolSettings["vnext"].toArray().first());
@@ -35,7 +35,7 @@ std::optional<PluginIOBoundData> BuiltinSerializer::GetOutboundInfo(const QStrin
         obj[IOBOUND_DATA_TYPE::IO_PORT] = *vmess.port;
         return obj;
     }
-    else if (protocol == "vless")
+    else if (outbound.protocol == "vless")
     {
         VLESSServerObject vless;
         vless.loadJson(outbound.protocolSettings["vnext"].toArray().first());
@@ -43,7 +43,7 @@ std::optional<PluginIOBoundData> BuiltinSerializer::GetOutboundInfo(const QStrin
         obj[IOBOUND_DATA_TYPE::IO_PORT] = *vless.port;
         return obj;
     }
-    else if (protocol == "shadowsocks")
+    else if (outbound.protocol == "shadowsocks")
     {
         ShadowSocksServerObject ss;
         ss.loadJson(outbound.protocolSettings["servers"].toArray().first());
@@ -54,16 +54,16 @@ std::optional<PluginIOBoundData> BuiltinSerializer::GetOutboundInfo(const QStrin
     return std::nullopt;
 }
 
-bool BuiltinSerializer::SetOutboundInfo(const QString &protocol, IOProtocolStreamSettings &outbound, const PluginIOBoundData &info) const
+bool BuiltinSerializer::SetOutboundInfo(IOConnectionSettings &outbound, const PluginIOBoundData &info) const
 {
-    if ((QStringList{ "http", "socks", "shadowsocks" }).contains(protocol))
+    if ((QStringList{ "http", "socks", "shadowsocks" }).contains(outbound.protocol))
     {
         QJsonIO::SetValue(outbound.protocolSettings, info[IOBOUND_DATA_TYPE::IO_ADDRESS].toString(), "servers", 0, "address");
         QJsonIO::SetValue(outbound.protocolSettings, info[IOBOUND_DATA_TYPE::IO_PORT].toInt(), "servers", 0, "port");
         return true;
     }
 
-    if ((QStringList{ "vless", "vmess" }).contains(protocol))
+    if ((QStringList{ "vless", "vmess" }).contains(outbound.protocol))
     {
         QJsonIO::SetValue(outbound.protocolSettings, info[IOBOUND_DATA_TYPE::IO_ADDRESS].toString(), "vnext", 0, "address");
         QJsonIO::SetValue(outbound.protocolSettings, info[IOBOUND_DATA_TYPE::IO_PORT].toInt(), "vnext", 0, "port");
@@ -75,7 +75,7 @@ bool BuiltinSerializer::SetOutboundInfo(const QString &protocol, IOProtocolStrea
 
 std::optional<QString> BuiltinSerializer::Serialize(const QString &name, const OutboundObject &outbound) const
 {
-    const auto protocol = outbound.protocol;
+    const auto protocol = outbound.outboundSettings.protocol;
     const auto oubound = outbound.outboundSettings.protocolSettings;
     const auto stream = outbound.outboundSettings.streamSettings;
 
@@ -219,7 +219,7 @@ std::optional<std::pair<QString, OutboundObject>> BuiltinSerializer::Deserialize
         QJsonIO::SetValue(root, url.password(), "servers", 0, "users", 0, "pass");
         OutboundObject out;
         out.outboundSettings.protocolSettings = IOProtocolSettings{ root };
-        out.protocol = url.scheme();
+        out.outboundSettings.protocol = url.scheme();
         return std::make_pair(url.fragment(), out);
     }
 

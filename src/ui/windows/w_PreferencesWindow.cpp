@@ -37,9 +37,8 @@
 PreferencesWindow::PreferencesWindow(QWidget *parent) : QvDialog("PreferenceWindow", parent), AppConfig()
 {
     setupUi(this);
-    //
     QvMessageBusConnect();
-    textBrowser->setHtml(ReadFile(":/assets/credit.html"));
+    textBrowser->setHtml(ReadFile("://../credit.html"));
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     configdirLabel->setText("ANYWHERE");
 
@@ -55,8 +54,8 @@ PreferencesWindow::PreferencesWindow(QWidget *parent) : QvDialog("PreferenceWind
     themeCombo->addItems(StyleManager->AllStyles());
     //
     qvVersion->setText(QV2RAY_VERSION_STRING);
-    qvBuildInfo->setText("QV2RAY_BUILD_INFO");
-    qvBuildExInfo->setText("QV2RAY_BUILD_EXTRA_INFO");
+    qvBuildInfo->setText(QStringLiteral("QV2RAY_BUILD_INFO"));
+    qvBuildExInfo->setText(QStringLiteral("QV2RAY_BUILD_EXTRA_INFO"));
     qvBuildTime->setText(__DATE__ " " __TIME__);
     qvPluginInterfaceVersionLabel->setText(tr("Version: %1").arg(Qv2rayPlugin::QV2RAY_PLUGIN_INTERFACE_VERSION));
     //
@@ -767,7 +766,7 @@ void PreferencesWindow::on_socksOverrideFakeDNSCB_stateChanged(int arg1)
     if (arg1 != Qt::Checked)
         AppConfig.inboundConfig->SOCKSConfig->DestinationOverride->removeAll("fakedns");
     else if (!AppConfig.inboundConfig->SOCKSConfig->DestinationOverride->contains("fakedns"))
-        AppConfig.inboundConfig->SOCKSConfig->DestinationOverride->append("fakedns");
+        AppConfig.inboundConfig->SOCKSConfig->DestinationOverride->append(QStringLiteral("fakedns"));
 }
 
 void PreferencesWindow::on_httpOverrideFakeDNSCB_stateChanged(int arg1)
@@ -776,7 +775,7 @@ void PreferencesWindow::on_httpOverrideFakeDNSCB_stateChanged(int arg1)
     if (arg1 != Qt::Checked)
         AppConfig.inboundConfig->HTTPConfig->DestinationOverride->removeAll("fakedns");
     else if (!AppConfig.inboundConfig->HTTPConfig->DestinationOverride->contains("fakedns"))
-        AppConfig.inboundConfig->HTTPConfig->DestinationOverride->append("fakedns");
+        AppConfig.inboundConfig->HTTPConfig->DestinationOverride->append(QStringLiteral("fakedns"));
 }
 
 void PreferencesWindow::on_tproxyOverrideFakeDNSCB_stateChanged(int arg1)
@@ -785,7 +784,7 @@ void PreferencesWindow::on_tproxyOverrideFakeDNSCB_stateChanged(int arg1)
     if (arg1 != Qt::Checked)
         AppConfig.inboundConfig->DokodemoDoorConfig->DestinationOverride->removeAll("fakedns");
     else if (!AppConfig.inboundConfig->DokodemoDoorConfig->DestinationOverride->contains("fakedns"))
-        AppConfig.inboundConfig->DokodemoDoorConfig->DestinationOverride->append("fakedns");
+        AppConfig.inboundConfig->DokodemoDoorConfig->DestinationOverride->append(QStringLiteral("fakedns"));
 }
 
 void PreferencesWindow::on_httpSniffingCB_currentIndexChanged(int index)

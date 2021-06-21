@@ -12,12 +12,12 @@
     if (isLoading)                                                                                                                                                       \
         return;
 
-InboundEditor::InboundEditor(InboundObject source, QWidget *parent) : QDialog(parent), original(source)
+InboundEditor::InboundEditor(const InboundObject &source, QWidget *parent) : QDialog(parent), original(source)
 {
     QvMessageBusConnect();
     setupUi(this);
     streamSettingsWidget = new StreamSettingsWidget(this);
-    streamSettingsWidget->SetStreamObject({});
+
     if (!transportFrame->layout())
     {
         auto l = new QGridLayout();
@@ -25,14 +25,14 @@ InboundEditor::InboundEditor(InboundObject source, QWidget *parent) : QDialog(pa
         l->setVerticalSpacing(0);
         transportFrame->setLayout(l);
     }
+
     transportFrame->layout()->addWidget(streamSettingsWidget);
     this->current = source;
-    inboundProtocol = current.protocol;
-    if (inboundProtocol.isEmpty())
-        inboundProtocol = current.protocol = "http";
 
-    allocateSettings = current.extraSettings["allocate"].toObject();
-    sniffingSettings = current.extraSettings["sniffing"].toObject();
+    inboundProtocol = current.inboundSettings.protocol;
+
+    allocateSettings = current.extraSettings[QStringLiteral("allocate")].toObject();
+    sniffingSettings = current.extraSettings[QStringLiteral("sniffing")].toObject();
 
     isLoading = true;
     for (const auto &[_, plugin] : GUIPluginHost->GUI_QueryByComponent(Qv2rayPlugin::GUI_COMPONENT_INBOUND_EDITOR))
@@ -69,22 +69,25 @@ InboundObject InboundEditor::OpenEditor()
 
 InboundObject InboundEditor::getResult()
 {
+    if (inboundProtocol.isEmpty())
+        return {};
+
     InboundObject newRoot = current;
-    for (const auto &[protocol, widget] : pluginWidgets.toStdMap())
+    for (auto it = pluginWidgets.constKeyValueBegin(); it != pluginWidgets.constKeyValueEnd(); it++)
     {
-        if (protocol == inboundProtocol)
+        if (it->first == inboundProtocol)
         {
-            newRoot.inboundSettings.protocolSettings = widget->GetContent();
+            newRoot.inboundSettings.protocolSettings = it->second->GetContent();
             break;
         }
     }
+
     if (streamSettingsWidget->isEnabled())
-    {
-        newRoot.inboundSettings.streamSettings = IOStreamSettings{ streamSettingsWidget->GetStreamSettings().toJson() };
-    }
-    newRoot.protocol = inboundProtocol;
-    newRoot.extraSettings["sniffing"] = sniffingSettings;
-    newRoot.extraSettings["allocate"] = allocateSettings;
+        newRoot.inboundSettings.streamSettings = streamSettingsWidget->GetStreamSettings();
+
+    newRoot.inboundSettings.protocol = inboundProtocol;
+    newRoot.extraSettings[QStringLiteral("sniffing")] = sniffingSettings;
+    newRoot.extraSettings[QStringLiteral("allocate")] = allocateSettings;
     return newRoot;
 }
 

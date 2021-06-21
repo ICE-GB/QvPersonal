@@ -92,7 +92,7 @@ OutboundObject OutboundEditor::generateConnectionJson()
 
     OutboundObject out;
     out.name = tag;
-    out.protocol = outboundType;
+    out.outboundSettings.protocol = outboundType;
     out.outboundSettings.protocolSettings = settings;
     out.outboundSettings.streamSettings = streaming;
     out.options["mux"] = muxConfig;
@@ -103,7 +103,7 @@ void OutboundEditor::reloadGUI()
 {
     tag = originalConfig.name;
     tagTxt->setText(tag);
-    outboundType = originalConfig.protocol;
+    outboundType = originalConfig.outboundSettings.protocol;
     if (outboundType.isEmpty())
         outboundType = "vmess";
 

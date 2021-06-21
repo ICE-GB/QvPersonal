@@ -1356,7 +1356,7 @@ For example, for updating subscriptions.</string>
             </size>
            </property>
            <property name="styleSheet">
-            <string notr="true">image: url(:/assets/icons/qv2ray.png);</string>
+            <string notr="true">image: url(:/qv2ray.png);</string>
            </property>
           </widget>
          </item>

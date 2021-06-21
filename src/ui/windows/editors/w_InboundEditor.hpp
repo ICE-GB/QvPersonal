@@ -15,7 +15,7 @@ class InboundEditor
     Q_OBJECT
 
   public:
-    explicit InboundEditor(InboundObject root, QWidget *parent = nullptr);
+    explicit InboundEditor(const InboundObject &root, QWidget *parent = nullptr);
     ~InboundEditor();
     InboundObject OpenEditor();
 
