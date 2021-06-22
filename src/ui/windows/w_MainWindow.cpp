@@ -1,6 +1,7 @@
 #include "w_MainWindow.hpp"
 
 #include "Common/ProfileHelpers.hpp"
+#include "Common/Utils.hpp"
 #include "GuiPluginHost/GuiPluginHost.hpp"
 #include "Profile/KernelManager.hpp"
 #include "Profile/ProfileManager.hpp"

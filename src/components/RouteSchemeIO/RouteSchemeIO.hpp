@@ -1,6 +1,6 @@
 #pragma once
 
-#include "models/V2RayModels.hpp"
+#include "plugins/common/V2RayModels.hpp"
 
 #include <QObject>
 

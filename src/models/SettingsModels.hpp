@@ -2,7 +2,7 @@
 
 #include "Common/CommonTypes.hpp"
 #include "Common/Settings.hpp"
-#include "V2RayModels.hpp"
+#include "src/plugins/common/V2RayModels.hpp"
 
 #include <QJsonObject>
 #include <QString>

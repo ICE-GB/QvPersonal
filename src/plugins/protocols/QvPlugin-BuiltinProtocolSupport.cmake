@@ -26,7 +26,7 @@ ADD_SOURCE(inbound socksin)
 add_library(${PROTOCOL_PLUGIN_TARGET} SHARED
     ${PLUGIN_UI_SOURCE}
     ${CMAKE_CURRENT_LIST_DIR}/resx.qrc
-    ${CMAKE_CURRENT_LIST_DIR}/../common/CommonTypes.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/../common/V2RayModels.hpp
     ${CMAKE_CURRENT_LIST_DIR}/BuiltinProtocolPlugin.hpp
     ${CMAKE_CURRENT_LIST_DIR}/BuiltinProtocolPlugin.cpp
     ${CMAKE_CURRENT_LIST_DIR}/core/OutboundHandler.cpp

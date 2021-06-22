@@ -1,7 +1,7 @@
 #pragma once
 
-#include "CommonTypes.hpp"
 #include "Gui/QvGUIPluginInterface.hpp"
+#include "V2RayModels.hpp"
 #include "ui_httpout.h"
 
 class HttpOutboundEditor
@@ -51,5 +51,5 @@ class HttpOutboundEditor
     void changeEvent(QEvent *e) override;
 
   private:
-    HttpServerObject http;
+    Qv2ray::Models::HttpServerObject http;
 };

@@ -12,7 +12,7 @@ StreamSettingsWidget::StreamSettingsWidget(QWidget *parent) : QWidget(parent)
     QvMessageBusConnect();
     stream.wsSettings->earlyDataHeaderName.ReadWriteBind(wsEarlyDataHeaderTxt, "text", &QLineEdit::textEdited);
     stream.sockopt->tcpKeepAliveInterval.ReadWriteBind(tcpKeepAliveIntervalSB, "value", &QSpinBox::valueChanged);
-    stream.HTTPConfig->method.ReadWriteBind(httpMethodTxt, "text", &QLineEdit::textEdited);
+    stream.httpSettings->method.ReadWriteBind(httpMethodTxt, "text", &QLineEdit::textEdited);
 }
 
 QvMessageBusSlotImpl(StreamSettingsWidget)
@@ -64,8 +64,8 @@ void StreamSettingsWidget::SetStreamObject(const Qv2ray::Models::StreamSettingsO
     }
     // HTTP
     {
-        httpHostTxt->setPlainText(stream.HTTPConfig->host->join(NEWLINE));
-        httpPathTxt->setText(stream.HTTPConfig->path);
+        httpHostTxt->setPlainText(stream.httpSettings->host->join(NEWLINE));
+        httpPathTxt->setText(stream.httpSettings->path);
     }
     // WS
     {
@@ -115,17 +115,17 @@ void StreamSettingsWidget::SetStreamObject(const Qv2ray::Models::StreamSettingsO
 
 void StreamSettingsWidget::on_httpPathTxt_textEdited(const QString &arg1)
 {
-    stream.HTTPConfig->path = arg1;
+    stream.httpSettings->path = arg1;
 }
 
 void StreamSettingsWidget::on_httpHostTxt_textChanged()
 {
     const auto hosts = httpHostTxt->toPlainText().replace("\r", "").split("\n");
-    stream.HTTPConfig->host->clear();
+    stream.httpSettings->host->clear();
     for (const auto &host : hosts)
     {
         if (!host.trimmed().isEmpty())
-            stream.HTTPConfig->host->push_back(host.trimmed());
+            stream.httpSettings->host->push_back(host.trimmed());
     }
 }
 

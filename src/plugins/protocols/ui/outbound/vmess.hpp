@@ -1,7 +1,7 @@
 #pragma once
 
-#include "CommonTypes.hpp"
 #include "Gui/QvGUIPluginInterface.hpp"
+#include "V2RayModels.hpp"
 #include "ui_vmess.h"
 
 class VmessOutboundEditor
@@ -35,7 +35,7 @@ class VmessOutboundEditor
     }
 
   private:
-    VMessServerObject vmess;
+    Qv2ray::Models::VMessServerObject vmess;
 
   protected:
     void changeEvent(QEvent *e) override;

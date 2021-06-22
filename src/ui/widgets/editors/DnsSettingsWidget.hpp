@@ -1,7 +1,7 @@
 #pragma once
 
 #include "MessageBus/MessageBus.hpp"
-#include "models/V2RayModels.hpp"
+#include "plugins/common/V2RayModels.hpp"
 #include "ui_DnsSettingsWidget.h"
 
 namespace Qv2ray::ui::widgets

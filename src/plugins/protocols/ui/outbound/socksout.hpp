@@ -1,7 +1,7 @@
 #pragma once
 
-#include "CommonTypes.hpp"
 #include "Gui/QvGUIPluginInterface.hpp"
+#include "V2RayModels.hpp"
 #include "ui_socksout.h"
 
 class SocksOutboundEditor
@@ -47,5 +47,5 @@ class SocksOutboundEditor
     void changeEvent(QEvent *e) override;
 
   private:
-    SocksServerObject socks;
+    Qv2ray::Models::SocksServerObject socks;
 };

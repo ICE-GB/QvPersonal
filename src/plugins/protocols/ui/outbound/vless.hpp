@@ -1,7 +1,7 @@
 #pragma once
 
-#include "CommonTypes.hpp"
 #include "Gui/QvGUIPluginInterface.hpp"
+#include "V2RayModels.hpp"
 #include "ui_vless.h"
 
 class VlessOutboundEditor
@@ -49,5 +49,5 @@ class VlessOutboundEditor
     void changeEvent(QEvent *e) override;
 
   private:
-    VLESSServerObject vless;
+    Qv2ray::Models::VLESSServerObject vless;
 };

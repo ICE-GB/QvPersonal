@@ -1,5 +1,4 @@
 #pragma once
-#include "CommonTypes.hpp"
 #include "QvPluginInterface.hpp"
 
 class BuiltinSerializer : public Qv2rayPlugin::IOutboundHandler
@@ -15,7 +14,7 @@ class BuiltinSerializer : public Qv2rayPlugin::IOutboundHandler
 
     QList<QString> SupportedLinkPrefixes() const override
     {
-        return { "http", "socks" };
+        return { "http", "socks", "vmess", "vless", "ss" };
     }
 
     QList<QString> SupportedProtocols() const override

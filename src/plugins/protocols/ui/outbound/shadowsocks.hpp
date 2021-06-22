@@ -1,7 +1,7 @@
 #pragma once
 
-#include "CommonTypes.hpp"
 #include "Gui/QvGUIPluginInterface.hpp"
+#include "V2RayModels.hpp"
 #include "ui_shadowsocks.h"
 
 class ShadowsocksOutboundEditor
@@ -45,5 +45,5 @@ class ShadowsocksOutboundEditor
     void changeEvent(QEvent *e) override;
 
   private:
-    ShadowSocksServerObject shadowsocks;
+    Qv2ray::Models::ShadowSocksServerObject shadowsocks;
 };

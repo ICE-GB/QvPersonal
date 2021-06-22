@@ -1,6 +1,5 @@
 #pragma once
 
-#include "CommonTypes.hpp"
 #include "QvPluginInterface.hpp"
 
 using namespace Qv2rayPlugin;

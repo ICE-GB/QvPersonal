@@ -27,6 +27,6 @@ class ImportConfigWindow
     void updateColorScheme() override{};
 
     // Use hash here since the order is not important.
-    GroupId selectedGroup;
+    GroupId selectedGroup = DefaultGroupId;
     QMultiMap<QString, ProfileContent> connections;
 };
