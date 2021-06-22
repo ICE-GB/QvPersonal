@@ -3,7 +3,7 @@
 
 #define QvMessageBusConnect() connect(UIMessageBus, &MessageBus::QvMessageBusObject::QvSendMessage, this, &std::remove_reference_t<decltype(*this)>::on_QvMessageReceived)
 
-#define QvMessageBusSlotSig const Qv2ray::components::MessageBus::QvMBMessage &msg
+#define QvMessageBusSlotSig Qv2ray::components::MessageBus::QvMBMessage msg
 #define QvMessageBusSlotIdentifier on_QvMessageReceived
 
 #define QvMessageBusSlotDecl void QvMessageBusSlotIdentifier(QvMessageBusSlotSig)

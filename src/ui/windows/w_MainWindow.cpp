@@ -56,7 +56,7 @@ void MainWindow::SortConnectionList(ConnectionInfoRole byCol, bool asending)
 
 void MainWindow::ReloadRecentConnectionList()
 {
-    QList<ConnectionGroupPair> newRecentConnections;
+    QList<ProfileId> newRecentConnections;
     const auto iterateRange = std::min(*GlobalConfig->appearanceConfig->RecentJumpListSize, GlobalConfig->appearanceConfig->RecentConnections->count());
     for (auto i = 0; i < iterateRange; i++)
     {
@@ -110,7 +110,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     //
     //
     connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnKernelCrashed,
-            [this](const ConnectionGroupPair &, const QString &reason)
+            [this](const ProfileId &, const QString &reason)
             {
                 MWShowWindow();
                 qApp->processEvents();
@@ -519,7 +519,7 @@ void MainWindow::on_connectionTreeView_customContextMenuRequested(const QPoint &
 
 void MainWindow::Action_DeleteConnections()
 {
-    QList<ConnectionGroupPair> connlist;
+    QList<ProfileId> connlist;
     QList<GroupId> groupsList;
 
     for (const auto &item : connectionTreeView->selectionModel()->selectedIndexes())
@@ -538,7 +538,7 @@ void MainWindow::Action_DeleteConnections()
 
         for (const auto &conns : QvBaselib->ProfileManager()->GetConnections(identifier.groupId))
         {
-            connlist.append(ConnectionGroupPair{ conns, identifier.groupId });
+            connlist.append(ProfileId{ conns, identifier.groupId });
         }
 
         const auto message = tr("Do you want to remove this group as well?") + NEWLINE + tr("Group: ") + GetDisplayName(identifier.groupId);
@@ -562,7 +562,7 @@ void MainWindow::Action_DeleteConnections()
 
     for (const auto &group : groupsList)
     {
-        QvBaselib->ProfileManager()->DeleteGroup(group);
+        QvBaselib->ProfileManager()->DeleteGroup(group, false);
     }
 }
 
@@ -570,8 +570,8 @@ void MainWindow::on_importConfigButton_clicked()
 {
     ImportConfigWindow w(this);
     const auto &[group, connections] = w.DoImportConnections();
-    for (const auto &conn : connections)
-        QvBaselib->ProfileManager()->CreateConnection(conn, conn.name, group);
+    for (auto it = connections.keyValueBegin(); it != connections.constKeyValueEnd(); it++)
+        QvBaselib->ProfileManager()->CreateConnection(it->second, it->first, group);
 }
 
 void MainWindow::Action_EditComplex()
@@ -599,7 +599,7 @@ void MainWindow::on_subsButton_clicked()
     GroupManager().exec();
 }
 
-void MainWindow::OnDisconnected(const ConnectionGroupPair &id)
+void MainWindow::OnDisconnected(const ProfileId &id)
 {
     Q_UNUSED(id)
     qvAppTrayIcon->setIcon(Q_TRAYICON("tray"));
@@ -624,7 +624,7 @@ void MainWindow::OnDisconnected(const ConnectionGroupPair &id)
     //    }
 }
 
-void MainWindow::OnConnected(const ConnectionGroupPair &id)
+void MainWindow::OnConnected(const ProfileId &id)
 {
     Q_UNUSED(id)
     qvAppTrayIcon->setIcon(Q_TRAYICON("tray-connected"));
@@ -658,7 +658,7 @@ void MainWindow::on_connectionFilterTxt_textEdited(const QString &arg1)
     modelHelper->Filter(arg1);
 }
 
-void MainWindow::OnStatsAvailable(const ConnectionGroupPair &id, const QMap<StatisticsObject::StatisticsType, StatisticsObject::StatsEntry> &data)
+void MainWindow::OnStatsAvailable(const ProfileId &id, const QMap<StatisticsObject::StatisticsType, StatisticsObject::StatsEntry> &data)
 {
     if (!QvBaselib->ProfileManager()->IsConnected(id))
         return;
@@ -700,7 +700,7 @@ void MainWindow::OnStatsAvailable(const ConnectionGroupPair &id, const QMap<Stat
                               NEWLINE "Up: " + totalSpeedUp + " Down: " + totalSpeedDown);
 }
 
-void MainWindow::OnVCoreLogAvailable(const ConnectionGroupPair &id, const QString &log)
+void MainWindow::OnVCoreLogAvailable(const ProfileId &id, const QString &log)
 {
     Q_UNUSED(id);
     FastAppendTextDocument(log.trimmed(), vCoreLogDocument);
@@ -790,7 +790,7 @@ void MainWindow::Action_RenameConnection()
 
 void MainWindow::Action_DuplicateConnection()
 {
-    QList<ConnectionGroupPair> connlist;
+    QList<ProfileId> connlist;
 
     for (const auto &item : connectionTreeView->selectionModel()->selectedIndexes())
     {
@@ -967,12 +967,11 @@ void MainWindow::on_newComplexConnectionBtn_clicked()
 {
     RouteEditor w({}, this);
     auto root = w.OpenEditor();
-    bool isChanged = w.result() == QDialog::Accepted;
-    if (isChanged)
+    if (w.result() == QDialog::Accepted)
     {
         const auto item = connectionTreeView->currentIndex();
         const auto id = item.isValid() ? GetIndexWidget(item)->Identifier().groupId : DefaultGroupId;
-        QvBaselib->ProfileManager()->CreateConnection(root, root.name, id);
+        QvBaselib->ProfileManager()->CreateConnection(root, QStringLiteral("New Connection"), id);
     }
 }
 

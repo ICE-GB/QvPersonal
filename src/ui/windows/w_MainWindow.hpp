@@ -83,11 +83,11 @@ class MainWindow
     void MWToggleVisibility();
     void OnEditRequested(const ConnectionId &id);
     void OnEditJsonRequested(const ConnectionId &id);
-    void OnConnected(const ConnectionGroupPair &id);
-    void OnDisconnected(const ConnectionGroupPair &id);
+    void OnConnected(const ProfileId &id);
+    void OnDisconnected(const ProfileId &id);
     //
-    void OnStatsAvailable(const ConnectionGroupPair &id, const QMap<StatisticsObject::StatisticsType, StatisticsObject::StatsEntry> &speed);
-    void OnVCoreLogAvailable(const ConnectionGroupPair &id, const QString &log);
+    void OnStatsAvailable(const ProfileId &id, const QMap<StatisticsObject::StatisticsType, StatisticsObject::StatsEntry> &speed);
+    void OnVCoreLogAvailable(const ProfileId &id, const QString &log);
     //
     void SortConnectionList(ConnectionInfoRole byCol, bool asending);
     //
@@ -162,7 +162,7 @@ class MainWindow
     int qvLogTimerId = -1;
     bool qvLogAutoScoll = true;
     //
-    ConnectionGroupPair lastConnected;
+    ProfileId lastConnected;
     void MWSetSystemProxy();
     void MWClearSystemProxy();
     void MWShowWindow();

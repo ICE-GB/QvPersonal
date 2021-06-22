@@ -9,8 +9,8 @@ InboundOutboundWidget::InboundOutboundWidget(NodeItemType mode, std::shared_ptr<
 {
     workingMode = mode;
     setupUi(this);
-    editBtn->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("edit")));
-    editJsonBtn->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("code")));
+    editBtn->setIcon(QIcon(STYLE_RESX("edit")));
+    editJsonBtn->setIcon(QIcon(STYLE_RESX("code")));
 }
 
 void InboundOutboundWidget::setValue(std::shared_ptr<InboundObject> data)

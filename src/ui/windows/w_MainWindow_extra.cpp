@@ -191,30 +191,30 @@ void MainWindow::CheckSubscriptionsUpdate()
 
 void MainWindow::updateColorScheme()
 {
-    vCoreLogHighlighter->loadRules(StyleManager->isCurrentlyDarkMode());
+    vCoreLogHighlighter->loadRules(StyleManager->isDarkMode());
     qvAppTrayIcon->setIcon(QvBaselib->KernelManager()->CurrentConnection().isNull() ? Q_TRAYICON("tray") : Q_TRAYICON("tray-connected"));
     //
-    importConfigButton->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("add")));
-    updownImageBox->setStyleSheet("image: url(" + QV2RAY_COLORSCHEME_FILE("netspeed_arrow") + ")");
-    updownImageBox_2->setStyleSheet("image: url(" + QV2RAY_COLORSCHEME_FILE("netspeed_arrow") + ")");
+    importConfigButton->setIcon(QIcon(STYLE_RESX("add")));
+    updownImageBox->setStyleSheet("image: url(" + STYLE_RESX("netspeed_arrow") + ")");
+    updownImageBox_2->setStyleSheet("image: url(" + STYLE_RESX("netspeed_arrow") + ")");
     //
     tray_action_ToggleVisibility->setIcon(this->windowIcon());
 
-    action_RCM_Start->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("start")));
-    action_RCM_Edit->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("edit")));
-    action_RCM_EditJson->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("code")));
-    action_RCM_EditComplex->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("edit")));
-    action_RCM_DuplicateConnection->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("copy")));
-    action_RCM_DeleteConnection->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("ashbin")));
-    action_RCM_ResetStats->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("ashbin")));
-    action_RCM_TestLatency->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("ping_gauge")));
+    action_RCM_Start->setIcon(QIcon(STYLE_RESX("start")));
+    action_RCM_Edit->setIcon(QIcon(STYLE_RESX("edit")));
+    action_RCM_EditJson->setIcon(QIcon(STYLE_RESX("code")));
+    action_RCM_EditComplex->setIcon(QIcon(STYLE_RESX("edit")));
+    action_RCM_DuplicateConnection->setIcon(QIcon(STYLE_RESX("copy")));
+    action_RCM_DeleteConnection->setIcon(QIcon(STYLE_RESX("ashbin")));
+    action_RCM_ResetStats->setIcon(QIcon(STYLE_RESX("ashbin")));
+    action_RCM_TestLatency->setIcon(QIcon(STYLE_RESX("ping_gauge")));
     //
-    clearChartBtn->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("ashbin")));
-    clearlogButton->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("ashbin")));
+    clearChartBtn->setIcon(QIcon(STYLE_RESX("ashbin")));
+    clearlogButton->setIcon(QIcon(STYLE_RESX("ashbin")));
     //
-    locateBtn->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("map")));
-    sortBtn->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("arrow-down-filling")));
-    collapseGroupsBtn->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("arrow-up")));
+    locateBtn->setIcon(QIcon(STYLE_RESX("map")));
+    sortBtn->setIcon(QIcon(STYLE_RESX("arrow-down-filling")));
+    collapseGroupsBtn->setIcon(QIcon(STYLE_RESX("arrow-up")));
 }
 
 void MainWindow::UpdateActionTranslations()

@@ -19,7 +19,7 @@ ConnectionItemWidget::ConnectionItemWidget(QWidget *parent) : QWidget(parent)
     connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnLatencyTestFinished, this, &ConnectionItemWidget::OnLatencyTestFinished);
 }
 
-ConnectionItemWidget::ConnectionItemWidget(const ConnectionGroupPair &id, QWidget *parent) : ConnectionItemWidget(parent)
+ConnectionItemWidget::ConnectionItemWidget(const ProfileId &id, QWidget *parent) : ConnectionItemWidget(parent)
 {
     connectionId = id.connectionId;
     groupId = id.groupId;
@@ -114,9 +114,9 @@ void ConnectionItemWidget::RecalculateConnections()
     OnGroupItemRenamed(groupId, "", originalItemName);
 }
 
-void ConnectionItemWidget::OnConnected(const ConnectionGroupPair &id)
+void ConnectionItemWidget::OnConnected(const ProfileId &id)
 {
-    if (id == ConnectionGroupPair{ connectionId, groupId })
+    if (id == ProfileId{ connectionId, groupId })
     {
         connNameLabel->setText("● " + originalItemName);
         QvDebug() << "ConnectionItemWidgetOnConnected signal received for:" << id.connectionId;
@@ -124,15 +124,15 @@ void ConnectionItemWidget::OnConnected(const ConnectionGroupPair &id)
     }
 }
 
-void ConnectionItemWidget::OnDisConnected(const ConnectionGroupPair &id)
+void ConnectionItemWidget::OnDisConnected(const ProfileId &id)
 {
-    if (id == ConnectionGroupPair{ connectionId, groupId })
+    if (id == ProfileId{ connectionId, groupId })
     {
         connNameLabel->setText(originalItemName);
     }
 }
 
-void ConnectionItemWidget::OnConnectionStatsArrived(const ConnectionGroupPair &id, const QMap<StatisticsObject::StatisticsType, StatisticsObject::StatsEntry> &data)
+void ConnectionItemWidget::OnConnectionStatsArrived(const ProfileId &id, const QMap<StatisticsObject::StatisticsType, StatisticsObject::StatsEntry> &data)
 {
     if (id.connectionId == connectionId)
     {

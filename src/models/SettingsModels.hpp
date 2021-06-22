@@ -22,7 +22,7 @@ namespace Qv2ray::Models
         Bindable<QString> UITheme;
         Bindable<QString> Language;
         Bindable<qsizetype> RecentJumpListSize;
-        Bindable<QList<ConnectionGroupPair>> RecentConnections;
+        Bindable<QList<ProfileId>> RecentConnections;
         Bindable<int> MaximizeLogLines;
         QJS_FUNC_JSON(F(DarkModeTrayIcon, UITheme, Language, RecentJumpListSize, RecentConnections, MaximizeLogLines))
     };
@@ -38,8 +38,8 @@ namespace Qv2ray::Models
         Bindable<LatencyTestEngineId> DefaultLatencyTestEngine;
         Bindable<AutoConnectBehavior> AutoConnectBehavior;
         Bindable<bool> QuietMode;
-        Bindable<ConnectionGroupPair> AutoConnectProfileId;
-        Bindable<ConnectionGroupPair> LastConnectedId;
+        Bindable<ProfileId> AutoConnectProfileId;
+        Bindable<ProfileId> LastConnectedId;
         Bindable<QString> GeoIPPath;
         Bindable<QString> GeoSitePath;
         QJS_FUNC_JSON(F(DefaultLatencyTestEngine, AutoConnectBehavior, QuietMode, AutoConnectProfileId, LastConnectedId, GeoIPPath, GeoSitePath))

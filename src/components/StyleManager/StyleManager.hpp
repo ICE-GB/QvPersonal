@@ -26,7 +26,7 @@ namespace Qv2ray::components::QvStyleManager
             return styles.keys();
         }
         bool ApplyStyle(const QString &);
-        bool isCurrentlyDarkMode() const;
+        bool isDarkMode() const;
 
       private:
         void ReloadStyles();

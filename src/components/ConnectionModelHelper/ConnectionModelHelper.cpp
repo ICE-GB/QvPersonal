@@ -25,7 +25,7 @@ ConnectionListHelper::ConnectionListHelper(QTreeView *view, QObject *parent) : Q
     const auto renamedLambda = [&](const ConnectionId &id, const QString &, const QString &newName) {
         for (const auto &gid : QvBaselib->ProfileManager()->GetGroups(id))
         {
-            ConnectionGroupPair pair{ id, gid };
+            ProfileId pair{ id, gid };
             if (pairs.contains(pair))
                 pairs[pair]->setData(newName, ROLE_DISPLAYNAME);
         }
@@ -34,13 +34,13 @@ ConnectionListHelper::ConnectionListHelper(QTreeView *view, QObject *parent) : Q
     const auto latencyLambda = [&](const ConnectionId &id, const int avg) {
         for (const auto &gid : QvBaselib->ProfileManager()->GetGroups(id))
         {
-            ConnectionGroupPair pair{ id, gid };
+            ProfileId pair{ id, gid };
             if (pairs.contains(pair))
                 pairs[pair]->setData(NumericString(avg), ROLE_LATENCY);
         }
     };
 
-    const auto statsLambda = [&](const ConnectionGroupPair &id, const QMap<StatisticsObject::StatisticsType, StatisticsObject::StatsEntry> &) {
+    const auto statsLambda = [&](const ProfileId &id, const QMap<StatisticsObject::StatisticsType, StatisticsObject::StatsEntry> &) {
         if (connections.contains(id.connectionId))
         {
             for (const auto &index : connections[id.connectionId])
@@ -88,7 +88,7 @@ void ConnectionListHelper::Filter(const QString &key)
     }
 }
 
-QStandardItem *ConnectionListHelper::addConnectionItem(const ConnectionGroupPair &id)
+QStandardItem *ConnectionListHelper::addConnectionItem(const ProfileId &id)
 {
     // Create Standard Item
     auto connectionItem = new QStandardItem();
@@ -128,12 +128,12 @@ QStandardItem *ConnectionListHelper::addGroupItem(const GroupId &groupId)
     return item;
 }
 
-void ConnectionListHelper::OnConnectionCreated(const ConnectionGroupPair &id, const QString &)
+void ConnectionListHelper::OnConnectionCreated(const ProfileId &id, const QString &)
 {
     addConnectionItem(id);
 }
 
-void ConnectionListHelper::OnConnectionDeleted(const ConnectionGroupPair &id)
+void ConnectionListHelper::OnConnectionDeleted(const ProfileId &id)
 {
     auto item = pairs.take(id);
     const auto index = model->indexFromItem(item);
@@ -143,7 +143,7 @@ void ConnectionListHelper::OnConnectionDeleted(const ConnectionGroupPair &id)
     connections[id.connectionId].removeAll(item);
 }
 
-void ConnectionListHelper::OnConnectionLinkedWithGroup(const ConnectionGroupPair &pairId)
+void ConnectionListHelper::OnConnectionLinkedWithGroup(const ProfileId &pairId)
 {
     addConnectionItem(pairId);
 }
@@ -157,7 +157,7 @@ void ConnectionListHelper::OnGroupDeleted(const GroupId &id, const QList<Connect
 {
     for (const auto &conn : connections)
     {
-        const ConnectionGroupPair pair{ conn, id };
+        const ProfileId pair{ conn, id };
         OnConnectionDeleted(pair);
     }
     const auto item = groups.take(id);

@@ -27,7 +27,7 @@ namespace Qv2ray::ui::widgets::models
         void Sort(ConnectionInfoRole, Qt::SortOrder);
         void Filter(const QString &);
 
-        inline QModelIndex GetConnectionPairIndex(const ConnectionGroupPair &id) const
+        inline QModelIndex GetConnectionPairIndex(const ProfileId &id) const
         {
             return model->indexFromItem(pairs.value(id));
         }
@@ -38,20 +38,20 @@ namespace Qv2ray::ui::widgets::models
         }
 
       private:
-        QStandardItem *addConnectionItem(const ConnectionGroupPair &id);
+        QStandardItem *addConnectionItem(const ProfileId &id);
         QStandardItem *addGroupItem(const GroupId &groupId);
         void OnGroupCreated(const GroupId &id, const QString &displayName);
         void OnGroupDeleted(const GroupId &id, const QList<ConnectionId> &connections);
-        void OnConnectionCreated(const ConnectionGroupPair &Id, const QString &displayName);
-        void OnConnectionDeleted(const ConnectionGroupPair &Id);
-        void OnConnectionLinkedWithGroup(const ConnectionGroupPair &id);
+        void OnConnectionCreated(const ProfileId &Id, const QString &displayName);
+        void OnConnectionDeleted(const ProfileId &Id);
+        void OnConnectionLinkedWithGroup(const ProfileId &id);
 
       private:
         QTreeView *parentView;
         QStandardItemModel *model;
 
         QHash<GroupId, QStandardItem *> groups;
-        QHash<ConnectionGroupPair, QStandardItem *> pairs;
+        QHash<ProfileId, QStandardItem *> pairs;
         QHash<ConnectionId, QList<QStandardItem *>> connections;
     };
 

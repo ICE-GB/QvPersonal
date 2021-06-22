@@ -32,8 +32,8 @@ RoutingEditorWidget::RoutingEditorWidget(std::shared_ptr<NodeDispatcher> dispatc
 
 void RoutingEditorWidget::updateColorScheme()
 {
-    addRouteBtn->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("add")));
-    delBtn->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("ashbin")));
+    addRouteBtn->setIcon(QIcon(STYLE_RESX("add")));
+    delBtn->setIcon(QIcon(STYLE_RESX("ashbin")));
 }
 
 QvMessageBusSlotImpl(RoutingEditorWidget)

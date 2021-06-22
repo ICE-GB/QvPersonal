@@ -61,7 +61,7 @@ class GroupManager
     void on_subscriptionTypeCB_currentIndexChanged(int arg1);
 
   private:
-    void updateColorScheme() override;
+    virtual void updateColorScheme() override;
     void reloadConnectionsList(const GroupId &group);
     void onRCMActionTriggered_Move();
     void onRCMActionTriggered_Copy();

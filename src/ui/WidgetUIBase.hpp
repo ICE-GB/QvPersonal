@@ -26,9 +26,9 @@ inline void BLACK(QWidget *obj)
     obj->setPalette(qApp->palette());
 }
 
-#define QV2RAY_COLORSCHEME_ROOT_X(isDark) (QStringLiteral(":/") + ((isDark) ? "ui_dark/" : "ui_light/"))
-#define QV2RAY_COLORSCHEME_FILE(file) (QV2RAY_COLORSCHEME_ROOT_X(StyleManager->isCurrentlyDarkMode()) + file + ".svg")
-#define Q_TRAYICON(name) (QPixmap(QV2RAY_COLORSCHEME_ROOT_X(GlobalConfig->appearanceConfig->DarkModeTrayIcon) + "glyph-" + name + ".png"))
+#define _COLOR_RESX(isDark) ((isDark) ? QStringLiteral(":/ui_dark/") : QStringLiteral(":/ui_light/"))
+#define STYLE_RESX(file) (_COLOR_RESX(StyleManager->isDarkMode()) + file + ".svg")
+#define Q_TRAYICON(name) (QPixmap(_COLOR_RESX(GlobalConfig->appearanceConfig->DarkModeTrayIcon) + "glyph-" + name + ".png"))
 
 class QvDialog : public QDialog
 {

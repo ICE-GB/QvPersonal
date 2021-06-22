@@ -60,9 +60,9 @@ namespace
 void RouteEditor::updateColorScheme()
 {
     // Setup icons according to the theme Settings->
-    addInboundBtn->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("add")));
-    addOutboundBtn->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("add")));
-    if (StyleManager->isCurrentlyDarkMode())
+    addInboundBtn->setIcon(QIcon(STYLE_RESX("add")));
+    addOutboundBtn->setIcon(QIcon(STYLE_RESX("add")));
+    if (StyleManager->isDarkMode())
     {
         QtNodes::NodeStyle::reset();
         QtNodes::FlowViewStyle::reset();
@@ -113,7 +113,7 @@ RouteEditor::RouteEditor(ProfileContent connection, QWidget *parent) : QvDialog(
     SetUpLayout(dnsEditorUIWidget, dnsWidget);
     //
     nodeDispatcher->LoadFullConfig(root);
-    dnsWidget->SetDNSObject(DNSObject::fromJson(root.options["dns"].toObject()), FakeDNSObject::fromJson(root.options["fakedns"].toObject()));
+    dnsWidget->SetDNSObject(DNSObject::fromJson(root.extraOptions["dns"].toObject()), FakeDNSObject::fromJson(root.extraOptions["fakedns"].toObject()));
     //
     domainStrategy = root.routing.options["domainStrategy"].toString();
     domainStrategyCombo->setCurrentText(domainStrategy);
@@ -124,11 +124,11 @@ RouteEditor::RouteEditor(ProfileContent connection, QWidget *parent) : QvDialog(
         defaultOutboundTag = root.outbounds.first().name;
     defaultOutboundCombo->setCurrentText(defaultOutboundTag);
     //
-    const auto browserForwarder = root.options["browserForwarder"].toObject();
+    const auto browserForwarder = root.extraOptions["browserForwarder"].toObject();
     bfListenIPTxt->setText(browserForwarder["listenAddr"].toString());
     bfListenPortTxt->setValue(browserForwarder["listenPort"].toInt());
 
-    const auto observatory = root.options["observatory"].toObject();
+    const auto observatory = root.extraOptions["observatory"].toObject();
     obSubjectSelectorTxt->setPlainText(observatory["subjectSelector"].toVariant().toStringList().join(NEWLINE));
 
     for (const auto &group : QvBaselib->ProfileManager()->GetGroups())
@@ -250,14 +250,14 @@ ProfileContent RouteEditor::OpenEditor()
     }
     // Process DNS
     const auto &[dns, fakedns] = dnsWidget->GetDNSObject();
-    root.options[QStringLiteral("dns")] = dns.toJson();
-    root.options[QStringLiteral("fakedns")] = fakedns.toJson();
+    root.extraOptions[QStringLiteral("dns")] = dns.toJson();
+    root.extraOptions[QStringLiteral("fakedns")] = fakedns.toJson();
     {
         // Process Browser Forwarder
         QJsonObject browserForwarder;
         browserForwarder[QStringLiteral("listenAddr")] = bfListenIPTxt->text();
         browserForwarder[QStringLiteral("listenPort")] = bfListenPortTxt->value();
-        root.options[QStringLiteral("browserForwarder")] = browserForwarder;
+        root.extraOptions[QStringLiteral("browserForwarder")] = browserForwarder;
     }
 
     // Process Observatory
@@ -265,7 +265,7 @@ ProfileContent RouteEditor::OpenEditor()
     {
         QJsonObject observatory;
         observatory[QStringLiteral("subjectSelector")] = QJsonArray::fromStringList(SplitLines(obSubjectSelectorTxt->toPlainText()));
-        root.options[QStringLiteral("observatory")] = observatory;
+        root.extraOptions[QStringLiteral("observatory")] = observatory;
     }
     return root;
 }

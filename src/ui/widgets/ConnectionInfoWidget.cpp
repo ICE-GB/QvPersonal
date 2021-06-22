@@ -23,10 +23,10 @@ QvMessageBusSlotImpl(ConnectionInfoWidget)
 
 void ConnectionInfoWidget::updateColorScheme()
 {
-    latencyBtn->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("ping_gauge")));
-    deleteBtn->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("ashbin")));
-    editBtn->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("edit")));
-    editJsonBtn->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("code")));
+    latencyBtn->setIcon(QIcon(STYLE_RESX("ping_gauge")));
+    deleteBtn->setIcon(QIcon(STYLE_RESX("ashbin")));
+    editBtn->setIcon(QIcon(STYLE_RESX("edit")));
+    editJsonBtn->setIcon(QIcon(STYLE_RESX("code")));
     shareLinkTxt->setStyleSheet("border-bottom: 1px solid gray; border-radius: 0px; padding: 2px; background-color: " +
                                 this->palette().color(this->backgroundRole()).name(QColor::HexRgb));
     groupSubsLinkTxt->setStyleSheet("border-bottom: 1px solid gray; border-radius: 0px; padding: 2px; background-color: " +
@@ -35,7 +35,7 @@ void ConnectionInfoWidget::updateColorScheme()
     qrLabel->setPixmap(IsComplexConfig(connectionId) ? QvApp->Qv2rayLogo : (isRealPixmapShown ? qrPixmap : qrPixmapBlured));
 
     const auto isCurrentItem = QvBaselib->KernelManager()->CurrentConnection().connectionId == connectionId;
-    connectBtn->setIcon(QIcon(isCurrentItem ? QV2RAY_COLORSCHEME_FILE("stop") : QV2RAY_COLORSCHEME_FILE("start")));
+    connectBtn->setIcon(QIcon(isCurrentItem ? STYLE_RESX("stop") : STYLE_RESX("start")));
 }
 
 ConnectionInfoWidget::ConnectionInfoWidget(QWidget *parent) : QWidget(parent)
@@ -60,7 +60,7 @@ ConnectionInfoWidget::ConnectionInfoWidget(QWidget *parent) : QWidget(parent)
     connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnConnectionRemovedFromGroup, this, &ConnectionInfoWidget::OnConnectionModified_Pair);
 }
 
-void ConnectionInfoWidget::ShowDetails(const ConnectionGroupPair &idpair)
+void ConnectionInfoWidget::ShowDetails(const ProfileId &idpair)
 {
     this->groupId = idpair.groupId;
     this->connectionId = idpair.connectionId;
@@ -73,8 +73,11 @@ void ConnectionInfoWidget::ShowDetails(const ConnectionGroupPair &idpair)
     if (isConnection)
     {
         auto shareLink = ConvertConfigToString(idpair.connectionId);
-        qrPixmap = QPixmap::fromImage(EncodeQRCode(shareLink, qrLabel->width() * devicePixelRatio()));
-        shareLinkTxt->setText(shareLink);
+        if (shareLink)
+        {
+            qrPixmap = QPixmap::fromImage(EncodeQRCode(*shareLink, qrLabel->width() * devicePixelRatio()));
+            shareLinkTxt->setText(*shareLink);
+        }
         shareLinkTxt->setCursorPosition(0);
         protocolLabel->setText(GetConnectionProtocolDescription(connectionId));
         groupLabel->setText(GetDisplayName(groupId));
@@ -93,28 +96,29 @@ void ConnectionInfoWidget::ShowDetails(const ConnectionGroupPair &idpair)
                 addressLabel->setText(host);
                 portLabel->setNum(port);
             }
-            qrPixmapBlured = BlurImage(ColorizeImage(qrPixmap, StyleManager->isCurrentlyDarkMode() ? QColor(Qt::black) : QColor(Qt::white), 0.7), 35);
+            qrPixmapBlured = BlurImage(ColorizeImage(qrPixmap, StyleManager->isDarkMode() ? QColor(Qt::black) : QColor(Qt::white), 0.7), 35);
             qrLabel->setPixmap(qrPixmapBlured);
         }
 
         const auto isCurrentItem = QvBaselib->KernelManager()->CurrentConnection().connectionId == connectionId;
-        connectBtn->setIcon(QIcon(isCurrentItem ? QV2RAY_COLORSCHEME_FILE("stop") : QV2RAY_COLORSCHEME_FILE("start")));
+        connectBtn->setIcon(QIcon(isCurrentItem ? STYLE_RESX("stop") : STYLE_RESX("start")));
 
         isRealPixmapShown = false;
     }
     else
     {
-        connectBtn->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("start")));
+        connectBtn->setIcon(QIcon(STYLE_RESX("start")));
         groupNameLabel->setText(GetDisplayName(groupId));
 
-        QString shareLinks;
+        QStringList shareLinks;
         for (const auto &connection : QvBaselib->ProfileManager()->GetConnections(groupId))
         {
             const auto link = ConvertConfigToString(connection);
-            shareLinks.append("\n" + link);
+            if (link)
+                shareLinks.append(*link);
         }
 
-        groupShareTxt->setPlainText(shareLinks);
+        groupShareTxt->setPlainText(shareLinks.join(NEWLINE));
         const auto &groupMetaData = QvBaselib->ProfileManager()->GetGroupObject(groupId);
         groupSubsLinkTxt->setText(groupMetaData.subscription_config.isSubscription ? groupMetaData.subscription_config.address : tr("Not a subscription"));
     }
@@ -130,7 +134,7 @@ void ConnectionInfoWidget::OnConnectionModified(const ConnectionId &id)
         ShowDetails({ id, groupId });
 }
 
-void ConnectionInfoWidget::OnConnectionModified_Pair(const ConnectionGroupPair &id)
+void ConnectionInfoWidget::OnConnectionModified_Pair(const ProfileId &id)
 {
     if (id.connectionId == this->connectionId && id.groupId == this->groupId)
         ShowDetails(id);
@@ -172,13 +176,9 @@ void ConnectionInfoWidget::on_deleteBtn_clicked()
     if (QvBaselib->Ask(tr("Delete an item"), tr("Are you sure to delete the current item?")) == Qv2rayBase::MessageOpt::Yes)
     {
         if (!connectionId.isNull())
-        {
             QvBaselib->ProfileManager()->RemoveFromGroup(connectionId, groupId);
-        }
         else
-        {
-            QvBaselib->ProfileManager()->DeleteGroup(groupId);
-        }
+            QvBaselib->ProfileManager()->DeleteGroup(groupId, false);
     }
 }
 
@@ -203,19 +203,19 @@ bool ConnectionInfoWidget::eventFilter(QObject *object, QEvent *event)
     return QWidget::eventFilter(object, event);
 }
 
-void ConnectionInfoWidget::OnConnected(const ConnectionGroupPair &id)
+void ConnectionInfoWidget::OnConnected(const ProfileId &id)
 {
-    if (id == ConnectionGroupPair{ connectionId, groupId })
+    if (id == ProfileId{ connectionId, groupId })
     {
-        connectBtn->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("stop")));
+        connectBtn->setIcon(QIcon(STYLE_RESX("stop")));
     }
 }
 
-void ConnectionInfoWidget::OnDisConnected(const ConnectionGroupPair &id)
+void ConnectionInfoWidget::OnDisConnected(const ProfileId &id)
 {
-    if (id == ConnectionGroupPair{ connectionId, groupId })
+    if (id == ProfileId{ connectionId, groupId })
     {
-        connectBtn->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("start")));
+        connectBtn->setIcon(QIcon(STYLE_RESX("start")));
     }
 }
 

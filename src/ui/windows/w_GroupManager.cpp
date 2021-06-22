@@ -21,25 +21,21 @@ const static auto RemoveInvalidFileName = [](QString fileName)
 };
 
 #define SELECTED_ROWS_INDEX                                                                                                                                              \
-    (                                                                                                                                                                    \
-        [&]()                                                                                                                                                            \
-        {                                                                                                                                                                \
-            const auto &__selection = connectionsTable->selectedItems();                                                                                                 \
-            QSet<int> rows;                                                                                                                                              \
-            for (const auto &selection : __selection)                                                                                                                    \
-                rows.insert(connectionsTable->row(selection));                                                                                                           \
-            return rows;                                                                                                                                                 \
-        }())
+    [&]() {                                                                                                                                                              \
+        const auto &__selection = connectionsTable->selectedItems();                                                                                                     \
+        QSet<int> rows;                                                                                                                                                  \
+        for (const auto &selection : __selection)                                                                                                                        \
+            rows.insert(connectionsTable->row(selection));                                                                                                               \
+        return rows;                                                                                                                                                     \
+    }()
 
 #define GET_SELECTED_CONNECTION_IDS(connectionIdList)                                                                                                                    \
-    (                                                                                                                                                                    \
-        [&]()                                                                                                                                                            \
-        {                                                                                                                                                                \
-            QList<ConnectionId> _list;                                                                                                                                   \
-            for (const auto &i : connectionIdList)                                                                                                                       \
-                _list.push_back(ConnectionId(connectionsTable->item(i, 0)->data(Qt::UserRole).toString()));                                                              \
-            return _list;                                                                                                                                                \
-        }())
+    [&]() {                                                                                                                                                              \
+        QList<ConnectionId> _list;                                                                                                                                       \
+        for (const auto &i : connectionIdList)                                                                                                                           \
+            _list.push_back(ConnectionId(connectionsTable->item(i, 0)->data(Qt::UserRole).toString()));                                                                  \
+        return _list;                                                                                                                                                    \
+    }()
 
 GroupManager::GroupManager(QWidget *parent) : QvDialog("GroupManager", parent)
 {
@@ -51,16 +47,15 @@ GroupManager::GroupManager(QWidget *parent) : QvDialog("GroupManager", parent)
         subscriptionTypeCB->addItem(pluginInfo->metadata().Name + ": " + type.displayName, type.type);
     }
 
-    //
     dnsSettingsWidget = new DnsSettingsWidget(this);
     routeSettingsWidget = new RouteSettingsMatrixWidget(this);
-    //
+
     dnsSettingsGB->setLayout(new QGridLayout(dnsSettingsGB));
     dnsSettingsGB->layout()->addWidget(dnsSettingsWidget);
-    //
+
     routeSettingsGB->setLayout(new QGridLayout(routeSettingsGB));
     routeSettingsGB->layout()->addWidget(routeSettingsWidget);
-    //
+
     updateColorScheme();
     connectionListRCMenu->addSection(tr("Connection Management"));
     connectionListRCMenu->addAction(exportConnectionAction);
@@ -69,21 +64,21 @@ GroupManager::GroupManager(QWidget *parent) : QvDialog("GroupManager", parent)
     connectionListRCMenu->addMenu(connectionListRCMenu_CopyToMenu);
     connectionListRCMenu->addMenu(connectionListRCMenu_MoveToMenu);
     connectionListRCMenu->addMenu(connectionListRCMenu_LinkToMenu);
-    //
+
     connect(exportConnectionAction, &QAction::triggered, this, &GroupManager::onRCMExportConnectionTriggered);
     connect(deleteConnectionAction, &QAction::triggered, this, &GroupManager::onRCMDeleteConnectionTriggered);
-    //
     connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnConnectionLinkedWithGroup, [this] { reloadConnectionsList(currentGroupId); });
     connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnGroupCreated, this, &GroupManager::reloadGroupRCMActions);
     connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnGroupDeleted, this, &GroupManager::reloadGroupRCMActions);
     connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnGroupRenamed, this, &GroupManager::reloadGroupRCMActions);
-    //
+
     for (const auto &group : QvBaselib->ProfileManager()->GetGroups())
     {
         auto item = new QListWidgetItem(GetDisplayName(group));
         item->setData(Qt::UserRole, group.toString());
         groupList->addItem(item);
     }
+
     if (groupList->count() > 0)
     {
         groupList->setCurrentItem(groupList->item(0));
@@ -101,9 +96,7 @@ void GroupManager::onRCMDeleteConnectionTriggered()
 {
     const auto list = GET_SELECTED_CONNECTION_IDS(SELECTED_ROWS_INDEX);
     for (const auto &item : list)
-    {
         QvBaselib->ProfileManager()->RemoveFromGroup(ConnectionId(item), currentGroupId);
-    }
     reloadConnectionsList(currentGroupId);
 }
 
@@ -143,6 +136,7 @@ void GroupManager::onRCMExportConnectionTriggered()
             for (const auto &connId : list)
             {
 #pragma message("TODO")
+                QvBaselib->ProfileManager()->ClearConnectionUsage({});
                 //                ConnectionId id(connId);
                 //                auto root = RouteManager->GenerateFinalConfig({ id, currentGroupId });
                 //                //
@@ -259,8 +253,8 @@ void GroupManager::onRCMActionTriggered_Move()
 
 void GroupManager::updateColorScheme()
 {
-    addGroupButton->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("add")));
-    removeGroupButton->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("ashbin")));
+    addGroupButton->setIcon(QIcon(STYLE_RESX("add")));
+    removeGroupButton->setIcon(QIcon(STYLE_RESX("ashbin")));
 }
 
 QvMessageBusSlotImpl(GroupManager)
@@ -313,7 +307,7 @@ void GroupManager::on_removeGroupButton_clicked()
 {
     if (QvBaselib->Ask(tr("Remove a Group"), tr("All connections will be moved to default group, do you want to continue?")) == Qv2rayBase::MessageOpt::Yes)
     {
-        QvBaselib->ProfileManager()->DeleteGroup(currentGroupId);
+        QvBaselib->ProfileManager()->DeleteGroup(currentGroupId, true);
         auto item = groupList->currentItem();
         int index = groupList->row(item);
         groupList->removeItemWidget(item);

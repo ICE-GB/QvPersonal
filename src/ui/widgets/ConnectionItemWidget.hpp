@@ -11,7 +11,7 @@ class ConnectionItemWidget
 {
     Q_OBJECT
   public:
-    explicit ConnectionItemWidget(const ConnectionGroupPair &id, QWidget *parent = nullptr);
+    explicit ConnectionItemWidget(const ProfileId &id, QWidget *parent = nullptr);
     explicit ConnectionItemWidget(const GroupId &groupId, QWidget *parent = nullptr);
     //
     void BeginConnection();
@@ -20,7 +20,7 @@ class ConnectionItemWidget
     void BeginRename();
     void CancelRename();
     bool NameMatched(const QString &arg) const;
-    inline const ConnectionGroupPair Identifier() const
+    inline const ProfileId Identifier() const
     {
         return { this->connectionId, this->groupId };
     }
@@ -35,9 +35,9 @@ class ConnectionItemWidget
   signals:
     void RequestWidgetFocus(const ConnectionItemWidget *me);
   private slots:
-    void OnConnected(const ConnectionGroupPair &id);
-    void OnDisConnected(const ConnectionGroupPair &id);
-    void OnConnectionStatsArrived(const ConnectionGroupPair &id, const QMap<StatisticsObject::StatisticsType, StatisticsObject::StatsEntry> &data);
+    void OnConnected(const ProfileId &id);
+    void OnDisConnected(const ProfileId &id);
+    void OnConnectionStatsArrived(const ProfileId &id, const QMap<StatisticsObject::StatisticsType, StatisticsObject::StatsEntry> &data);
     void OnLatencyTestStart(const ConnectionId &id);
     void OnConnectionModified(const ConnectionId &id);
     void OnLatencyTestFinished(const ConnectionId &id, const int average);

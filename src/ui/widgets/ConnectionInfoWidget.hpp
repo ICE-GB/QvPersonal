@@ -14,7 +14,7 @@ class ConnectionInfoWidget
 
   public:
     explicit ConnectionInfoWidget(QWidget *parent = nullptr);
-    void ShowDetails(const ConnectionGroupPair &_identifier);
+    void ShowDetails(const ProfileId &_identifier);
     ~ConnectionInfoWidget();
 
   signals:
@@ -31,10 +31,10 @@ class ConnectionInfoWidget
     void on_deleteBtn_clicked();
 
     void OnGroupRenamed(const GroupId &id, const QString &oldName, const QString &newName);
-    void OnConnected(const ConnectionGroupPair &id);
-    void OnDisConnected(const ConnectionGroupPair &id);
+    void OnConnected(const ProfileId &id);
+    void OnDisConnected(const ProfileId &id);
     void OnConnectionModified(const ConnectionId &id);
-    void OnConnectionModified_Pair(const ConnectionGroupPair &id);
+    void OnConnectionModified_Pair(const ProfileId &id);
     void on_latencyBtn_clicked();
 
   private:

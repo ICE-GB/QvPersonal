@@ -130,7 +130,7 @@ namespace Qv2ray::components::QvStyleManager
         return true;
     }
 
-    bool QvStyleManager::isCurrentlyDarkMode() const
+    bool QvStyleManager::isDarkMode() const
     {
         return qApp->palette().color(QPalette::Window).lightness() < 110;
     }

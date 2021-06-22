@@ -23,12 +23,12 @@
 
 void DnsSettingsWidget::updateColorScheme()
 {
-    addServerBtn->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("add")));
-    removeServerBtn->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("minus")));
-    moveServerUpBtn->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("arrow-up")));
-    moveServerDownBtn->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("arrow-down")));
-    addStaticHostBtn->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("add")));
-    removeStaticHostBtn->setIcon(QIcon(QV2RAY_COLORSCHEME_FILE("minus")));
+    addServerBtn->setIcon(QIcon(STYLE_RESX("add")));
+    removeServerBtn->setIcon(QIcon(STYLE_RESX("minus")));
+    moveServerUpBtn->setIcon(QIcon(STYLE_RESX("arrow-up")));
+    moveServerDownBtn->setIcon(QIcon(STYLE_RESX("arrow-down")));
+    addStaticHostBtn->setIcon(QIcon(STYLE_RESX("add")));
+    removeStaticHostBtn->setIcon(QIcon(STYLE_RESX("minus")));
 }
 
 DnsSettingsWidget::DnsSettingsWidget(QWidget *parent) : QWidget(parent)
