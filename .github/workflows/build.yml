@@ -61,7 +61,7 @@ jobs:
     - name: run-vcpkg
       uses: lukka/run-vcpkg@v7.3
       with:
-        vcpkgArguments: protobuf openssl
+        vcpkgArguments: protobuf openssl grpc
         vcpkgGitCommitId: 08214e18eeb146542944067c35d77faca8962be5
         vcpkgTriplet: ${{ matrix.config.vcpkgTriplet }}
   
