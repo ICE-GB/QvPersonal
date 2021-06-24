@@ -55,7 +55,6 @@
 #include "V2RayModels.hpp"
 
 #include <QHostAddress>
-#include <arpa/inet.h>
 
 QByteArray V2RayProfileGenerator::GenerateConfiguration(const ProfileContent &profile)
 {
@@ -299,6 +298,15 @@ void V2RayProfileGenerator::GenerateInboundConfig(const InboundObject &in, ::v2r
     if (in.inboundSettings.protocol == QStringLiteral("http"))
     {
         v2ray::core::proxy::http::ServerConfig http;
+        Qv2ray::Models::HttpServerObject server;
+        server.loadJson(in.inboundSettings.protocolSettings);
+
+        for (const auto &[user, pass, level] : *server.users)
+        {
+            Q_UNUSED(level);
+            http.mutable_accounts()->insert(user->toStdString(), pass->toStdString());
+        }
+
         // http.set_allow_transparent();
         // http.set_user_level()
         // http.set_timeout()
@@ -316,6 +324,10 @@ void V2RayProfileGenerator::GenerateInboundConfig(const InboundObject &in, ::v2r
     // TODO VMess, Shadowsocks, Trojan, VLESS unsupported.
 }
 
-void V2RayProfileGenerator::GenerateOutboundConfig(const OutboundObject &, v2ray::core::OutboundHandlerConfig *)
+void V2RayProfileGenerator::GenerateOutboundConfig(const OutboundObject &out, v2ray::core::OutboundHandlerConfig *vout)
 {
+    vout->set_tag(out.name.toStdString());
+    vout->mutable_sender_settings();
+
+    v2ray::core::app::proxyman::SenderConfig send;
 }

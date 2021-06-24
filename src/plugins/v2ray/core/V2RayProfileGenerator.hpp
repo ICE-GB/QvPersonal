@@ -21,19 +21,7 @@ class V2RayProfileGenerator
   public:
     QByteArray GenerateConfiguration(const ProfileContent &);
 
-    v2ray::core::app::router::RoutingRule GenerateRoutingRule(const RuleObject &);
-    v2ray::core::app::router::Config GenetateRouting(const RoutingObject &);
-
-    v2ray::core::transport::internet::ProxyConfig GenerateOutboundProxyConfig(const IOProtocolSettings &);
-    v2ray::core::transport::internet::ProxyConfig GenerateInboundProxyConfig(const IOProtocolSettings &);
-
-    v2ray::core::transport::internet::StreamConfig GenerateStreamConfig(const IOStreamSettings &);
-
-    v2ray::core::app::browserforwarder::Config GenerateBrowserForwarderConfig();
-    v2ray::core::app::observatory::Config GenerateObservatoryConfig();
-
     void GenerateStreamSettings(const IOStreamSettings &, ::v2ray::core::transport::internet::StreamConfig *);
-
     void GenerateInboundConfig(const InboundObject &, ::v2ray::core::InboundHandlerConfig *);
     void GenerateOutboundConfig(const OutboundObject &, v2ray::core::OutboundHandlerConfig *);
 };
