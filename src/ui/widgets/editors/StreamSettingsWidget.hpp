@@ -1,7 +1,7 @@
 #pragma once
 
 #include "MessageBus/MessageBus.hpp"
-#include "plugins/common/V2RayModels.hpp"
+#include "plugins/PluginsCommon/V2RayModels.hpp"
 #include "ui_StreamSettingsWidget.h"
 
 #include <QWidget>

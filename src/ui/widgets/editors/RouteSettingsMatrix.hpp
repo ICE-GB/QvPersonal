@@ -24,10 +24,6 @@ class RouteSettingsMatrixWidget
     std::optional<QString> openFileDialog();
     std::optional<QString> saveFileDialog();
     QList<QAction *> getBuiltInSchemes();
-    QAction *schemeToAction(const QString &name, const Qv2ray::Models::RouteMatrixConfig &scheme);
-
-  private:
-    QMenu *builtInSchemesMenu;
 
   private slots:
     void on_importSchemeBtn_clicked();
@@ -37,8 +33,11 @@ class RouteSettingsMatrixWidget
     Qv2ray::ui::widgets::AutoCompleteTextEdit *directDomainTxt;
     Qv2ray::ui::widgets::AutoCompleteTextEdit *proxyDomainTxt;
     Qv2ray::ui::widgets::AutoCompleteTextEdit *blockDomainTxt;
-    //
+
     Qv2ray::ui::widgets::AutoCompleteTextEdit *directIPTxt;
     Qv2ray::ui::widgets::AutoCompleteTextEdit *blockIPTxt;
     Qv2ray::ui::widgets::AutoCompleteTextEdit *proxyIPTxt;
+
+  private:
+    QMenu *builtInSchemesMenu;
 };

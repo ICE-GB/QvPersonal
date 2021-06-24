@@ -182,7 +182,7 @@ void InboundEditor::on_inboundHostTxt_textEdited(const QString &arg1)
 void InboundEditor::on_inboundPortTxt_textEdited(const QString &arg1)
 {
     CHECKLOADING
-    current.listenPort = arg1;
+    current.listenPort = arg1.toInt();
 }
 
 void InboundEditor::on_sniffingGroupBox_clicked(bool checked)

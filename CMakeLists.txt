@@ -107,8 +107,9 @@ protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${CMAKE_SOURCE_DIR}/assets/v2ray_geo
 # ==================================================================================
 # Qv2ray Builtin Plugins
 # ==================================================================================
-include(src/plugins/protocols/QvPlugin-BuiltinProtocolSupport.cmake)
-include(src/plugins/subscription-adapters/QvPlugin-BuiltinSubscriptionAdapters.cmake)
+include(src/plugins/protocols/plugin.cmake)
+include(src/plugins/subscription-adapters/plugin.cmake)
+include(src/plugins/v2ray/plugin.cmake)
 
 # ==================================================================================
 # Qv2ray

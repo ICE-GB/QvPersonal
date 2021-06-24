@@ -105,15 +105,15 @@ namespace Qv2ray::Models
         struct HTTPResponseObject
         {
             Bindable<QString> version{ "1.1" };
-            Bindable<QString> method{ "GET" };
             Bindable<QString> status{ "200" };
+            Bindable<QString> reason{ "OK" };
             Bindable<QMap<QString, QStringList>> headers{ { { "Content-Type", { "application/octet-stream", "video/mpeg" } },
                                                             { "Transfer-Encoding", { "chunked" } },
                                                             { "Connection", { "keep-alive" } },
                                                             { "Pragma", { "no-cache" } } } };
 
-            QJS_FUNC_COMPARE(HTTPResponseObject, version, method, status, headers);
-            QJS_FUNC_JSON(F(version, method, status, status))
+            QJS_FUNC_COMPARE(HTTPResponseObject, version, reason, status, headers);
+            QJS_FUNC_JSON(F(version, reason, status, status))
         };
 
         struct TCPHeader_Internal
@@ -177,8 +177,10 @@ namespace Qv2ray::Models
         struct DomainSocketObject
         {
             Bindable<QString> path{ "/" };
-            QJS_FUNC_COMPARE(DomainSocketObject, path);
-            QJS_FUNC_JSON(F(path))
+            Bindable<bool> abstract{ false };
+            Bindable<bool> padding{ false };
+            QJS_FUNC_COMPARE(DomainSocketObject, path, abstract, padding);
+            QJS_FUNC_JSON(F(path, abstract, padding))
         };
 
         struct QuicObject

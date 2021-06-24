@@ -300,7 +300,7 @@ void RouteEditor::on_addDefaultBtn_clicked()
 #pragma message("TODO: Metadata only sniffing.")
     if (inConfig->HasHTTP)
     {
-        const auto httpIn = InboundObject::Create("HTTP (Global)", "http", inConfig->ListenAddress, QString::number(inConfig->HTTPConfig->ListenPort));
+        const auto httpIn = InboundObject::Create("HTTP (Global)", "http", inConfig->ListenAddress, inConfig->HTTPConfig->ListenPort);
 
         httpIn.options[QStringLiteral("sniffing")] = inConfig->SOCKSConfig->Sniffing ? sniffingOn : sniffingOff;
         const auto _ = nodeDispatcher->CreateInbound(httpIn);
@@ -310,7 +310,7 @@ void RouteEditor::on_addDefaultBtn_clicked()
     {
         const IOProtocolSettings socks{ QJsonObject{ { "udp", *inConfig->SOCKSConfig->EnableUDP }, { "ip", *inConfig->SOCKSConfig->UDPLocalAddress } } };
 
-        const auto socksIn = InboundObject::Create("Socks (Global)", "socks", inConfig->ListenAddress, QString::number(inConfig->SOCKSConfig->ListenPort), socks);
+        const auto socksIn = InboundObject::Create("Socks (Global)", "socks", inConfig->ListenAddress, inConfig->SOCKSConfig->ListenPort, socks);
         socksIn.options[QStringLiteral("sniffing")] = inConfig->SOCKSConfig->Sniffing ? sniffingOn : sniffingOff;
         const auto _ = nodeDispatcher->CreateInbound(socksIn);
     }
@@ -325,7 +325,7 @@ void RouteEditor::on_addDefaultBtn_clicked()
             const auto tProxyIn = InboundObject::Create(QStringLiteral("tProxy"),                   //
                                                         QStringLiteral("dokodemo-door"),            //
                                                         GlobalConfig->inboundConfig->ListenAddress, //
-                                                        QString::number(ts->ListenPort),            //
+                                                        ts->ListenPort,                             //
                                                         tproxyInSettings,                           //
                                                         streamSettings);
             tProxyIn.options[QStringLiteral("sniffing")] = sniffingOn;
@@ -337,7 +337,7 @@ void RouteEditor::on_addDefaultBtn_clicked()
             const auto tProxyV6In = InboundObject::Create(QStringLiteral("tProxy IPv6"),                //
                                                           QStringLiteral("dokodemo-door"),              //
                                                           GlobalConfig->inboundConfig->ListenAddressV6, //
-                                                          QString::number(ts->ListenPort),              //
+                                                          ts->ListenPort,                               //
                                                           tproxyInSettings,                             //
                                                           streamSettings);
             tProxyV6In.options[QStringLiteral("sniffing")] = sniffingOn;

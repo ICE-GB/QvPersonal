@@ -9,6 +9,6 @@ add_library(${SUBSCRIPTION_PLUGIN_TARGET} SHARED
     )
 
 target_include_directories(${SUBSCRIPTION_PLUGIN_TARGET} PRIVATE ${CMAKE_CURRENT_LIST_DIR})
-target_include_directories(${SUBSCRIPTION_PLUGIN_TARGET} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/../common)
+target_include_directories(${SUBSCRIPTION_PLUGIN_TARGET} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/../PluginsCommon)
 
 qv2ray_configure_plugin(${SUBSCRIPTION_PLUGIN_TARGET} Widgets)

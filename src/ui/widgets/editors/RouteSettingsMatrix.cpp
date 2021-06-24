@@ -12,48 +12,41 @@
 RouteSettingsMatrixWidget::RouteSettingsMatrixWidget(QWidget *parent) : QWidget(parent)
 {
     setupUi(this);
-    //
     builtInSchemesMenu = new QMenu(this);
     builtInSchemesMenu->addActions(this->getBuiltInSchemes());
     builtInSchemeBtn->setMenu(builtInSchemesMenu);
-    //
-    auto sourceStringsDomain = GeositeReader::ReadGeoSiteFromFile(GlobalConfig->behaviorConfig->GeoSitePath);
-    directDomainTxt = new AutoCompleteTextEdit("geosite", sourceStringsDomain, this);
-    proxyDomainTxt = new AutoCompleteTextEdit("geosite", sourceStringsDomain, this);
-    blockDomainTxt = new AutoCompleteTextEdit("geosite", sourceStringsDomain, this);
-    //
-    auto sourceStringsIP = GeositeReader::ReadGeoSiteFromFile(GlobalConfig->behaviorConfig->GeoIPPath);
-    directIPTxt = new AutoCompleteTextEdit("geoip", sourceStringsIP, this);
-    proxyIPTxt = new AutoCompleteTextEdit("geoip", sourceStringsIP, this);
-    blockIPTxt = new AutoCompleteTextEdit("geoip", sourceStringsIP, this);
-    //
+
+    const auto sourceStringsDomain = GeositeReader::ReadGeoSiteFromFile(GlobalConfig->behaviorConfig->GeoSitePath);
+    directDomainTxt = new AutoCompleteTextEdit(QStringLiteral("geosite"), sourceStringsDomain, this);
+    proxyDomainTxt = new AutoCompleteTextEdit(QStringLiteral("geosite"), sourceStringsDomain, this);
+    blockDomainTxt = new AutoCompleteTextEdit(QStringLiteral("geosite"), sourceStringsDomain, this);
+
+    const auto sourceStringsIP = GeositeReader::ReadGeoSiteFromFile(GlobalConfig->behaviorConfig->GeoIPPath);
+    directIPTxt = new AutoCompleteTextEdit(QStringLiteral("geoip"), sourceStringsIP, this);
+    proxyIPTxt = new AutoCompleteTextEdit(QStringLiteral("geoip"), sourceStringsIP, this);
+    blockIPTxt = new AutoCompleteTextEdit(QStringLiteral("geoip"), sourceStringsIP, this);
+
     directTxtLayout->addWidget(directDomainTxt, 0, 0);
     proxyTxtLayout->addWidget(proxyDomainTxt, 0, 0);
     blockTxtLayout->addWidget(blockDomainTxt, 0, 0);
-    //
+
     directIPLayout->addWidget(directIPTxt, 0, 0);
     proxyIPLayout->addWidget(proxyIPTxt, 0, 0);
     blockIPLayout->addWidget(blockIPTxt, 0, 0);
 }
 
-/**
- * @brief RouteSettingsMatrixWidget::getBuiltInSchemes
- * @return
- */
 QList<QAction *> RouteSettingsMatrixWidget::getBuiltInSchemes()
 {
-    QList<QAction *> list;
-    list.append(this->schemeToAction(tr("empty scheme"), RouteSchemeIO::emptyScheme));
-    list.append(this->schemeToAction(tr("empty scheme (no ads)"), RouteSchemeIO::noAdsScheme));
-    return list;
-}
+    const static auto schemeToAction = [this](const QString &name, const Qv2ray::Models::RouteMatrixConfig &scheme) -> QAction * {
+        const auto action = new QAction(name, this);
+        connect(action, &QAction::triggered, [this, &scheme] { this->SetRouteConfig(scheme); });
+        return action;
+    };
 
-QAction *RouteSettingsMatrixWidget::schemeToAction(const QString &name, const Qv2ray::Models::RouteMatrixConfig &scheme)
-{
-    QAction *action = new QAction(this);
-    action->setText(name);
-    connect(action, &QAction::triggered, [this, &scheme] { this->SetRouteConfig(scheme); });
-    return action;
+    QList<QAction *> list;
+    list.append(schemeToAction(tr("empty scheme"), RouteSchemeIO::EmptyScheme));
+    list.append(schemeToAction(tr("empty scheme (no ads)"), RouteSchemeIO::NoAdsScheme));
+    return list;
 }
 
 void RouteSettingsMatrixWidget::SetRouteConfig(const Qv2ray::Models::RouteMatrixConfig &conf)
@@ -61,13 +54,13 @@ void RouteSettingsMatrixWidget::SetRouteConfig(const Qv2ray::Models::RouteMatrix
     domainStrategyCombo->setCurrentText(conf.domainStrategy);
     domainMatcherCombo->setCurrentIndex(conf.domainMatcher == QStringLiteral("mph") ? 1 : 0);
     //
-    directDomainTxt->setPlainText(conf.domains->direct->join(NEWLINE));
-    proxyDomainTxt->setPlainText(conf.domains->proxy->join(NEWLINE));
-    blockDomainTxt->setPlainText(conf.domains->block->join(NEWLINE));
+    directDomainTxt->setPlainText(conf.domains->direct->join('\n'));
+    proxyDomainTxt->setPlainText(conf.domains->proxy->join('\n'));
+    blockDomainTxt->setPlainText(conf.domains->block->join('\n'));
     //
-    blockIPTxt->setPlainText(conf.ips->block->join(NEWLINE));
-    directIPTxt->setPlainText(conf.ips->direct->join(NEWLINE));
-    proxyIPTxt->setPlainText(conf.ips->proxy->join(NEWLINE));
+    blockIPTxt->setPlainText(conf.ips->block->join('\n'));
+    directIPTxt->setPlainText(conf.ips->direct->join('\n'));
+    proxyIPTxt->setPlainText(conf.ips->proxy->join('\n'));
 }
 
 Qv2ray::Models::RouteMatrixConfig RouteSettingsMatrixWidget::GetRouteConfig() const
@@ -75,15 +68,16 @@ Qv2ray::Models::RouteMatrixConfig RouteSettingsMatrixWidget::GetRouteConfig() co
     Qv2ray::Models::RouteMatrixConfig conf;
     // Workaround for translation
     const auto index = domainMatcherCombo->currentIndex();
-    conf.domainMatcher = index == 0 ? "" : "mph";
+    conf.domainMatcher->clear();
+    if (index != 0)
+        conf.domainMatcher = QStringLiteral("mph");
     conf.domainStrategy = domainStrategyCombo->currentText();
-    conf.domains->block = SplitLines(blockDomainTxt->toPlainText().replace(" ", ""));
-    conf.domains->direct = SplitLines(directDomainTxt->toPlainText().replace(" ", ""));
-    conf.domains->proxy = SplitLines(proxyDomainTxt->toPlainText().replace(" ", ""));
-    //
-    conf.ips->block = SplitLines(blockIPTxt->toPlainText().replace(" ", ""));
-    conf.ips->direct = SplitLines(directIPTxt->toPlainText().replace(" ", ""));
-    conf.ips->proxy = SplitLines(proxyIPTxt->toPlainText().replace(" ", ""));
+    conf.domains->block = SplitLines(blockDomainTxt->toPlainText());
+    conf.domains->direct = SplitLines(directDomainTxt->toPlainText());
+    conf.domains->proxy = SplitLines(proxyDomainTxt->toPlainText());
+    conf.ips->block = SplitLines(blockIPTxt->toPlainText());
+    conf.ips->direct = SplitLines(directIPTxt->toPlainText());
+    conf.ips->proxy = SplitLines(proxyIPTxt->toPlainText());
     return conf;
 }
 
@@ -91,38 +85,22 @@ RouteSettingsMatrixWidget::~RouteSettingsMatrixWidget()
 {
 }
 
-/**
- * @brief RouteSettingsMatrixWidget::on_importSchemeBtn_clicked
- * @author DuckSoft <realducksoft@gmail.com>
- * @todo add some debug output
- */
 void RouteSettingsMatrixWidget::on_importSchemeBtn_clicked()
 {
-    // open up the file dialog and choose a file.
-    auto filePath = this->openFileDialog();
+    const auto filePath = this->openFileDialog();
     if (!filePath)
         return;
 
-    // read the file and parse back to struct.
-    // if error occurred on parsing, an exception will be thrown.
-    auto content = ReadFile(*filePath);
     RouteSchemeIO::Qv2rayRouteScheme scheme;
-    scheme.loadJson(JsonFromString(content));
+    scheme.loadJson(JsonFromString(ReadFile(*filePath)));
 
-    // show the information of this scheme to user,
-    // and ask user if he/she wants to import and apply this.
-    auto strPrompt = tr("Import scheme '%1' made by '%2'? \r\n Description: %3").arg(scheme.name, scheme.author, scheme.description);
-    auto decision = QvBaselib->Ask(tr("Importing Scheme"), strPrompt);
-
-    // if user don't want to import, just leave.
+    const auto strPrompt = tr("Import scheme '%1' made by '%2'? \r\n Description: %3").arg(scheme.name, scheme.author, scheme.description);
+    const auto decision = QvBaselib->Ask(tr("Importing Scheme"), strPrompt);
     if (decision != Qv2rayBase::MessageOpt::Yes)
         return;
 
-    // write the scheme onto the window
-    this->SetRouteConfig(scheme);
-
-    // done
     QvLog() << "Imported route config:" << scheme.name << "by:" << scheme.author;
+    this->SetRouteConfig(scheme);
 }
 
 /**
@@ -131,34 +109,27 @@ void RouteSettingsMatrixWidget::on_importSchemeBtn_clicked()
  */
 void RouteSettingsMatrixWidget::on_exportSchemeBtn_clicked()
 {
-    // parse the config back from the window components
-    auto config = this->GetRouteConfig();
+    const auto config = this->GetRouteConfig();
 
-    // init some constants
     const auto dialogTitle = tr("Exporting Scheme");
 
-    // scheme name?
     bool ok = false;
-    auto schemeName = QInputDialog::getText(this, dialogTitle, tr("Scheme name:"), QLineEdit::Normal, tr("Unnamed Scheme"), &ok);
+    const auto schemeName = QInputDialog::getText(this, dialogTitle, tr("Scheme name:"), QLineEdit::Normal, tr("Unnamed Scheme"), &ok);
     if (!ok)
         return;
 
-    // scheme author?
-    auto schemeAuthor = QInputDialog::getText(this, dialogTitle, tr("Author:"), QLineEdit::Normal, "Anonymous <mystery@example.com>", &ok);
+    const auto schemeAuthor = QInputDialog::getText(this, dialogTitle, tr("Author:"), QLineEdit::Normal, QStringLiteral("Anonymous <mystery@example.com>"), &ok);
     if (!ok)
         return;
 
-    // scheme description?
-    auto schemeDescription = QInputDialog::getText(this, dialogTitle, tr("Description:"), QLineEdit::Normal, tr("The author is too lazy to leave a comment"));
+    const auto schemeDescription = QInputDialog::getText(this, dialogTitle, tr("Description:"), QLineEdit::Normal, tr("The author is too lazy to leave a comment"));
     if (!ok)
         return;
 
-    // where to save?
-    auto savePath = this->saveFileDialog();
+    const auto savePath = this->saveFileDialog();
     if (!savePath)
         return;
 
-    // construct the data structure
     RouteSchemeIO::Qv2rayRouteScheme scheme;
     scheme.name = schemeName;
     scheme.author = schemeAuthor;
@@ -172,7 +143,6 @@ void RouteSettingsMatrixWidget::on_exportSchemeBtn_clicked()
     WriteFile(content.toUtf8(), *savePath);
 
     // done
-    // TODO: Give some success as Notification
     QvBaselib->Info(dialogTitle, tr("Your route scheme has been successfully exported!"));
 }
 
@@ -192,7 +162,7 @@ std::optional<QString> RouteSettingsMatrixWidget::saveFileDialog()
     {
         return std::nullopt;
     }
-    return dialog.selectedFiles().first();
+    return dialog.selectedFiles().value(0);
 }
 
 /**
@@ -209,5 +179,5 @@ std::optional<QString> RouteSettingsMatrixWidget::openFileDialog()
     {
         return std::nullopt;
     }
-    return dialog.selectedFiles().first();
+    return dialog.selectedFiles().value(0);
 }

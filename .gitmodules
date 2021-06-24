@@ -13,3 +13,6 @@
 [submodule "3rdparty/QNodeEditor"]
 	path = 3rdparty/QNodeEditor
 	url = https://github.com/moodyhunter/QNodeEditor
+[submodule "src/plugins/v2ray/3rdparty/v2ray-core"]
+	path = src/plugins/v2ray/3rdparty/v2ray-core
+	url = https://github.com/xiaokangwang/v2ray-core-1

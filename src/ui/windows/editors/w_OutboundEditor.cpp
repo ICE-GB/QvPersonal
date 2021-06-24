@@ -11,7 +11,7 @@
 
 constexpr auto OUTBOUND_TAG_PROXY = "Proxy";
 
-OutboundEditor::OutboundEditor(QWidget *parent) : QDialog(parent), tag(OUTBOUND_TAG_PROXY)
+OutboundEditor::OutboundEditor(QWidget *parent) : QDialog(parent), outboundTag(OUTBOUND_TAG_PROXY)
 {
     QvMessageBusConnect();
     setupUi(this);
@@ -44,9 +44,9 @@ QvMessageBusSlotImpl(OutboundEditor)
     }
 }
 
-OutboundEditor::OutboundEditor(const OutboundObject &outboundEntry, QWidget *parent) : OutboundEditor(parent)
+OutboundEditor::OutboundEditor(const OutboundObject &out, QWidget *parent) : OutboundEditor(parent)
 {
-    originalConfig = outboundEntry;
+    originalConfig = out;
     reloadGUI();
 }
 
@@ -62,9 +62,9 @@ OutboundObject OutboundEditor::OpenEditor()
 
 QString OutboundEditor::GetFriendlyName()
 {
-    auto host = ipLineEdit->text().replace(":", "-").replace("/", "_").replace("\\", "_");
-    auto port = portLineEdit->text().replace(":", "-").replace("/", "_").replace("\\", "_");
-    return tag.isEmpty() ? outboundType + "@" + host + ":" + port : tag;
+    const auto host = ipLineEdit->text().replace(':', '-').replace('/', '_').replace('\\', '_');
+    const auto port = portLineEdit->text().replace(':', '-').replace('/', '_').replace('\\', '_');
+    return outboundTag.isEmpty() ? outboundProtocol + "@" + host + ":" + port : outboundTag;
 }
 
 OutboundObject OutboundEditor::generateConnectionJson()
@@ -74,7 +74,7 @@ OutboundObject OutboundEditor::generateConnectionJson()
     bool processed = false;
     for (const auto &[protocol, widget] : pluginWidgets.toStdMap())
     {
-        if (protocol == outboundType)
+        if (protocol == outboundProtocol)
         {
             widget->SetHostAddress(serverAddress, serverPort);
             settings = widget->GetContent();
@@ -87,43 +87,36 @@ OutboundObject OutboundEditor::generateConnectionJson()
     }
     if (!processed)
     {
-        QvBaselib->Warn(tr("Unknown outbound type."), tr("The specified outbound type is not supported, this may happen due to a plugin failure."));
+        QvBaselib->Warn(tr("Unknown outbound protocol."), tr("The specified protocol is not supported, this may happen due to a plugin failure."));
     }
 
-    OutboundObject out;
-    out.name = tag;
-    out.outboundSettings.protocol = outboundType;
-    out.outboundSettings.protocolSettings = settings;
-    out.outboundSettings.streamSettings = streaming;
-    out.options["mux"] = muxConfig;
+    OutboundObject out{ IOConnectionSettings{ outboundProtocol, settings, streaming } };
+    out.name = outboundTag;
+    out.muxSettings = muxConfig;
     return out;
 }
 
 void OutboundEditor::reloadGUI()
 {
-    tag = originalConfig.name;
-    tagTxt->setText(tag);
-    outboundType = originalConfig.outboundSettings.protocol;
-    if (outboundType.isEmpty())
-        outboundType = "vmess";
+    outboundTag = originalConfig.name;
+    tagTxt->setText(outboundTag);
+    outboundProtocol = originalConfig.outboundSettings.protocol;
 
-#pragma message("TODO: properly place mux object")
-    muxConfig = originalConfig.options["mux"].toObject();
+    muxConfig = originalConfig.muxSettings;
     streamSettingsWidget->SetStreamObject(StreamSettingsObject::fromJson(originalConfig.outboundSettings.streamSettings));
-    //
-    muxEnabledCB->setChecked(muxConfig["enabled"].toBool());
-    muxConcurrencyTxt->setValue(muxConfig["concurrency"].toInt());
-    //
+
+    muxEnabledCB->setChecked(muxConfig.enabled);
+    muxConcurrencyTxt->setValue(muxConfig.concurrency);
+
     const auto &settings = originalConfig.outboundSettings.protocolSettings;
-    //
     bool processed = false;
-    for (const auto &[protocol, widget] : pluginWidgets.toStdMap())
+    for (auto it = pluginWidgets.constKeyValueBegin(); it != pluginWidgets.constKeyValueEnd(); it++)
     {
-        if (protocol == outboundType)
+        if (it->first == outboundProtocol)
         {
-            outBoundTypeCombo->setCurrentIndex(outBoundTypeCombo->findData(protocol));
-            widget->SetContent(settings);
-            const auto &[_address, _port] = widget->GetHostAddress();
+            outBoundTypeCombo->setCurrentIndex(outBoundTypeCombo->findData(it->first));
+            it->second->SetContent(settings);
+            const auto &[_address, _port] = it->second->GetHostAddress();
             serverAddress = _address;
             serverPort = _port;
             ipLineEdit->setText(_address);
@@ -132,9 +125,10 @@ void OutboundEditor::reloadGUI()
             break;
         }
     }
+
     if (!processed)
     {
-        QvLog() << "Outbound type:" << outboundType << " is not supported.";
+        QvLog() << "Outbound type:" << outboundProtocol << " is not supported.";
         QvBaselib->Warn(tr("Unknown outbound."), tr("The specified outbound type is invalid, this may be caused by a plugin failure.") + NEWLINE +
                                                      tr("Please use the JsonEditor or reload the plugin."));
         reject();
@@ -158,23 +152,23 @@ void OutboundEditor::on_portLineEdit_textEdited(const QString &arg1)
 
 void OutboundEditor::on_tagTxt_textEdited(const QString &arg1)
 {
-    tag = arg1;
+    outboundTag = arg1;
 }
 
 void OutboundEditor::on_muxEnabledCB_stateChanged(int arg1)
 {
-    muxConfig["enabled"] = arg1 == Qt::Checked;
+    muxConfig.enabled = arg1 == Qt::Checked;
 }
 
 void OutboundEditor::on_muxConcurrencyTxt_valueChanged(int arg1)
 {
-    muxConfig["concurrency"] = arg1;
+    muxConfig.concurrency = arg1;
 }
 
 void OutboundEditor::on_outBoundTypeCombo_currentIndexChanged(int)
 {
-    outboundType = outBoundTypeCombo->currentData().toString();
-    auto newWidget = pluginWidgets[outboundType];
+    outboundProtocol = outBoundTypeCombo->currentData().toString();
+    auto newWidget = pluginWidgets[outboundProtocol];
     if (!newWidget)
         return;
     outboundTypeStackView->setCurrentWidget(newWidget);

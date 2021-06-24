@@ -1,13 +1,13 @@
 #pragma once
 
-#include "plugins/common/V2RayModels.hpp"
+#include "plugins/PluginsCommon/V2RayModels.hpp"
 
 #include <QObject>
 
 namespace Qv2ray::components::RouteSchemeIO
 {
-    const inline Qv2ray::Models::RouteMatrixConfig emptyScheme;
-    const inline Qv2ray::Models::RouteMatrixConfig noAdsScheme({ {}, { "geosite:category-ads-all" }, {} }, { {}, {}, {} }, "AsIs");
+    const static inline Qv2ray::Models::RouteMatrixConfig EmptyScheme;
+    const static inline Qv2ray::Models::RouteMatrixConfig NoAdsScheme({ {}, { "geosite:category-ads-all" }, {} }, { {}, {}, {} }, "AsIs");
 
     /**
      * @brief The Qv2rayRouteScheme struct
@@ -15,9 +15,6 @@ namespace Qv2ray::components::RouteSchemeIO
      */
     struct Qv2rayRouteScheme : Qv2ray::Models::RouteMatrixConfig
     {
-
-        // M: all these fields are mandatory
-        QJS_FUNC_JSON(F(name, author, description), B(RouteMatrixConfig))
         /**
          * @brief the name of the scheme.
          * @example "Untitled Scheme"
@@ -33,5 +30,6 @@ namespace Qv2ray::components::RouteSchemeIO
          * @example "A scheme to bypass China mainland, while allowing bilibili to go through proxy."
          */
         Bindable<QString> description;
+        QJS_FUNC_JSON(F(name, author, description), B(RouteMatrixConfig))
     };
 } // namespace Qv2ray::components::RouteSchemeIO

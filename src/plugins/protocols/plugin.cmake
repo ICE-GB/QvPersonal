@@ -26,7 +26,7 @@ ADD_SOURCE(inbound socksin)
 add_library(${PROTOCOL_PLUGIN_TARGET} SHARED
     ${PLUGIN_UI_SOURCE}
     ${CMAKE_CURRENT_LIST_DIR}/resx.qrc
-    ${CMAKE_CURRENT_LIST_DIR}/../common/V2RayModels.hpp
+#    ${CMAKE_CURRENT_LIST_DIR}/../PluginsCommon/V2RayModels.hpp
     ${CMAKE_CURRENT_LIST_DIR}/BuiltinProtocolPlugin.hpp
     ${CMAKE_CURRENT_LIST_DIR}/BuiltinProtocolPlugin.cpp
     ${CMAKE_CURRENT_LIST_DIR}/core/OutboundHandler.cpp
@@ -38,6 +38,6 @@ add_library(${PROTOCOL_PLUGIN_TARGET} SHARED
     )
 
 target_include_directories(${PROTOCOL_PLUGIN_TARGET} PRIVATE ${CMAKE_CURRENT_LIST_DIR})
-target_include_directories(${PROTOCOL_PLUGIN_TARGET} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/../common)
+target_include_directories(${PROTOCOL_PLUGIN_TARGET} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/../PluginsCommon)
 
 qv2ray_configure_plugin(${PROTOCOL_PLUGIN_TARGET} Widgets)

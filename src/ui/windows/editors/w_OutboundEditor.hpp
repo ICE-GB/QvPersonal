@@ -33,17 +33,17 @@ class OutboundEditor
     void on_tagTxt_textEdited(const QString &arg1);
 
   private:
-    QString tag;
+    QString outboundTag;
     void reloadGUI();
     OutboundObject generateConnectionJson();
     OutboundObject originalConfig;
     OutboundObject resultConfig;
-    QJsonObject muxConfig;
+    MultiplexerObject muxConfig;
     QString serverAddress;
     int serverPort;
     //
     // Connection Configs
-    QString outboundType = "vmess";
+    QString outboundProtocol = "vmess";
     //
     StreamSettingsWidget *streamSettingsWidget;
     //
