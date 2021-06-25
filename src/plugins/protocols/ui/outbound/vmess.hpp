@@ -27,11 +27,7 @@ class VmessOutboundEditor
     void SetContent(const IOProtocolSettings &content) override;
     const IOProtocolSettings GetContent() const override
     {
-        auto result = content;
-        QJsonArray vnext;
-        vnext.append(vmess.toJson());
-        result.insert("vnext", vnext);
-        return result;
+        return IOProtocolSettings{ vmess.toJson() };
     }
 
   private:

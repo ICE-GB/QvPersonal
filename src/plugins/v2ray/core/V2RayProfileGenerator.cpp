@@ -485,11 +485,11 @@ void V2RayProfileGenerator::GenerateOutboundConfig(const OutboundObject &out, v2
 
         setIpOrDomin(vmess.address, receiver->mutable_address());
         receiver->set_port(vmess.port);
-        for (const auto &[id, alterid, security, level] : *vmess.users)
+
         {
             Account acc;
-            acc.set_id(id->toStdString());
-            acc.set_alter_id(alterid);
+            acc.set_id(vmess.id->toStdString());
+            acc.set_alter_id(vmess.alterId);
             acc.mutable_security_settings()->set_type([](const QString &s) {
                 if (s == QStringLiteral("aes-128-gcm"))
                     return v2ray::core::common::protocol::SecurityType::AES128_GCM;
@@ -502,7 +502,7 @@ void V2RayProfileGenerator::GenerateOutboundConfig(const OutboundObject &out, v2
                 if (s == QStringLiteral("zero"))
                     return v2ray::core::common::protocol::SecurityType::ZERO;
                 return v2ray::core::common::protocol::SecurityType::AUTO;
-            }(security));
+            }(vmess.security));
 
             receiver->add_user()->mutable_account()->PackFrom(acc);
         }
@@ -570,12 +570,11 @@ void V2RayProfileGenerator::GenerateOutboundConfig(const OutboundObject &out, v2
         setIpOrDomin(_out("address").toString(), s->mutable_address());
         s->set_port(_out("port").toInt());
 
-        for (const auto &[id, encryption, flow] : *vless.users)
         {
             Account acc;
-            acc.set_id(id->toStdString());
-            acc.set_flow(flow->toStdString());
-            acc.set_encryption(encryption->toStdString());
+            acc.set_id(vless.id->toStdString());
+            acc.set_flow(vless.flow->toStdString());
+            acc.set_encryption(vless.encryption->toStdString());
             s->add_user()->mutable_account()->PackFrom(acc);
         }
         vout->mutable_proxy_settings()->PackFrom(conf);

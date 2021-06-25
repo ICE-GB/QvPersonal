@@ -22,16 +22,11 @@ void VmessOutboundEditor::changeEvent(QEvent *e)
 void VmessOutboundEditor::SetContent(const IOProtocolSettings &content)
 {
     this->content = content;
-    if (content["vnext"].toArray().isEmpty())
-        content["vnext"] = QJsonArray{ QJsonObject{} };
+    vmess.loadJson(content);
 
-    vmess.loadJson(content["vnext"].toArray().first().toObject());
-    if (vmess.users->isEmpty())
-        vmess.users->push_back({});
-
-    vmess.users->first().security.ReadWriteBind(securityCombo, "currentText", &QComboBox::currentIndexChanged);
-    vmess.users->first().alterId.ReadWriteBind(alterLineEdit, "value", &QSpinBox::valueChanged);
-    vmess.users->first().id.ReadWriteBind(idLineEdit, "text", &QLineEdit::textEdited);
+    vmess.security.ReadWriteBind(securityCombo, "currentText", &QComboBox::currentIndexChanged);
+    vmess.alterId.ReadWriteBind(alterLineEdit, "value", &QSpinBox::valueChanged);
+    vmess.id.ReadWriteBind(idLineEdit, "text", &QLineEdit::textEdited);
 
     if (alterLineEdit->value() > 0)
     {

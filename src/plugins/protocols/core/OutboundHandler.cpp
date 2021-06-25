@@ -301,8 +301,6 @@ QString SerializeVMess(const QString &alias, const IOProtocolSettings &serverJso
     Qv2ray::Models::StreamSettingsObject stream;
     stream.loadJson(streamJson);
 
-    if (server.users->empty())
-        return QObject::tr("(Empty Users)");
     QUrl url;
     QUrlQuery query;
     url.setFragment(alias, QUrl::StrictMode);
@@ -357,7 +355,7 @@ QString SerializeVMess(const QString &alias, const IOProtocolSettings &serverJso
     }
     url.setPath(QStringLiteral("/"));
     url.setScheme(QStringLiteral("vmess"));
-    url.setPassword(server.users->first().id + "-" + QString::number(server.users->first().alterId));
+    url.setPassword(server.id + "-" + QString::number(server.alterId));
     url.setHost(server.address);
     url.setPort(server.port);
     url.setUserName(protocol);
@@ -569,7 +567,6 @@ std::optional<std::tuple<IOProtocolSettings, IOStreamSettings, QString>> Deseria
     const auto name = url.fragment(QUrl::FullyDecoded).trimmed();
 
     VMessClientObject server;
-    server.users << VMessClientObject::UserObject{};
 
     StreamSettingsObject stream;
     QString net;
@@ -606,9 +603,9 @@ std::optional<std::tuple<IOProtocolSettings, IOStreamSettings, QString>> Deseria
         }
         server.address = host;
         server.port = port;
-        server.users->first().id = uuid;
-        server.users->first().alterId = aid;
-        server.users->first().security = "auto";
+        server.id = uuid;
+        server.alterId = aid;
+        server.security = "auto";
     }
 
     const static auto getQueryValue = [&query](const QString &key, const QString &defaultValue) {

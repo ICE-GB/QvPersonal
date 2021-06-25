@@ -26,23 +26,15 @@ class VlessOutboundEditor
     void SetContent(const IOProtocolSettings &content) override
     {
         this->content = content;
-        if (content["vnext"].toArray().isEmpty())
-            content["vnext"] = QJsonArray{ QJsonObject{} };
-        vless.loadJson(content["vnext"].toArray().first().toObject());
-        if (vless.users->isEmpty())
-            vless.users->push_back({});
-        vless.users->first().encryption.ReadWriteBind(vLessSecurityCombo, "currentText", &QComboBox::currentIndexChanged);
-        vless.users->first().flow.ReadWriteBind(flowCombo, "currentText", &QComboBox::currentIndexChanged);
-        vless.users->first().id.ReadWriteBind(vLessIDTxt, "text", &QLineEdit::textEdited);
+        vless.loadJson(content);
+        vless.encryption.ReadWriteBind(vLessSecurityCombo, "currentText", &QComboBox::currentIndexChanged);
+        vless.flow.ReadWriteBind(flowCombo, "currentText", &QComboBox::currentIndexChanged);
+        vless.id.ReadWriteBind(vLessIDTxt, "text", &QLineEdit::textEdited);
     }
 
     const IOProtocolSettings GetContent() const override
     {
-        auto result = content;
-        QJsonArray vnext;
-        vnext.append(vless.toJson());
-        result.insert("vnext", vnext);
-        return result;
+        return IOProtocolSettings{ vless.toJson() };
     }
 
   protected:

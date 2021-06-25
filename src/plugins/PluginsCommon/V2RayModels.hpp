@@ -314,6 +314,7 @@ namespace Qv2ray::Models
 
         Bindable<QString> method{ QStringLiteral("aes-256-gcm") };
         Bindable<QString> password;
+
         QJS_FUNC_JSON(P(method, address, port, password))
         QJS_FUNC_COMPARE(ShadowSocksClientObject, method, address, port, password)
     };
@@ -322,20 +323,14 @@ namespace Qv2ray::Models
     // VLESS Server
     struct VLESSClientObject
     {
-        struct UserObject
-        {
-            Bindable<QString> id;
-            Bindable<QString> encryption{ QStringLiteral("none") };
-            Bindable<QString> flow;
-            QJS_FUNC_JSON(P(encryption, id, flow))
-            QJS_FUNC_COMPARE(UserObject, encryption, id, flow)
-        };
-
         Bindable<QString> address;
         Bindable<int> port = 0;
-        Bindable<QList<UserObject>> users;
-        QJS_FUNC_JSON(P(address, port, users))
-        QJS_FUNC_COMPARE(VLESSClientObject, address, port, users)
+
+        Bindable<QString> id;
+        Bindable<QString> encryption{ QStringLiteral("none") };
+        Bindable<QString> flow;
+
+        QJS_FUNC_JSON(P(address, port, id, encryption, flow))
     };
 
     //
@@ -343,21 +338,15 @@ namespace Qv2ray::Models
     constexpr auto VMESS_USER_ALTERID_DEFAULT = 0;
     struct VMessClientObject
     {
-        struct UserObject
-        {
-            Bindable<QString> id;
-            Bindable<int> alterId{ VMESS_USER_ALTERID_DEFAULT };
-            Bindable<QString> security{ QStringLiteral("auto") };
-            Bindable<int> level{ 0 };
-            QJS_FUNC_JSON(F(id, alterId, security, level))
-            QJS_FUNC_COMPARE(UserObject, id, alterId, security, level)
-        };
-
         Bindable<QString> address;
         Bindable<int> port{ 0 };
-        Bindable<QList<UserObject>> users;
-        QJS_FUNC_JSON(F(address, port, users))
-        QJS_FUNC_COMPARE(VMessClientObject, address, port, users)
+
+        Bindable<QString> id;
+        Bindable<int> alterId{ VMESS_USER_ALTERID_DEFAULT };
+        Bindable<QString> security{ QStringLiteral("auto") };
+
+        QJS_FUNC_JSON(F(address, port, id, alterId, security))
+        //        QJS_FUNC_COMPARE(VMessClientObject, address, port )
     };
 
 } // namespace Qv2ray::models
