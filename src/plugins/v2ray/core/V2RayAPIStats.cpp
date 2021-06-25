@@ -15,9 +15,24 @@ using grpc::Status;
 #define QV_MODULE_NAME "gRPCBackend"
 
 constexpr auto Qv2ray_GRPC_ERROR_RETCODE = -1;
-const QvAPIDataTypeConfig DefaultInboundAPIConfig{ { StatisticsObject::API_ALL_INBOUND, { "dokodemo-door", "http", "socks" } } };
-const QvAPIDataTypeConfig DefaultOutboundAPIConfig{ { StatisticsObject::API_OUTBOUND_PROXY, { "dns", "http", "shadowsocks", "socks", "vmess", "vless", "trojan" } },
-                                                    { StatisticsObject::API_OUTBOUND_DIRECT, { "freedom" } } };
+const QvAPIDataTypeConfig DefaultInboundAPIConfig{ { StatisticsObject::API_ALL_INBOUND,
+                                                     {
+                                                         QStringLiteral("dokodemo-door"), //
+                                                         QStringLiteral("http"),          //
+                                                         QStringLiteral("socks")          //
+                                                     } } };
+
+const QvAPIDataTypeConfig DefaultOutboundAPIConfig{ { StatisticsObject::API_OUTBOUND_PROXY,
+                                                      {
+                                                          QStringLiteral("dns"),         //
+                                                          QStringLiteral("http"),        //
+                                                          QStringLiteral("shadowsocks"), //
+                                                          QStringLiteral("socks"),       //
+                                                          QStringLiteral("vmess"),       //
+                                                          QStringLiteral("vless"),       //
+                                                          QStringLiteral("trojan")       //
+                                                      } },
+                                                    { StatisticsObject::API_OUTBOUND_DIRECT, { QStringLiteral("freedom") } } };
 
 APIWorker::APIWorker()
 {
@@ -82,7 +97,7 @@ void APIWorker::process()
             {
 #ifndef QV2RAY_NO_GRPC
                 const QString channelAddress = QStringLiteral("127.0.0.1:1919810"); // + QSTRN(GlobalConfig.kernelConfig->statsPort);
-                QvPluginLog("gRPC Version: " + QString::fromStdString(grpc::Version()));
+                QvPluginLog(QStringLiteral("gRPC Version: ") + QString::fromStdString(grpc::Version()));
                 grpc_channel = grpc::CreateChannel(channelAddress.toStdString(), grpc::InsecureChannelCredentials());
                 stats_service_stub = v2ray::core::app::stats::command::StatsService::NewStub(grpc_channel);
                 dialed = true;
@@ -107,9 +122,9 @@ void APIWorker::process()
             bool hasError = false;
             for (const auto &[tag, config] : tagProtocolConfig)
             {
-                const auto prefix = config.type == StatisticsObject::API_ALL_INBOUND ? "inbound" : "outbound";
-                const auto value_up = CallStatsAPIByName(prefix + ">>>" % tag % ">>>traffic>>>uplink");
-                const auto value_down = CallStatsAPIByName(prefix + ">>>" % tag % ">>>traffic>>>downlink");
+                const auto prefix = config.type == StatisticsObject::API_ALL_INBOUND ? QStringLiteral("inbound") : QStringLiteral("outbound");
+                const auto value_up = CallStatsAPIByName(prefix + QStringLiteral(">>>") + tag + QStringLiteral(">>>traffic>>>uplink"));
+                const auto value_down = CallStatsAPIByName(prefix + QStringLiteral(">>>") + tag + QStringLiteral(">>>traffic>>>downlink"));
                 hasError = hasError || value_up == Qv2ray_GRPC_ERROR_RETCODE || value_down == Qv2ray_GRPC_ERROR_RETCODE;
                 statsResult[config.type].up += std::max(value_up, 0LL);
                 statsResult[config.type].down += std::max(value_down, 0LL);
@@ -136,7 +151,7 @@ qint64 APIWorker::CallStatsAPIByName(const QString &name)
     const auto status = stats_service_stub->GetStats(&context, request, &response);
     if (!status.ok())
     {
-        QvPluginLog("API call returns:" + QString::number(status.error_code()) + " (" + QString::fromStdString(status.error_message()) + ")");
+        QvPluginLog(QStringLiteral("API call returns:") + QString::number(status.error_code()) + QStringLiteral(":") + QString::fromStdString(status.error_message()));
         return Qv2ray_GRPC_ERROR_RETCODE;
     }
     else

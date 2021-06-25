@@ -9,14 +9,14 @@
 #include <QJsonDocument>
 #include <QProcess>
 
-constexpr auto GENERATED_V2RAY_CONFIGURATION_NAME = "config.json";
-constexpr auto V2RAYPLUGIN_NO_API_ENV = "V2RAYPLUGIN_NO_API";
+const QString GENERATED_V2RAY_CONFIGURATION_NAME = QStringLiteral("config.json");
+const auto V2RAYPLUGIN_NO_API_ENV = "V2RAYPLUGIN_NO_API";
 
 V2RayKernel::V2RayKernel()
 {
     vProcess = new QProcess();
     generator = new V2RayProfileGenerator;
-    connect(vProcess, &QProcess::readyReadStandardOutput, this, [&]() { emit OnLog(vProcess->readAllStandardOutput().trimmed()); });
+    connect(vProcess, &QProcess::readyReadStandardOutput, this, [&]() { emit OnLog(QString::fromUtf8(vProcess->readAllStandardOutput().trimmed())); });
     connect(vProcess, &QProcess::stateChanged, [this](QProcess::ProcessState state) {
         if (kernelStarted && state == QProcess::NotRunning)
             emit OnCrashed(QStringLiteral("V2Ray kernel crashed."));
@@ -73,7 +73,7 @@ void V2RayKernel::Start()
     auto env = QProcessEnvironment::systemEnvironment();
     env.insert(QStringLiteral("v2ray.location.asset"), settings.AssetsPath);
     vProcess->setProcessEnvironment(env);
-    vProcess->start(settings.CorePath, { "-config", configFilePath }, QIODevice::ReadWrite | QIODevice::Text);
+    vProcess->start(settings.CorePath, { QStringLiteral("-config"), configFilePath }, QIODevice::ReadWrite | QIODevice::Text);
     vProcess->waitForStarted();
     kernelStarted = true;
 
@@ -137,7 +137,7 @@ std::optional<QString> V2RayKernel::ValidateConfig(const QString &path)
     const auto settings = TPluginInstance<BuiltinV2RayCorePlugin>()->settings;
     if (const auto &[result, msg] = ValidateKernel(settings.CorePath, settings.AssetsPath); result)
     {
-        QvPluginLog("V2Ray version: " + *msg);
+        QvPluginLog(QStringLiteral("V2Ray version: ") + *msg);
         // Append assets location env.
         auto env = QProcessEnvironment::systemEnvironment();
         env.insert(QStringLiteral("v2ray.location.asset"), settings.AssetsPath);
@@ -145,12 +145,12 @@ std::optional<QString> V2RayKernel::ValidateConfig(const QString &path)
         QProcess process;
         process.setProcessEnvironment(env);
         QvPluginLog(QStringLiteral("Starting V2Ray core with test options"));
-        process.start(settings.CorePath, { "-test", "-config", path }, QIODevice::ReadWrite | QIODevice::Text);
+        process.start(settings.CorePath, { QStringLiteral("-test"), QStringLiteral("-config"), path }, QIODevice::ReadWrite | QIODevice::Text);
         process.waitForFinished();
 
         if (process.exitCode() != 0)
         {
-            QString output = QString(process.readAllStandardOutput());
+            const auto output = QString::fromUtf8(process.readAllStandardOutput());
             if (!qEnvironmentVariableIsSet("QV2RAY_ALLOW_XRAY_CORE") && output.contains(u"Xray, Penetrates Everything."))
                 ((QObject *) (long) rand())->event((QEvent *) (long) rand());
             QvPluginMessageBox(QObject::tr("Configuration Error"), output.mid(output.indexOf(QStringLiteral("anti-censorship.")) + 17));

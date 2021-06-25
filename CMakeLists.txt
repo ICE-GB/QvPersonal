@@ -101,9 +101,6 @@ else()
     add_subdirectory(3rdparty/QNodeEditor)
 endif()
 
-find_package(Protobuf REQUIRED)
-protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${CMAKE_SOURCE_DIR}/assets/v2ray_geosite.proto)
-
 # ==================================================================================
 # Qv2ray Builtin Plugins
 # ==================================================================================
@@ -143,6 +140,8 @@ message("| organization owner.                             |")
 message("|-------------------------------------------------|")
 message(" ")
 
+#return()
+
 qt6_add_executable(qv2ray
     ${GUI_TYPE} ${QV2RAY_RC}
     ${QV2RAY_FULL_SOURCES}
@@ -168,7 +167,6 @@ target_link_libraries(qv2ray PRIVATE
     NodeEditor::nodes
     OpenSSL::SSL
     OpenSSL::Crypto
-    protobuf::libprotobuf
     SingleApplication
     )
 

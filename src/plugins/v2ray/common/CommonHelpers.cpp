@@ -2,11 +2,6 @@
 
 #include <QRegularExpression>
 
-QStringList SplitLines(const QString &_string)
-{
-    return _string.split(QRegularExpression(QStringLiteral("[\r\n]")), Qt::SkipEmptyParts);
-}
-
 std::pair<bool, std::optional<QString>> ValidateKernel(const QString &corePath, const QString &assetsPath)
 {
     QFile coreFile(corePath);
@@ -24,8 +19,8 @@ std::pair<bool, std::optional<QString>> ValidateKernel(const QString &corePath, 
     //
     // Check file existance.
     // From: https://www.v2fly.org/chapter_02/env.html#asset-location
-    bool hasGeoIP = QDir(assetsPath).entryList().contains("geoip.dat");
-    bool hasGeoSite = QDir(assetsPath).entryList().contains("geosite.dat");
+    bool hasGeoIP = QDir(assetsPath).entryList().contains(QStringLiteral("geoip.dat"));
+    bool hasGeoSite = QDir(assetsPath).entryList().contains(QStringLiteral("geosite.dat"));
 
     if (!hasGeoIP && !hasGeoSite)
         return { false, QObject::tr("V2Ray assets path is not valid.") };
@@ -46,7 +41,7 @@ std::pair<bool, std::optional<QString>> ValidateKernel(const QString &corePath, 
     proc.setNativeArguments("--version");
     proc.start();
 #else
-    proc.start(corePath, { "--version" });
+    proc.start(corePath, { QStringLiteral("--version") });
 #endif
     proc.waitForStarted();
     proc.waitForFinished();
@@ -57,8 +52,8 @@ std::pair<bool, std::optional<QString>> ValidateKernel(const QString &corePath, 
 
     const auto output = proc.readAllStandardOutput();
 
-    if (SplitLines(output).isEmpty())
+    if (output.split('\n').isEmpty())
         return { false, QObject::tr("V2Ray core returns empty string.") };
 
-    return { true, SplitLines(output).at(0) };
+    return { true, QString::fromUtf8(output.split('\n').first()) };
 }

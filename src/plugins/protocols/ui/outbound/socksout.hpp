@@ -47,5 +47,5 @@ class SocksOutboundEditor
     void changeEvent(QEvent *e) override;
 
   private:
-    Qv2ray::Models::SocksServerObject socks;
+    Qv2ray::Models::SocksClientObject socks;
 };

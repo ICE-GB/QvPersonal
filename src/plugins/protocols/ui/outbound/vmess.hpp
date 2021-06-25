@@ -35,7 +35,7 @@ class VmessOutboundEditor
     }
 
   private:
-    Qv2ray::Models::VMessServerObject vmess;
+    Qv2ray::Models::VMessClientObject vmess;
 
   protected:
     void changeEvent(QEvent *e) override;

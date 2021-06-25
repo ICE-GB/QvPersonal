@@ -29,7 +29,7 @@ namespace Qv2ray::Models
             ips = _ips;
         }
         Bindable<QString> domainStrategy;
-        Bindable<QString> domainMatcher{ "mph" };
+        Bindable<QString> domainMatcher{ QStringLiteral("mph") };
         Bindable<Detail> domains;
         Bindable<Detail> ips;
         QJS_FUNC_COMPARE(RouteMatrixConfig, domainStrategy, domainMatcher, domains, ips);
@@ -56,7 +56,7 @@ namespace Qv2ray::Models
         Bindable<QString> tag;
         Bindable<bool> disableCache{ false };
         Bindable<bool> disableFallback{ false };
-        Bindable<QString> queryStrategy{ "UseIP" };
+        Bindable<QString> queryStrategy{ QStringLiteral("UseIP") };
         QJS_FUNC_COMPARE(DNSObject, hosts, servers, clientIp, tag, disableCache, disableFallback, queryStrategy);
         QJS_FUNC_JSON(F(hosts, servers, clientIp, tag, disableCache, disableFallback, queryStrategy));
         static auto fromJson(const QJsonObject &o)
@@ -69,7 +69,7 @@ namespace Qv2ray::Models
 
     struct FakeDNSObject
     {
-        Bindable<QString> ipPool{ "198.18.0.0/15" };
+        Bindable<QString> ipPool{ QStringLiteral("198.18.0.0/15") };
         Bindable<int> poolSize{ 65535 };
         QJS_FUNC_COMPARE(FakeDNSObject, ipPool, poolSize);
         QJS_FUNC_JSON(F(ipPool, poolSize))
@@ -85,40 +85,40 @@ namespace Qv2ray::Models
     {
         struct HTTPRequestObject
         {
-            Bindable<QString> version{ "1.1" };
-            Bindable<QString> method{ "GET" };
-            Bindable<QList<QString>> path{ { "/" } };
+            Bindable<QString> version{ QStringLiteral("1.1") };
+            Bindable<QString> method{ QStringLiteral("GET") };
+            Bindable<QList<QString>> path{ { QStringLiteral("/") } };
             Bindable<QMap<QString, QStringList>> headers{
-                { { "Host", { "www.baidu.com", "www.bing.com" } },
-                  { "User-Agent",
-                    { "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36",
-                      "Mozilla/5.0 (iPhone; CPU iPhone OS 10_0_2 like Mac OS X) AppleWebKit/601.1 (KHTML, like Gecko) CriOS/53.0.2785.109 Mobile/14A456 Safari/601.1.46" } },
-                  { "Accept-Encoding", { "gzip, deflate" } },
-                  { "Connection", { "keep-alive" } },
-                  { "Pragma", { "no-cache" } } }
+                { { QStringLiteral("Host"), { QStringLiteral("www.baidu.com"), QStringLiteral("www.bing.com") } },
+                  { QStringLiteral("User-Agent"),
+                    { QStringLiteral("Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36"),
+                      QStringLiteral(
+                          "Mozilla/5.0 (iPhone; CPU iPhone OS 10_0_2 like Mac OS X) AppleWebKit/601.1 (KHTML, like Gecko) CriOS/53.0.2785.109 Mobile/14A456 Safari/601.1.46") } },
+                  { QStringLiteral("Accept-Encoding"), { QStringLiteral("gzip, deflate") } },
+                  { QStringLiteral("Connection"), { QStringLiteral("keep-alive") } },
+                  { QStringLiteral("Pragma"), { QStringLiteral("no-cache") } } }
             };
-
             QJS_FUNC_COMPARE(HTTPRequestObject, version, method, path, headers);
             QJS_FUNC_JSON(F(version, method, path, headers))
         };
 
         struct HTTPResponseObject
         {
-            Bindable<QString> version{ "1.1" };
-            Bindable<QString> status{ "200" };
-            Bindable<QString> reason{ "OK" };
-            Bindable<QMap<QString, QStringList>> headers{ { { "Content-Type", { "application/octet-stream", "video/mpeg" } },
-                                                            { "Transfer-Encoding", { "chunked" } },
-                                                            { "Connection", { "keep-alive" } },
-                                                            { "Pragma", { "no-cache" } } } };
-
+            Bindable<QString> version{ QStringLiteral("1.1") };
+            Bindable<QString> status{ QStringLiteral("200") };
+            Bindable<QString> reason{ QStringLiteral("OK") };
+            Bindable<QMap<QString, QStringList>> headers{ { { QStringLiteral("Content-Type"),
+                                                              { QStringLiteral("application/octet-stream"), QStringLiteral("video/mpeg") } },
+                                                            { QStringLiteral("Transfer-Encoding"), { QStringLiteral("chunked") } },
+                                                            { QStringLiteral("Connection"), { QStringLiteral("keep-alive") } },
+                                                            { QStringLiteral("Pragma"), { QStringLiteral("no-cache") } } } };
             QJS_FUNC_COMPARE(HTTPResponseObject, version, reason, status, headers);
             QJS_FUNC_JSON(F(version, reason, status, status))
         };
 
         struct TCPHeader_Internal
         {
-            Bindable<QString> type{ "none" };
+            Bindable<QString> type{ QStringLiteral("none") };
             Bindable<HTTPRequestObject> request;
             Bindable<HTTPResponseObject> response;
             QJS_FUNC_COMPARE(TCPHeader_Internal, type, request, response);
@@ -127,7 +127,7 @@ namespace Qv2ray::Models
 
         struct ObfsHeaderObject
         {
-            Bindable<QString> type{ "none" };
+            Bindable<QString> type{ QStringLiteral("none") };
             QJS_FUNC_COMPARE(ObfsHeaderObject, type);
             QJS_FUNC_JSON(F(type))
         };
@@ -156,7 +156,7 @@ namespace Qv2ray::Models
 
         struct WebSocketObject
         {
-            Bindable<QString> path{ "/" };
+            Bindable<QString> path{ QStringLiteral("/") };
             Bindable<QMap<QString, QString>> headers;
             Bindable<int> maxEarlyData{ 0 };
             Bindable<bool> useBrowserForwarding{ false };
@@ -168,7 +168,7 @@ namespace Qv2ray::Models
         struct HttpObject
         {
             Bindable<QList<QString>> host;
-            Bindable<QString> path{ "/" };
+            Bindable<QString> path{ QStringLiteral("/") };
             Bindable<QString> method;
             QJS_FUNC_COMPARE(HttpObject, host, path, method);
             QJS_FUNC_JSON(F(host, path, method))
@@ -176,7 +176,7 @@ namespace Qv2ray::Models
 
         struct DomainSocketObject
         {
-            Bindable<QString> path{ "/" };
+            Bindable<QString> path{ QStringLiteral("/") };
             Bindable<bool> abstract{ false };
             Bindable<bool> padding{ false };
             QJS_FUNC_COMPARE(DomainSocketObject, path, abstract, padding);
@@ -185,7 +185,7 @@ namespace Qv2ray::Models
 
         struct QuicObject
         {
-            Bindable<QString> security{ "none" };
+            Bindable<QString> security{ QStringLiteral("none") };
             Bindable<QString> key;
             Bindable<ObfsHeaderObject> header;
             QJS_FUNC_COMPARE(QuicObject, security, key, header);
@@ -194,7 +194,7 @@ namespace Qv2ray::Models
 
         struct gRPCObject
         {
-            Bindable<QString> serviceName{ "GunService" };
+            Bindable<QString> serviceName{ QStringLiteral("GunService") };
             QJS_FUNC_COMPARE(gRPCObject, serviceName);
             QJS_FUNC_JSON(F(serviceName))
         };
@@ -204,14 +204,14 @@ namespace Qv2ray::Models
             Bindable<int> mark{ 255 };
             Bindable<int> tcpKeepAliveInterval{ 0 };
             Bindable<bool> tcpFastOpen{ false };
-            Bindable<QString> tproxy{ "off" };
+            Bindable<QString> tproxy{ QStringLiteral("off") };
             QJS_FUNC_COMPARE(SockoptObject, mark, tcpKeepAliveInterval, tcpFastOpen, tproxy);
             QJS_FUNC_JSON(F(mark, tcpKeepAliveInterval, tcpFastOpen, tproxy))
         };
 
         struct CertificateObject
         {
-            Bindable<QString> usage{ "encipherment" };
+            Bindable<QString> usage{ QStringLiteral("encipherment") };
             Bindable<QString> certificateFile;
             Bindable<QString> keyFile;
             Bindable<QList<QString>> certificate;
@@ -245,8 +245,8 @@ namespace Qv2ray::Models
 
     struct StreamSettingsObject
     {
-        Bindable<QString> network{ "tcp" };
-        Bindable<QString> security{ "none" };
+        Bindable<QString> network{ QStringLiteral("tcp") };
+        Bindable<QString> security{ QStringLiteral("none") };
         Bindable<transfer::SockoptObject> sockopt;
         Bindable<transfer::TLSObject> tlsSettings;
         Bindable<transfer::XTLSObject> xtlsSettings;
@@ -285,46 +285,47 @@ namespace Qv2ray::Models
 
     //
     // Socks, OutBound
-    struct SocksServerObject
+    struct SocksClientObject
     {
-        Bindable<QString> address{ "0.0.0.0" };
+        Bindable<QString> address{ QStringLiteral("0.0.0.0") };
         Bindable<int> port = 0;
         Bindable<QList<HTTPSOCKSUserObject>> users;
         QJS_FUNC_JSON(P(address, port, users));
-        QJS_FUNC_COMPARE(SocksServerObject, address, port, users);
+        QJS_FUNC_COMPARE(SocksClientObject, address, port, users);
     };
 
     //
     // Http, OutBound
-    struct HttpServerObject
+    struct HttpClientObject
     {
-        Bindable<QString> address{ "0.0.0.0" };
+        Bindable<QString> address{ QStringLiteral("0.0.0.0") };
         Bindable<int> port = 0;
         Bindable<QList<HTTPSOCKSUserObject>> users;
         QJS_FUNC_JSON(P(address, port, users))
-        QJS_FUNC_COMPARE(HttpServerObject, address, port, users);
+        QJS_FUNC_COMPARE(HttpClientObject, address, port, users);
     };
 
     //
     // ShadowSocks Server
-    struct ShadowSocksServerObject
+    struct ShadowSocksClientObject
     {
-        Bindable<QString> address{ "0.0.0.0" };
-        Bindable<QString> method{ "aes-256-gcm" };
-        Bindable<QString> password;
+        Bindable<QString> address{ QStringLiteral("0.0.0.0") };
         Bindable<int> port{ 0 };
+
+        Bindable<QString> method{ QStringLiteral("aes-256-gcm") };
+        Bindable<QString> password;
         QJS_FUNC_JSON(P(method, address, port, password))
-        QJS_FUNC_COMPARE(ShadowSocksServerObject, method, address, port, password)
+        QJS_FUNC_COMPARE(ShadowSocksClientObject, method, address, port, password)
     };
 
     //
     // VLESS Server
-    struct VLESSServerObject
+    struct VLESSClientObject
     {
         struct UserObject
         {
             Bindable<QString> id;
-            Bindable<QString> encryption{ "none" };
+            Bindable<QString> encryption{ QStringLiteral("none") };
             Bindable<QString> flow;
             QJS_FUNC_JSON(P(encryption, id, flow))
             QJS_FUNC_COMPARE(UserObject, encryption, id, flow)
@@ -334,19 +335,19 @@ namespace Qv2ray::Models
         Bindable<int> port = 0;
         Bindable<QList<UserObject>> users;
         QJS_FUNC_JSON(P(address, port, users))
-        QJS_FUNC_COMPARE(VLESSServerObject, address, port, users)
+        QJS_FUNC_COMPARE(VLESSClientObject, address, port, users)
     };
 
     //
     // VMess Server
     constexpr auto VMESS_USER_ALTERID_DEFAULT = 0;
-    struct VMessServerObject
+    struct VMessClientObject
     {
         struct UserObject
         {
             Bindable<QString> id;
             Bindable<int> alterId{ VMESS_USER_ALTERID_DEFAULT };
-            Bindable<QString> security{ "auto" };
+            Bindable<QString> security{ QStringLiteral("auto") };
             Bindable<int> level{ 0 };
             QJS_FUNC_JSON(F(id, alterId, security, level))
             QJS_FUNC_COMPARE(UserObject, id, alterId, security, level)
@@ -356,7 +357,7 @@ namespace Qv2ray::Models
         Bindable<int> port{ 0 };
         Bindable<QList<UserObject>> users;
         QJS_FUNC_JSON(F(address, port, users))
-        QJS_FUNC_COMPARE(VMessServerObject, address, port, users)
+        QJS_FUNC_COMPARE(VMessClientObject, address, port, users)
     };
 
 } // namespace Qv2ray::models

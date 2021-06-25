@@ -45,5 +45,5 @@ class ShadowsocksOutboundEditor
     void changeEvent(QEvent *e) override;
 
   private:
-    Qv2ray::Models::ShadowSocksServerObject shadowsocks;
+    Qv2ray::Models::ShadowSocksClientObject shadowsocks;
 };

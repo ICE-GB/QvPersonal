@@ -56,6 +56,31 @@
 
 #include <QHostAddress>
 
+std::string to_v2ray_addr(const QHostAddress &addr)
+{
+    if (addr.protocol() == QAbstractSocket::IPv4Protocol)
+    {
+        const auto a = addr.toIPv4Address();
+        return { (char) ((a >> 24) & 0b11111111), (char) ((a >> 16) & 0b11111111), (char) ((a >> 8) & 0b11111111), (char) ((a >> 0) & 0b11111111) };
+    }
+    if (addr.protocol() == QAbstractSocket::IPv6Protocol)
+    {
+        const auto a = addr.toIPv6Address();
+        return { (char) a[0], (char) a[1], (char) a[2],  (char) a[3],  (char) a[4],  (char) a[5],  (char) a[6],  (char) a[7],
+                 (char) a[8], (char) a[9], (char) a[10], (char) a[11], (char) a[12], (char) a[13], (char) a[14], (char) a[15] };
+    }
+    assert(false);
+}
+
+void setIpOrDomin(const QString &ipOrDomain, ::v2ray::core::common::net::IPOrDomain *d)
+{
+    const QHostAddress addr{ ipOrDomain };
+    if (addr.protocol() == QAbstractSocket::IPv4Protocol || addr.protocol() == QAbstractSocket::IPv6Protocol)
+        d->set_ip(to_v2ray_addr(addr));
+    else
+        d->set_domain(ipOrDomain.toStdString());
+}
+
 QByteArray V2RayProfileGenerator::GenerateConfiguration(const ProfileContent &profile)
 {
     v2ray::core::Config config;
@@ -81,9 +106,7 @@ void V2RayProfileGenerator::GenerateStreamSettings(const IOStreamSettings &s, ::
     vs->set_security_type(stream.security->toLower().toStdString());
 
     if (stream.security->toLower() == QStringLiteral("none") || stream.security->toLower().isEmpty())
-    {
-        // Do nothing
-    }
+        /* Do nothing */;
 
     if (stream.security->toLower() == QStringLiteral("tls"))
     {
@@ -156,6 +179,8 @@ void V2RayProfileGenerator::GenerateStreamSettings(const IOStreamSettings &s, ::
         httpConfig.set_method(stream.httpSettings->method->toStdString());
 
         // TODO HTTP Headers, Not implemented in GUI
+        // httpConfig.mutable_header();
+
         vs->add_transport_settings()->mutable_settings()->PackFrom(httpConfig);
     }
 
@@ -251,27 +276,8 @@ void V2RayProfileGenerator::GenerateInboundConfig(const InboundObject &in, ::v2r
     vin->set_tag(in.name.toStdString());
 
     v2ray::core::app::proxyman::ReceiverConfig recv;
-    const QHostAddress addr{ in.listenAddress };
-    const auto ip2v2rayaddr = [](const QHostAddress &addr) -> std::string {
-        if (addr.protocol() == QAbstractSocket::IPv4Protocol)
-        {
-            const auto a = addr.toIPv4Address();
-            return { (char) ((a >> 24) & 0b11111111), (char) ((a >> 16) & 0b11111111), (char) ((a >> 8) & 0b11111111), (char) ((a >> 0) & 0b11111111) };
-        }
-        if (addr.protocol() == QAbstractSocket::IPv6Protocol)
-        {
-            const auto a = addr.toIPv6Address();
-            return { (char) a[0], (char) a[1], (char) a[2],  (char) a[3],  (char) a[4],  (char) a[5],  (char) a[6],  (char) a[7],
-                     (char) a[8], (char) a[9], (char) a[10], (char) a[11], (char) a[12], (char) a[13], (char) a[14], (char) a[15] };
-        }
-        assert(false);
-    };
 
-    // inbound.listen
-    if (addr.protocol() == QAbstractSocket::IPv4Protocol || addr.protocol() == QAbstractSocket::IPv6Protocol)
-        recv.mutable_listen()->set_ip(ip2v2rayaddr(addr));
-    else
-        recv.mutable_listen()->set_domain(in.listenAddress.toStdString());
+    setIpOrDomin(in.listenAddress, recv.mutable_listen());
 
     // inbound.port
     recv.mutable_port_range()->set_from(in.listenPort.from);
@@ -279,6 +285,9 @@ void V2RayProfileGenerator::GenerateInboundConfig(const InboundObject &in, ::v2r
 
     // inbound.sniffing
     recv.mutable_sniffing_settings()->set_enabled(in.options[QStringLiteral("sniffing")][QStringLiteral("enabled")].toBool());
+
+    // inbound.sniffing.metadataOnly
+    recv.mutable_sniffing_settings()->set_metadata_only(in.options[QStringLiteral("sniffing")][QStringLiteral("metadataOnly")].toBool());
 
     // inbound.sniffing.destOverride
     for (const auto &str : in.options[QStringLiteral("sniffing")][QStringLiteral("destOverride")].toArray())
@@ -295,39 +304,289 @@ void V2RayProfileGenerator::GenerateInboundConfig(const InboundObject &in, ::v2r
 
     // ========================= Inbound Protocol Settings =========================
 
+#define _in(x) in.inboundSettings.protocolSettings[QStringLiteral(x)]
     if (in.inboundSettings.protocol == QStringLiteral("http"))
     {
-        v2ray::core::proxy::http::ServerConfig http;
-        Qv2ray::Models::HttpServerObject server;
-        server.loadJson(in.inboundSettings.protocolSettings);
+        using namespace v2ray::core::proxy::http;
+        ServerConfig http;
 
-        for (const auto &[user, pass, level] : *server.users)
-        {
-            Q_UNUSED(level);
-            http.mutable_accounts()->insert(user->toStdString(), pass->toStdString());
-        }
+        // WARN This is client object, which is used for outbounds, the existence here is just simplify the parser of users[].
+        Qv2ray::Models::HttpClientObject tmpClient;
+        tmpClient.loadJson(in.inboundSettings.protocolSettings);
 
-        // http.set_allow_transparent();
-        // http.set_user_level()
-        // http.set_timeout()
+        for (const auto &[user, pass, level] : *tmpClient.users)
+            http.mutable_accounts()->operator[](user->toStdString()) = pass->toStdString();
+
+        http.set_allow_transparent(_in("allowTransparent").toBool());
+
+        // TODO UserLevel Not Implemented
+        // http.set_user_level();
+
+        // Timeout is deprecated
+        // http.set_timeout(_in["timeout"].toInt());
+
         vin->mutable_proxy_settings()->PackFrom(http);
         return;
     }
 
     if (in.inboundSettings.protocol == QStringLiteral("socks"))
     {
-    }
-    if (in.inboundSettings.protocol == QStringLiteral("dokodemo-door"))
-    {
+        using namespace v2ray::core::proxy::socks;
+        ServerConfig socks;
+        // WARN See above for Qv2ray::Models::HttpClientObject
+        Qv2ray::Models::SocksClientObject tmpClient;
+        tmpClient.loadJson(in.inboundSettings.protocolSettings);
+
+        for (const auto &[user, pass, level] : *tmpClient.users)
+            socks.mutable_accounts()->operator[](user->toStdString()) = pass->toStdString();
+        socks.mutable_address()->set_ip(_in("ip").toString().toStdString());
+        socks.set_udp_enabled(_in("udp").toBool());
+        socks.set_auth_type(_in("auth").toString() == QStringLiteral("noauth") ? NO_AUTH : PASSWORD);
+
+        vin->mutable_proxy_settings()->PackFrom(socks);
     }
 
+    if (in.inboundSettings.protocol == QStringLiteral("dokodemo-door"))
+    {
+        using namespace v2ray::core::proxy::dokodemo;
+        Config doko;
+        setIpOrDomin(_in("address").toString(), doko.mutable_address());
+        doko.set_port(_in("port").toInt());
+        for (const auto &n : _in("networks").toString().split(QChar::fromLatin1(',')))
+            if (n == QStringLiteral("tcp"))
+                doko.add_networks(v2ray::core::common::net::Network::TCP);
+            else if (n == QStringLiteral("udp"))
+                doko.add_networks(v2ray::core::common::net::Network::UDP);
+        doko.set_follow_redirect(_in("followRedirect").toBool());
+
+        vin->mutable_proxy_settings()->PackFrom(doko);
+    }
+#undef _in
     // TODO VMess, Shadowsocks, Trojan, VLESS unsupported.
 }
 
 void V2RayProfileGenerator::GenerateOutboundConfig(const OutboundObject &out, v2ray::core::OutboundHandlerConfig *vout)
 {
     vout->set_tag(out.name.toStdString());
-    vout->mutable_sender_settings();
-
     v2ray::core::app::proxyman::SenderConfig send;
+    GenerateStreamSettings(out.outboundSettings.streamSettings, send.mutable_stream_settings());
+
+    // TODO via
+    // send.mutable_via();
+    send.mutable_multiplex_settings()->set_enabled(out.muxSettings.enabled);
+    send.mutable_multiplex_settings()->set_concurrency(out.muxSettings.concurrency);
+    vout->mutable_sender_settings()->PackFrom(send);
+
+#define _out(x) out.outboundSettings.protocolSettings[QStringLiteral(x)]
+    if (out.outboundSettings.protocol == QStringLiteral("blackhole"))
+    {
+        using namespace v2ray::core::proxy::blackhole;
+        Config conf;
+        if (_out("response")[QStringLiteral("type")].toString() == QStringLiteral("none"))
+            conf.mutable_response()->PackFrom(NoneResponse{});
+        if (_out("response")[QStringLiteral("type")].toString() == QStringLiteral("http"))
+            conf.mutable_response()->PackFrom(HTTPResponse{});
+        vout->mutable_proxy_settings()->PackFrom(conf);
+    }
+
+    if (out.outboundSettings.protocol == QStringLiteral("dns"))
+    {
+        using namespace v2ray::core::proxy::dns;
+        Config conf;
+        if (!_out("network").isUndefined())
+        {
+            if (_out("network")[QStringLiteral("network")].toString() == QStringLiteral("tcp"))
+                conf.mutable_server()->set_network(v2ray::core::common::net::TCP);
+            else if (_out("network")[QStringLiteral("network")].toString() == QStringLiteral("udp"))
+                conf.mutable_server()->set_network(v2ray::core::common::net::UDP);
+        }
+
+        if (!_out("address").isUndefined())
+            setIpOrDomin(_out("network").toString(), conf.mutable_server()->mutable_address());
+        if (!_out("port").isUndefined())
+            conf.mutable_server()->set_port(_out("port").toInt());
+        vout->mutable_proxy_settings()->PackFrom(conf);
+    }
+
+    if (out.outboundSettings.protocol == QStringLiteral("freedom"))
+    {
+        using namespace v2ray::core::proxy::freedom;
+        Config conf;
+        conf.set_domain_strategy([](const QString &ds) {
+            if (ds == QStringLiteral("AsIs"))
+                return Config_DomainStrategy::Config_DomainStrategy_AS_IS;
+            if (ds == QStringLiteral("UseIP"))
+                return Config_DomainStrategy::Config_DomainStrategy_USE_IP;
+            if (ds == QStringLiteral("UseIPv4"))
+                return Config_DomainStrategy::Config_DomainStrategy_USE_IP4;
+            if (ds == QStringLiteral("UseIPv6"))
+                return Config_DomainStrategy::Config_DomainStrategy_USE_IP6;
+            return Config_DomainStrategy::Config_DomainStrategy_AS_IS;
+        }(_out("domainStrategy").toString(QStringLiteral("AsIs"))));
+
+        QUrl url{ QStringLiteral("pseudo://") + _out("redirect").toString() };
+        setIpOrDomin(url.host(), conf.mutable_destination_override()->mutable_server()->mutable_address());
+        conf.mutable_destination_override()->mutable_server()->set_port(url.port());
+        vout->mutable_proxy_settings()->PackFrom(conf);
+    }
+
+    if (out.outboundSettings.protocol == QStringLiteral("http"))
+    {
+        using namespace v2ray::core::proxy::http;
+        ClientConfig conf;
+        Qv2ray::Models::HttpClientObject http;
+        http.loadJson(out.outboundSettings.protocolSettings);
+
+        auto s = conf.add_server();
+        setIpOrDomin(http.address, s->mutable_address());
+        s->set_port(http.port);
+
+        for (const auto &[user, pass, level] : *http.users)
+        {
+            Account acc;
+            acc.set_username(user->toStdString());
+            acc.set_password(pass->toStdString());
+            s->add_user()->mutable_account()->PackFrom(acc);
+        }
+
+        vout->mutable_proxy_settings()->PackFrom(conf);
+    }
+
+    if (out.outboundSettings.protocol == QStringLiteral("socks"))
+    {
+        using namespace v2ray::core::proxy::socks;
+        ClientConfig conf;
+        Qv2ray::Models::SocksClientObject socks;
+        socks.loadJson(out.outboundSettings.protocolSettings);
+        auto s = conf.add_server();
+        setIpOrDomin(socks.address, s->mutable_address());
+        s->set_port(socks.port);
+
+        for (const auto &[user, pass, level] : *socks.users)
+        {
+            Account acc;
+            acc.set_username(user->toStdString());
+            acc.set_password(pass->toStdString());
+            s->add_user()->mutable_account()->PackFrom(acc);
+        }
+
+        vout->mutable_proxy_settings()->PackFrom(conf);
+    }
+
+    if (out.outboundSettings.protocol == QStringLiteral("vmess"))
+    {
+        using namespace v2ray::core::proxy::vmess;
+        using namespace v2ray::core::proxy::vmess::outbound;
+        Config conf;
+        auto receiver = conf.add_receiver();
+
+        Qv2ray::Models::VMessClientObject vmess;
+        vmess.loadJson(out.outboundSettings.protocolSettings);
+
+        setIpOrDomin(vmess.address, receiver->mutable_address());
+        receiver->set_port(vmess.port);
+        for (const auto &[id, alterid, security, level] : *vmess.users)
+        {
+            Account acc;
+            acc.set_id(id->toStdString());
+            acc.set_alter_id(alterid);
+            acc.mutable_security_settings()->set_type([](const QString &s) {
+                if (s == QStringLiteral("aes-128-gcm"))
+                    return v2ray::core::common::protocol::SecurityType::AES128_GCM;
+                if (s == QStringLiteral("chacha20-poly1305"))
+                    return v2ray::core::common::protocol::SecurityType::CHACHA20_POLY1305;
+                if (s == QStringLiteral("auto"))
+                    return v2ray::core::common::protocol::SecurityType::AUTO;
+                if (s == QStringLiteral("none"))
+                    return v2ray::core::common::protocol::SecurityType::NONE;
+                if (s == QStringLiteral("zero"))
+                    return v2ray::core::common::protocol::SecurityType::ZERO;
+                return v2ray::core::common::protocol::SecurityType::AUTO;
+            }(security));
+
+            receiver->add_user()->mutable_account()->PackFrom(acc);
+        }
+
+        vout->mutable_proxy_settings()->PackFrom(conf);
+    }
+
+    if (out.outboundSettings.protocol == QStringLiteral("shadowsocks"))
+    {
+        using namespace v2ray::core::proxy::shadowsocks;
+        ClientConfig conf;
+
+        Qv2ray::Models::ShadowSocksClientObject ss;
+        ss.loadJson(out.outboundSettings.protocolSettings);
+        auto s = conf.add_server();
+        setIpOrDomin(ss.address, s->mutable_address());
+        s->set_port(ss.port);
+
+        Account acc;
+        acc.set_iv_check(true);
+        acc.set_password(ss.password->toStdString());
+        acc.set_cipher_type([](const QString &c) {
+            if (c == QStringLiteral("aes-256-gcm"))
+                return AES_256_GCM;
+            if (c == QStringLiteral("aes-128-gcm"))
+                return AES_128_GCM;
+            if (c == QStringLiteral("chacha20-poly1305") || c == QStringLiteral("chacha20-ietf-poly1305"))
+                return CHACHA20_POLY1305;
+            if (c == QStringLiteral("none") || c == QStringLiteral("plain"))
+                return NONE;
+            assert(false);
+        }(ss.method->toLower()));
+
+        s->add_user()->mutable_account()->PackFrom(acc);
+        vout->mutable_proxy_settings()->PackFrom(conf);
+    }
+
+    if (out.outboundSettings.protocol == QStringLiteral("trojan"))
+    {
+        using namespace v2ray::core::proxy::trojan;
+
+        ClientConfig conf;
+        auto s = conf.add_server();
+
+        setIpOrDomin(_out("address").toString(), s->mutable_address());
+        s->set_port(_out("port").toInt());
+
+        Account acc;
+        acc.set_password(_out("password").toString().toStdString());
+        s->add_user()->mutable_account()->PackFrom(acc);
+        vout->mutable_proxy_settings()->PackFrom(conf);
+    }
+
+    if (out.outboundSettings.protocol == QStringLiteral("vless"))
+    {
+        using namespace v2ray::core::proxy::vless;
+        using namespace v2ray::core::proxy::vless::outbound;
+
+        Qv2ray::Models::VLESSClientObject vless;
+        vless.loadJson(out.outboundSettings.protocolSettings);
+
+        Config conf;
+        auto s = conf.add_vnext();
+
+        setIpOrDomin(_out("address").toString(), s->mutable_address());
+        s->set_port(_out("port").toInt());
+
+        for (const auto &[id, encryption, flow] : *vless.users)
+        {
+            Account acc;
+            acc.set_id(id->toStdString());
+            acc.set_flow(flow->toStdString());
+            acc.set_encryption(encryption->toStdString());
+            s->add_user()->mutable_account()->PackFrom(acc);
+        }
+        vout->mutable_proxy_settings()->PackFrom(conf);
+    }
+
+    if (out.outboundSettings.protocol == QStringLiteral("loopback"))
+    {
+        using namespace v2ray::core::proxy::loopback;
+        Config conf;
+        conf.set_inbound_tag(_out("tag").toString().toStdString());
+        vout->mutable_proxy_settings()->PackFrom(conf);
+    }
+#undef _out
 }

@@ -51,5 +51,5 @@ class HttpOutboundEditor
     void changeEvent(QEvent *e) override;
 
   private:
-    Qv2ray::Models::HttpServerObject http;
+    Qv2ray::Models::HttpClientObject http;
 };

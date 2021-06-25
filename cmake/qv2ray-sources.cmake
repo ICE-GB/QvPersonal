@@ -27,7 +27,10 @@ list(APPEND QV2RAY_FULL_SOURCES
     ${CMAKE_SOURCE_DIR}/src/models/SettingsModels.hpp
     ${CMAKE_SOURCE_DIR}/src/plugins/PluginsCommon/V2RayModels.hpp
     ${CMAKE_SOURCE_DIR}/src/ui/WidgetUIBase.hpp
-    ${CMAKE_SOURCE_DIR}/src/ui/windows/w_MainWindow_extra.cpp)
+    ${CMAKE_SOURCE_DIR}/src/ui/windows/w_MainWindow_extra.cpp
+    ${CMAKE_SOURCE_DIR}/src/components/GeositeReader/picoproto.h
+    ${CMAKE_SOURCE_DIR}/src/components/GeositeReader/picoproto.cc
+    )
 
 qv2ray_add_class(Qv2rayApplication)
 qv2ray_add_class(ui/node/models/ChainOutboundNodeModel)

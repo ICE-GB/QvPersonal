@@ -49,5 +49,5 @@ class VlessOutboundEditor
     void changeEvent(QEvent *e) override;
 
   private:
-    Qv2ray::Models::VLESSServerObject vless;
+    Qv2ray::Models::VLESSClientObject vless;
 };

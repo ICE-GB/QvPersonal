@@ -29,7 +29,7 @@ std::optional<PluginIOBoundData> BuiltinSerializer::GetOutboundInfo(const IOConn
     obj[IOBOUND_DATA_TYPE::IO_PROTOCOL] = outbound.protocol;
     if (outbound.protocol == QStringLiteral("http"))
     {
-        HttpServerObject http;
+        HttpClientObject http;
         http.loadJson(outbound.protocolSettings[QStringLiteral("servers")].toArray().first());
         obj[IOBOUND_DATA_TYPE::IO_ADDRESS] = *http.address;
         obj[IOBOUND_DATA_TYPE::IO_PORT] = *http.port;
@@ -37,7 +37,7 @@ std::optional<PluginIOBoundData> BuiltinSerializer::GetOutboundInfo(const IOConn
     }
     else if (outbound.protocol == QStringLiteral("socks"))
     {
-        SocksServerObject socks;
+        SocksClientObject socks;
         socks.loadJson(outbound.protocolSettings[QStringLiteral("servers")].toArray().first());
         obj[IOBOUND_DATA_TYPE::IO_ADDRESS] = *socks.address;
         obj[IOBOUND_DATA_TYPE::IO_PORT] = *socks.port;
@@ -45,7 +45,7 @@ std::optional<PluginIOBoundData> BuiltinSerializer::GetOutboundInfo(const IOConn
     }
     else if (outbound.protocol == QStringLiteral("vmess"))
     {
-        VMessServerObject vmess;
+        VMessClientObject vmess;
         vmess.loadJson(outbound.protocolSettings[QStringLiteral("vnext")].toArray().first());
         obj[IOBOUND_DATA_TYPE::IO_ADDRESS] = *vmess.address;
         obj[IOBOUND_DATA_TYPE::IO_PORT] = *vmess.port;
@@ -53,7 +53,7 @@ std::optional<PluginIOBoundData> BuiltinSerializer::GetOutboundInfo(const IOConn
     }
     else if (outbound.protocol == QStringLiteral("vless"))
     {
-        VLESSServerObject vless;
+        VLESSClientObject vless;
         vless.loadJson(outbound.protocolSettings[QStringLiteral("vnext")].toArray().first());
         obj[IOBOUND_DATA_TYPE::IO_ADDRESS] = *vless.address;
         obj[IOBOUND_DATA_TYPE::IO_PORT] = *vless.port;
@@ -61,7 +61,7 @@ std::optional<PluginIOBoundData> BuiltinSerializer::GetOutboundInfo(const IOConn
     }
     else if (outbound.protocol == QStringLiteral("shadowsocks"))
     {
-        ShadowSocksServerObject ss;
+        ShadowSocksClientObject ss;
         ss.loadJson(outbound.protocolSettings[QStringLiteral("servers")].toArray().first());
         obj[IOBOUND_DATA_TYPE::IO_ADDRESS] = *ss.address;
         obj[IOBOUND_DATA_TYPE::IO_PORT] = *ss.port;
@@ -295,7 +295,7 @@ QString SerializeVLESS(const QString &name, const IOProtocolSettings &out, const
 
 QString SerializeVMess(const QString &alias, const IOProtocolSettings &serverJson, const IOStreamSettings &streamJson)
 {
-    Qv2ray::Models::VMessServerObject server;
+    Qv2ray::Models::VMessClientObject server;
     server.loadJson(serverJson[QStringLiteral("vnext")].toArray().first());
 
     Qv2ray::Models::StreamSettingsObject stream;
@@ -367,7 +367,7 @@ QString SerializeVMess(const QString &alias, const IOProtocolSettings &serverJso
 
 QString SerializeSS(const QString &name, const IOProtocolSettings &out, const IOStreamSettings &)
 {
-    Qv2ray::Models::ShadowSocksServerObject server;
+    Qv2ray::Models::ShadowSocksClientObject server;
     server.loadJson(out);
     QUrl url;
     const auto plainUserInfo = server.method + ":" + server.password;
@@ -568,8 +568,8 @@ std::optional<std::tuple<IOProtocolSettings, IOStreamSettings, QString>> Deseria
     // If previous alias is empty, just the PS is needed, else, append a "_"
     const auto name = url.fragment(QUrl::FullyDecoded).trimmed();
 
-    VMessServerObject server;
-    server.users << VMessServerObject::UserObject{};
+    VMessClientObject server;
+    server.users << VMessClientObject::UserObject{};
 
     StreamSettingsObject stream;
     QString net;
@@ -664,7 +664,7 @@ std::optional<std::tuple<IOProtocolSettings, IOStreamSettings, QString>> Deseria
 
 std::optional<std::tuple<IOProtocolSettings, IOStreamSettings, QString>> DeserializeSS(const QString &link)
 {
-    ShadowSocksServerObject server;
+    ShadowSocksClientObject server;
     QString d_name;
 
     auto uri = link.mid(5);

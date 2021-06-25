@@ -31,8 +31,8 @@ InboundEditor::InboundEditor(const InboundObject &source, QWidget *parent) : QDi
 
     inboundProtocol = current.inboundSettings.protocol;
 
-    allocateSettings = current.extraSettings[QStringLiteral("allocate")].toObject();
-    sniffingSettings = current.extraSettings[QStringLiteral("sniffing")].toObject();
+    allocateSettings = current.options[QStringLiteral("allocate")].toObject();
+    sniffingSettings = current.options[QStringLiteral("sniffing")].toObject();
 
     isLoading = true;
     for (const auto &[_, plugin] : GUIPluginHost->GUI_QueryByComponent(Qv2rayPlugin::GUI_COMPONENT_INBOUND_EDITOR))
@@ -86,8 +86,8 @@ InboundObject InboundEditor::getResult()
         newRoot.inboundSettings.streamSettings = streamSettingsWidget->GetStreamSettings();
 
     newRoot.inboundSettings.protocol = inboundProtocol;
-    newRoot.extraSettings[QStringLiteral("sniffing")] = sniffingSettings;
-    newRoot.extraSettings[QStringLiteral("allocate")] = allocateSettings;
+    newRoot.options[QStringLiteral("sniffing")] = sniffingSettings;
+    newRoot.options[QStringLiteral("allocate")] = allocateSettings;
     return newRoot;
 }
 

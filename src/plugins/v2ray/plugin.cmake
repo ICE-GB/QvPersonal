@@ -83,6 +83,8 @@ add_library(QvPlugin-BuiltinV2RaySupport SHARED
     ${CMAKE_CURRENT_LIST_DIR}/core/V2RayProfileGenerator.cpp
     )
 
+target_compile_definitions(QvPlugin-BuiltinV2RaySupport PRIVATE QT_NO_CAST_FROM_ASCII)
+
 target_compile_definitions(QvPlugin-BuiltinV2RaySupport PRIVATE)
 target_include_directories(QvPlugin-BuiltinV2RaySupport PRIVATE ${CMAKE_CURRENT_LIST_DIR})
 target_include_directories(QvPlugin-BuiltinV2RaySupport PRIVATE ${CMAKE_CURRENT_LIST_DIR}/../PluginsCommon)
