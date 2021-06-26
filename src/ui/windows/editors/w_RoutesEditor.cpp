@@ -115,7 +115,7 @@ RouteEditor::RouteEditor(ProfileContent connection, QWidget *parent) : QvDialog(
     nodeDispatcher->LoadFullConfig(root);
     dnsWidget->SetDNSObject(DNSObject::fromJson(root.extraOptions["dns"].toObject()), FakeDNSObject::fromJson(root.extraOptions["fakedns"].toObject()));
     //
-    domainStrategy = root.routing.options["domainStrategy"].toString();
+    domainStrategy = root.routing.options[QStringLiteral("domainStrategy")].toString();
     domainStrategyCombo->setCurrentText(domainStrategy);
     //
     // Set default outboung combo text AFTER adding all outbounds.
@@ -124,12 +124,12 @@ RouteEditor::RouteEditor(ProfileContent connection, QWidget *parent) : QvDialog(
         defaultOutboundTag = root.outbounds.first().name;
     defaultOutboundCombo->setCurrentText(defaultOutboundTag);
     //
-    const auto browserForwarder = root.extraOptions["browserForwarder"].toObject();
-    bfListenIPTxt->setText(browserForwarder["listenAddr"].toString());
-    bfListenPortTxt->setValue(browserForwarder["listenPort"].toInt());
+    const auto browserForwarder = root.extraOptions[QStringLiteral("browserForwarder")].toObject();
+    bfListenIPTxt->setText(browserForwarder[QStringLiteral("listenAddr")].toString());
+    bfListenPortTxt->setValue(browserForwarder[QStringLiteral("listenPort")].toInt());
 
-    const auto observatory = root.extraOptions["observatory"].toObject();
-    obSubjectSelectorTxt->setPlainText(observatory["subjectSelector"].toVariant().toStringList().join(NEWLINE));
+    const auto observatory = root.extraOptions[QStringLiteral("observatory")].toObject();
+    obSubjectSelectorTxt->setPlainText(observatory[QStringLiteral("subjectSelector")].toVariant().toStringList().join(NEWLINE));
 
     for (const auto &group : QvBaselib->ProfileManager()->GetGroups())
     {
@@ -154,12 +154,12 @@ QvMessageBusSlotImpl(RouteEditor)
     }
 }
 
-void RouteEditor::OnDispatcherInboundOutboundHovered(const QString &tag, const PluginIOBoundData &info)
+void RouteEditor::OnDispatcherInboundOutboundHovered(const QString &tag, const IOBoundData &info)
 {
     tagLabel->setText(tag);
-    hostLabel->setText(info[IOBOUND_DATA_TYPE::IO_ADDRESS].toString());
-    portLabel->setNum(info[IOBOUND_DATA_TYPE::IO_PORT].toInt());
-    protocolLabel->setText(info[IOBOUND_DATA_TYPE::IO_PROTOCOL].toString());
+    protocolLabel->setText(std::get<0>(info));
+    hostLabel->setText(std::get<1>(info));
+    portLabel->setNum(std::get<2>(info).from);
 }
 
 void RouteEditor::OnDispatcherOutboundCreated(std::shared_ptr<OutboundObject> out, QtNodes::Node &)

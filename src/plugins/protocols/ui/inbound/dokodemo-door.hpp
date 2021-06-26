@@ -12,12 +12,6 @@ class DokodemoDoorInboundEditor
   public:
     explicit DokodemoDoorInboundEditor(QWidget *parent = nullptr);
 
-    void SetHostAddress(const QString &, int) override{};
-    QPair<QString, int> GetHostAddress() const override
-    {
-        return {};
-    }
-
     void SetContent(const IOProtocolSettings &content) override;
     const IOProtocolSettings GetContent() const override;
 

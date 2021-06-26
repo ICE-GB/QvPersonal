@@ -277,11 +277,11 @@ void V2RayProfileGenerator::GenerateInboundConfig(const InboundObject &in, ::v2r
 
     v2ray::core::app::proxyman::ReceiverConfig recv;
 
-    setIpOrDomin(in.listenAddress, recv.mutable_listen());
+    setIpOrDomin(in.inboundSettings.address, recv.mutable_listen());
 
     // inbound.port
-    recv.mutable_port_range()->set_from(in.listenPort.from);
-    recv.mutable_port_range()->set_to(in.listenPort.to);
+    recv.mutable_port_range()->set_from(in.inboundSettings.port.from);
+    recv.mutable_port_range()->set_to(in.inboundSettings.port.to);
 
     // inbound.sniffing
     recv.mutable_sniffing_settings()->set_enabled(in.options[QStringLiteral("sniffing")][QStringLiteral("enabled")].toBool());
@@ -311,11 +311,10 @@ void V2RayProfileGenerator::GenerateInboundConfig(const InboundObject &in, ::v2r
         ServerConfig http;
 
         // WARN This is client object, which is used for outbounds, the existence here is just simplify the parser of users[].
-        Qv2ray::Models::HttpClientObject tmpClient;
+        Qv2ray::Models::HTTPSOCKSObject tmpClient;
         tmpClient.loadJson(in.inboundSettings.protocolSettings);
 
-        for (const auto &[user, pass, level] : *tmpClient.users)
-            http.mutable_accounts()->operator[](user->toStdString()) = pass->toStdString();
+        http.mutable_accounts()->operator[](tmpClient.user->toStdString()) = tmpClient.pass->toStdString();
 
         http.set_allow_transparent(_in("allowTransparent").toBool());
 
@@ -334,11 +333,11 @@ void V2RayProfileGenerator::GenerateInboundConfig(const InboundObject &in, ::v2r
         using namespace v2ray::core::proxy::socks;
         ServerConfig socks;
         // WARN See above for Qv2ray::Models::HttpClientObject
-        Qv2ray::Models::SocksClientObject tmpClient;
+        Qv2ray::Models::HTTPSOCKSObject tmpClient;
         tmpClient.loadJson(in.inboundSettings.protocolSettings);
 
-        for (const auto &[user, pass, level] : *tmpClient.users)
-            socks.mutable_accounts()->operator[](user->toStdString()) = pass->toStdString();
+        socks.mutable_accounts()->operator[](tmpClient.user->toStdString()) = tmpClient.pass->toStdString();
+
         socks.mutable_address()->set_ip(_in("ip").toString().toStdString());
         socks.set_udp_enabled(_in("udp").toBool());
         socks.set_auth_type(_in("auth").toString() == QStringLiteral("noauth") ? NO_AUTH : PASSWORD);
@@ -373,8 +372,8 @@ void V2RayProfileGenerator::GenerateOutboundConfig(const OutboundObject &out, v2
 
     // TODO via
     // send.mutable_via();
-    send.mutable_multiplex_settings()->set_enabled(out.muxSettings.enabled);
-    send.mutable_multiplex_settings()->set_concurrency(out.muxSettings.concurrency);
+    send.mutable_multiplex_settings()->set_enabled(out.outboundSettings.muxSettings.enabled);
+    send.mutable_multiplex_settings()->set_concurrency(out.outboundSettings.muxSettings.concurrency);
     vout->mutable_sender_settings()->PackFrom(send);
 
 #define _out(x) out.outboundSettings.protocolSettings[QStringLiteral(x)]
@@ -434,20 +433,17 @@ void V2RayProfileGenerator::GenerateOutboundConfig(const OutboundObject &out, v2
     {
         using namespace v2ray::core::proxy::http;
         ClientConfig conf;
-        Qv2ray::Models::HttpClientObject http;
+        Qv2ray::Models::HTTPSOCKSObject http;
         http.loadJson(out.outboundSettings.protocolSettings);
 
         auto s = conf.add_server();
-        setIpOrDomin(http.address, s->mutable_address());
-        s->set_port(http.port);
+        setIpOrDomin(out.outboundSettings.address, s->mutable_address());
+        s->set_port(out.outboundSettings.port.from);
 
-        for (const auto &[user, pass, level] : *http.users)
-        {
-            Account acc;
-            acc.set_username(user->toStdString());
-            acc.set_password(pass->toStdString());
-            s->add_user()->mutable_account()->PackFrom(acc);
-        }
+        Account acc;
+        acc.set_username(http.user->toStdString());
+        acc.set_password(http.pass->toStdString());
+        s->add_user()->mutable_account()->PackFrom(acc);
 
         vout->mutable_proxy_settings()->PackFrom(conf);
     }
@@ -456,19 +452,16 @@ void V2RayProfileGenerator::GenerateOutboundConfig(const OutboundObject &out, v2
     {
         using namespace v2ray::core::proxy::socks;
         ClientConfig conf;
-        Qv2ray::Models::SocksClientObject socks;
+        Qv2ray::Models::HTTPSOCKSObject socks;
         socks.loadJson(out.outboundSettings.protocolSettings);
         auto s = conf.add_server();
-        setIpOrDomin(socks.address, s->mutable_address());
-        s->set_port(socks.port);
+        setIpOrDomin(out.outboundSettings.address, s->mutable_address());
+        s->set_port(out.outboundSettings.port.from);
 
-        for (const auto &[user, pass, level] : *socks.users)
-        {
-            Account acc;
-            acc.set_username(user->toStdString());
-            acc.set_password(pass->toStdString());
-            s->add_user()->mutable_account()->PackFrom(acc);
-        }
+        Account acc;
+        acc.set_username(socks.user->toStdString());
+        acc.set_password(socks.pass->toStdString());
+        s->add_user()->mutable_account()->PackFrom(acc);
 
         vout->mutable_proxy_settings()->PackFrom(conf);
     }
@@ -483,8 +476,8 @@ void V2RayProfileGenerator::GenerateOutboundConfig(const OutboundObject &out, v2
         Qv2ray::Models::VMessClientObject vmess;
         vmess.loadJson(out.outboundSettings.protocolSettings);
 
-        setIpOrDomin(vmess.address, receiver->mutable_address());
-        receiver->set_port(vmess.port);
+        setIpOrDomin(out.outboundSettings.address, receiver->mutable_address());
+        receiver->set_port(out.outboundSettings.port.from);
 
         {
             Account acc;
@@ -518,8 +511,8 @@ void V2RayProfileGenerator::GenerateOutboundConfig(const OutboundObject &out, v2
         Qv2ray::Models::ShadowSocksClientObject ss;
         ss.loadJson(out.outboundSettings.protocolSettings);
         auto s = conf.add_server();
-        setIpOrDomin(ss.address, s->mutable_address());
-        s->set_port(ss.port);
+        setIpOrDomin(out.outboundSettings.address, s->mutable_address());
+        s->set_port(out.outboundSettings.port.from);
 
         Account acc;
         acc.set_iv_check(true);

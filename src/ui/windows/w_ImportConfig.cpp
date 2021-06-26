@@ -98,8 +98,8 @@ void ImportConfigWindow::on_beginImportBtn_clicked()
 
                 if (name.isEmpty())
                 {
-                    auto [protocol, host, port] = GetOutboundInfoTuple(outbound);
-                    name = protocol + "/" + host + ":" + QString::number(port) + "-" + GenerateRandomString(5);
+                    auto [protocol, host, port] = GetOutboundInfo(outbound);
+                    name = protocol + "/" + host + ":" + port + "-" + GenerateRandomString(5);
                 }
 
                 connections.insert(name, ProfileContent{ outbound });

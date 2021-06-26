@@ -12,12 +12,6 @@ class DnsOutboundEditor
   public:
     explicit DnsOutboundEditor(QWidget *parent = nullptr);
 
-    void SetHostAddress(const QString &, int) override{};
-    QPair<QString, int> GetHostAddress() const override
-    {
-        return {};
-    };
-
     void SetContent(const IOProtocolSettings &_content) override
     {
         this->content = _content;

@@ -13,16 +13,6 @@ class VlessOutboundEditor
   public:
     explicit VlessOutboundEditor(QWidget *parent = nullptr);
 
-    void SetHostAddress(const QString &addr, int port) override
-    {
-        vless.address = addr;
-        vless.port = port;
-    }
-    QPair<QString, int> GetHostAddress() const override
-    {
-        return { vless.address, vless.port };
-    }
-
     void SetContent(const IOProtocolSettings &content) override
     {
         this->content = content;

@@ -13,17 +13,6 @@ class VmessOutboundEditor
   public:
     explicit VmessOutboundEditor(QWidget *parent = nullptr);
 
-    void SetHostAddress(const QString &addr, int port) override
-    {
-        vmess.address = addr;
-        vmess.port = port;
-    }
-
-    QPair<QString, int> GetHostAddress() const override
-    {
-        return { vmess.address, vmess.port };
-    }
-
     void SetContent(const IOProtocolSettings &content) override;
     const IOProtocolSettings GetContent() const override
     {

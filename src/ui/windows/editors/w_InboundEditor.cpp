@@ -97,8 +97,8 @@ void InboundEditor::loadUI()
     streamSettingsWidget->SetStreamObject(StreamSettingsObject::fromJson(original.inboundSettings.streamSettings));
     {
         inboundTagTxt->setText(current.name);
-        inboundHostTxt->setText(current.listenAddress);
-        inboundPortTxt->setText(current.listenPort);
+        inboundHostTxt->setText(current.inboundSettings.address);
+        inboundPortTxt->setText(current.inboundSettings.port);
     }
     {
         const auto allocationStrategy = allocateSettings["strategy"].toString();
@@ -176,13 +176,13 @@ void InboundEditor::on_concurrencyNumberBox_valueChanged(int arg1)
 void InboundEditor::on_inboundHostTxt_textEdited(const QString &arg1)
 {
     CHECKLOADING
-    current.listenAddress = arg1;
+    current.inboundSettings.address = arg1;
 }
 
 void InboundEditor::on_inboundPortTxt_textEdited(const QString &arg1)
 {
     CHECKLOADING
-    current.listenPort = arg1.toInt();
+    current.inboundSettings.port = arg1.toInt();
 }
 
 void InboundEditor::on_sniffingGroupBox_clicked(bool checked)

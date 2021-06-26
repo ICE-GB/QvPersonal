@@ -13,22 +13,9 @@ class ShadowsocksOutboundEditor
   public:
     explicit ShadowsocksOutboundEditor(QWidget *parent = nullptr);
 
-    void SetHostAddress(const QString &addr, int port) override
-    {
-        shadowsocks.address = addr;
-        shadowsocks.port = port;
-    };
-    QPair<QString, int> GetHostAddress() const override
-    {
-        return { shadowsocks.address, shadowsocks.port };
-    };
-
     void SetContent(const IOProtocolSettings &content) override
     {
-        if (content["servers"].toArray().isEmpty())
-            content["servers"] = QJsonArray{ QJsonObject{} };
-
-        shadowsocks.loadJson(content["servers"].toArray().first().toObject());
+        shadowsocks.loadJson(content);
         shadowsocks.method.ReadWriteBind(ss_encryptionMethod, "currentText", &QComboBox::currentTextChanged);
         shadowsocks.password.ReadWriteBind(ss_passwordTxt, "text", &QLineEdit::textEdited);
     }

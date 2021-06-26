@@ -13,43 +13,21 @@ class HttpOutboundEditor
   public:
     explicit HttpOutboundEditor(QWidget *parent = nullptr);
 
-    void SetHostAddress(const QString &server, int port) override
-    {
-        http.address = server;
-        http.port = port;
-    }
-
-    QPair<QString, int> GetHostAddress() const override
-    {
-        return { http.address, http.port };
-    }
-
     void SetContent(const IOProtocolSettings &source) override
     {
-        auto servers = source["servers"].toArray();
-        if (servers.isEmpty())
-            return;
-        const auto content = servers.first().toObject();
-
-        http.loadJson(content);
-        if (http.users->isEmpty())
-            http.users->push_back({});
-
-        http.users->first().user.ReadWriteBind(http_UserNameTxt, "text", &QLineEdit::textEdited);
-        http.users->first().pass.ReadWriteBind(http_PasswordTxt, "text", &QLineEdit::textEdited);
+        http.loadJson(source);
+        http.user.ReadWriteBind(http_UserNameTxt, "text", &QLineEdit::textEdited);
+        http.pass.ReadWriteBind(http_PasswordTxt, "text", &QLineEdit::textEdited);
     }
 
     const IOProtocolSettings GetContent() const override
     {
-        auto result = http.toJson();
-        if (http.users->isEmpty() || (http.users->first().user->isEmpty() && http.users->first().pass->isEmpty()))
-            result.remove("users");
-        return IOProtocolSettings{ QJsonObject{ { "servers", QJsonArray{ result } } } };
+        return IOProtocolSettings{ http.toJson() };
     }
 
   protected:
     void changeEvent(QEvent *e) override;
 
   private:
-    Qv2ray::Models::HttpClientObject http;
+    Qv2ray::Models::HTTPSOCKSObject http;
 };

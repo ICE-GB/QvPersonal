@@ -13,39 +13,21 @@ class SocksOutboundEditor
   public:
     explicit SocksOutboundEditor(QWidget *parent = nullptr);
 
-    void SetHostAddress(const QString &server, int port) override
-    {
-        socks.address = server;
-        socks.port = port;
-    }
-
-    QPair<QString, int> GetHostAddress() const override
-    {
-        return { (QString) socks.address, (int) socks.port };
-    }
-
     void SetContent(const IOProtocolSettings &source) override
     {
-        auto servers = source["servers"].toArray();
-        if (servers.isEmpty())
-            return;
-        const auto content = servers.first().toObject();
-        socks.loadJson(content);
-        socks.users->first().user.ReadWriteBind(socks_UserNameTxt, "text", &QLineEdit::textEdited);
-        socks.users->first().pass.ReadWriteBind(socks_PasswordTxt, "text", &QLineEdit::textEdited);
+        socks.loadJson(source);
+        socks.user.ReadWriteBind(socks_UserNameTxt, "text", &QLineEdit::textEdited);
+        socks.pass.ReadWriteBind(socks_PasswordTxt, "text", &QLineEdit::textEdited);
     }
 
     const IOProtocolSettings GetContent() const override
     {
-        auto result = socks.toJson();
-        if (socks.users->isEmpty() || (socks.users->first().user->isEmpty() && socks.users->first().pass->isEmpty()))
-            result.remove("users");
-        return IOProtocolSettings{ QJsonObject{ { "servers", QJsonArray{ result } } } };
+        return IOProtocolSettings{ socks.toJson() };
     }
 
   protected:
     void changeEvent(QEvent *e) override;
 
   private:
-    Qv2ray::Models::SocksClientObject socks;
+    Qv2ray::Models::HTTPSOCKSObject socks;
 };

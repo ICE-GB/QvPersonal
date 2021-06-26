@@ -57,7 +57,7 @@ class RouteEditor
     void OnDispatcherOutboundCreated(std::shared_ptr<OutboundObject>, QtNodes::Node &);
     void OnDispatcherRuleCreated(std::shared_ptr<RuleObject>, QtNodes::Node &);
     void OnDispatcherRuleDeleted(const RuleObject &);
-    void OnDispatcherInboundOutboundHovered(const QString &, const PluginIOBoundData &);
+    void OnDispatcherInboundOutboundHovered(const QString &, const IOBoundData &);
     void OnDispatcherObjectTagChanged(const NodeItemType &, const QString, const QString);
 
   private:

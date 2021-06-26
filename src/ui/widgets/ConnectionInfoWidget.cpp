@@ -91,10 +91,10 @@ void ConnectionInfoWidget::ShowDetails(const ProfileId &idpair)
             const auto root = QvBaselib->ProfileManager()->GetConnection(connectionId);
             if (!root.outbounds.isEmpty())
             {
-                const auto &[protocol, host, port] = GetOutboundInfoTuple(root.outbounds.first());
+                const auto &[protocol, host, port] = GetOutboundInfo(root.outbounds.first());
                 Q_UNUSED(protocol)
                 addressLabel->setText(host);
-                portLabel->setNum(port);
+                portLabel->setNum(port.from);
             }
             qrPixmapBlured = BlurImage(ColorizeImage(qrPixmap, StyleManager->isDarkMode() ? QColor(Qt::black) : QColor(Qt::white), 0.7), 35);
             qrLabel->setPixmap(qrPixmapBlured);

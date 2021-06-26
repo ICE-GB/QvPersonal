@@ -274,63 +274,31 @@ namespace Qv2ray::Models
         }
     };
 
-    struct HTTPSOCKSUserObject
+    struct HTTPSOCKSObject
     {
         Bindable<QString> user;
         Bindable<QString> pass;
         Bindable<int> level{ 0 };
         QJS_FUNC_JSON(P(user, pass, level))
-        QJS_FUNC_COMPARE(HTTPSOCKSUserObject, user, pass, level);
-    };
-
-    //
-    // Socks, OutBound
-    struct SocksClientObject
-    {
-        Bindable<QString> address{ QStringLiteral("0.0.0.0") };
-        Bindable<int> port = 0;
-        Bindable<QList<HTTPSOCKSUserObject>> users;
-        QJS_FUNC_JSON(P(address, port, users));
-        QJS_FUNC_COMPARE(SocksClientObject, address, port, users);
-    };
-
-    //
-    // Http, OutBound
-    struct HttpClientObject
-    {
-        Bindable<QString> address{ QStringLiteral("0.0.0.0") };
-        Bindable<int> port = 0;
-        Bindable<QList<HTTPSOCKSUserObject>> users;
-        QJS_FUNC_JSON(P(address, port, users))
-        QJS_FUNC_COMPARE(HttpClientObject, address, port, users);
     };
 
     //
     // ShadowSocks Server
     struct ShadowSocksClientObject
     {
-        Bindable<QString> address{ QStringLiteral("0.0.0.0") };
-        Bindable<int> port{ 0 };
-
         Bindable<QString> method{ QStringLiteral("aes-256-gcm") };
         Bindable<QString> password;
-
-        QJS_FUNC_JSON(P(method, address, port, password))
-        QJS_FUNC_COMPARE(ShadowSocksClientObject, method, address, port, password)
+        QJS_FUNC_JSON(P(method, password))
     };
 
     //
     // VLESS Server
     struct VLESSClientObject
     {
-        Bindable<QString> address;
-        Bindable<int> port = 0;
-
         Bindable<QString> id;
         Bindable<QString> encryption{ QStringLiteral("none") };
         Bindable<QString> flow;
-
-        QJS_FUNC_JSON(P(address, port, id, encryption, flow))
+        QJS_FUNC_JSON(P(id, encryption, flow))
     };
 
     //
@@ -338,15 +306,10 @@ namespace Qv2ray::Models
     constexpr auto VMESS_USER_ALTERID_DEFAULT = 0;
     struct VMessClientObject
     {
-        Bindable<QString> address;
-        Bindable<int> port{ 0 };
-
         Bindable<QString> id;
         Bindable<int> alterId{ VMESS_USER_ALTERID_DEFAULT };
         Bindable<QString> security{ QStringLiteral("auto") };
-
-        QJS_FUNC_JSON(F(address, port, id, alterId, security))
-        //        QJS_FUNC_COMPARE(VMessClientObject, address, port )
+        QJS_FUNC_JSON(F(id, alterId, security))
     };
 
 } // namespace Qv2ray::models

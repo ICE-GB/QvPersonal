@@ -194,8 +194,8 @@ void GroupManager::reloadConnectionsList(const GroupId &group)
         displayNameItem->setData(Qt::UserRole, conn.toString());
         auto typeItem = new QTableWidgetItem(GetConnectionProtocolDescription(conn));
         //
-        const auto [type, host, port] = GetOutboundInfoTuple(QvBaselib->ProfileManager()->GetConnection(conn).outbounds.first());
-        auto hostPortItem = new QTableWidgetItem(host + ":" + QString::number(port));
+        const auto [type, host, port] = GetOutboundInfo(QvBaselib->ProfileManager()->GetConnection(conn).outbounds.first());
+        auto hostPortItem = new QTableWidgetItem(host + ":" + port);
         //
         QStringList groupsNamesString;
         for (const auto &group : QvBaselib->ProfileManager()->GetGroups(conn))

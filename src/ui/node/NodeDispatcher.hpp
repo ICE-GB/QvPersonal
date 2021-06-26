@@ -140,7 +140,7 @@ class NodeDispatcher
     void OnObjectTagChanged(const NodeItemType &, const QString originalTag, const QString newTag);
 
   signals:
-    void OnInboundOutboundNodeHovered(const QString &tag, const PluginIOBoundData &);
+    void OnInboundOutboundNodeHovered(const QString &tag, const IOBoundData &);
 
   private:
     QString defaultOutbound;

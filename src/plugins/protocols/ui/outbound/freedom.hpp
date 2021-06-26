@@ -12,12 +12,6 @@ class FreedomOutboundEditor
   public:
     explicit FreedomOutboundEditor(QWidget *parent = nullptr);
 
-    void SetHostAddress(const QString &, int) override{};
-    QPair<QString, int> GetHostAddress() const override
-    {
-        return {};
-    };
-
     void SetContent(const IOProtocolSettings &content) override
     {
         this->content = content;

@@ -11,11 +11,6 @@ class LoopbackSettingsEditor
 
   public:
     explicit LoopbackSettingsEditor(QWidget *parent = nullptr);
-    void SetHostAddress(const QString &, int){};
-    QPair<QString, int> GetHostAddress() const
-    {
-        return {};
-    }
 
     void SetContent(const IOProtocolSettings &_content)
     {

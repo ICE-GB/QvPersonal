@@ -76,7 +76,6 @@ OutboundObject OutboundEditor::generateConnectionJson()
     {
         if (protocol == outboundProtocol)
         {
-            widget->SetHostAddress(serverAddress, serverPort);
             settings = widget->GetContent();
             const auto hasStreamSettings = GetProperty(widget, "QV2RAY_INTERNAL_HAS_STREAMSETTINGS");
             if (!hasStreamSettings)
@@ -90,9 +89,9 @@ OutboundObject OutboundEditor::generateConnectionJson()
         QvBaselib->Warn(tr("Unknown outbound protocol."), tr("The specified protocol is not supported, this may happen due to a plugin failure."));
     }
 
-    OutboundObject out{ IOConnectionSettings{ outboundProtocol, settings, streaming } };
+    OutboundObject out;
+    out.outboundSettings = IOConnectionSettings{ outboundProtocol, serverAddress, serverPort, settings, streaming, muxConfig };
     out.name = outboundTag;
-    out.muxSettings = muxConfig;
     return out;
 }
 
@@ -102,11 +101,14 @@ void OutboundEditor::reloadGUI()
     tagTxt->setText(outboundTag);
     outboundProtocol = originalConfig.outboundSettings.protocol;
 
-    muxConfig = originalConfig.muxSettings;
+    muxConfig = originalConfig.outboundSettings.muxSettings;
     streamSettingsWidget->SetStreamObject(StreamSettingsObject::fromJson(originalConfig.outboundSettings.streamSettings));
 
     muxEnabledCB->setChecked(muxConfig.enabled);
     muxConcurrencyTxt->setValue(muxConfig.concurrency);
+
+    serverAddress = originalConfig.outboundSettings.address;
+    serverPort = originalConfig.outboundSettings.port.from;
 
     const auto &settings = originalConfig.outboundSettings.protocolSettings;
     bool processed = false;
@@ -116,11 +118,8 @@ void OutboundEditor::reloadGUI()
         {
             outBoundTypeCombo->setCurrentIndex(outBoundTypeCombo->findData(it->first));
             it->second->SetContent(settings);
-            const auto &[_address, _port] = it->second->GetHostAddress();
-            serverAddress = _address;
-            serverPort = _port;
-            ipLineEdit->setText(_address);
-            portLineEdit->setText(QString::number(_port));
+            ipLineEdit->setText(serverAddress);
+            portLineEdit->setText(QString::number(serverPort));
             processed = true;
             break;
         }
