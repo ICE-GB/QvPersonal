@@ -43,6 +43,32 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.17.0")
     cmake_policy(SET CMP0100 NEW)
 endif()
 
+
+# ==================================================================================
+# Qv2ray Build Info
+# ==================================================================================
+set(QV2RAY_CODENAME "Qv2ray 3.0, the new era.")
+
+if(QV2RAY_BUILD_INFO)
+    set(QV2RAY_BUILD_INFO "${QV2RAY_BUILD_INFO}")
+elseif(DEFINED ENV{QV2RAY_BUILD_INFO})
+    set(QV2RAY_BUILD_INFO "$ENV{QV2RAY_BUILD_INFO}")
+else()
+    set(QV2RAY_BUILD_INFO "Qv2ray (Made By Yourself)")
+endif()
+
+if(QV2RAY_BUILD_EXTRA_INFO)
+    set(QV2RAY_BUILD_EXTRA_INFO "${QV2RAY_BUILD_EXTRA_INFO}")
+elseif(DEFINED ENV{QV2RAY_BUILD_EXTRA_INFO})
+    set(QV2RAY_BUILD_EXTRA_INFO "$ENV{QV2RAY_BUILD_EXTRA_INFO}")
+else()
+    set(QV2RAY_BUILD_EXTRA_INFO "${CMAKE_PROJECT_VERSION}")
+endif()
+
+add_definitions(-DQV2RAY_BUILD_INFO="${QV2RAY_BUILD_INFO}")
+add_definitions(-DQV2RAY_BUILD_EXTRA_INFO="${QV2RAY_BUILD_EXTRA_INFO} - ${QV2RAY_CODENAME}")
+message("Qv2ray Version: ${QV2RAY_BUILD_INFO} - ${QV2RAY_BUILD_EXTRA_INFO}")
+
 # ==================================================================================
 # Qv2ray compile arguments
 # ==================================================================================

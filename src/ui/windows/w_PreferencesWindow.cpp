@@ -51,9 +51,8 @@ PreferencesWindow::PreferencesWindow(QWidget *parent) : QvDialog(QStringLiteral(
     themeCombo->addItems(StyleManager->AllStyles());
     //
     qvVersion->setText(QStringLiteral(QV2RAY_VERSION_STRING));
-    qvBuildInfo->setText(QStringLiteral("QV2RAY_BUILD_INFO"));
-    qvBuildExInfo->setText(QStringLiteral("QV2RAY_BUILD_EXTRA_INFO"));
-    qvBuildTime->setText(__DATE__ " " __TIME__);
+    qvBuildInfo->setText(QStringLiteral(QV2RAY_BUILD_INFO));
+    qvBuildExInfo->setText(QStringLiteral(QV2RAY_BUILD_EXTRA_INFO));
     qvPluginInterfaceVersionLabel->setText(tr("Version: %1").arg(Qv2rayPlugin::QV2RAY_PLUGIN_INTERFACE_VERSION));
     //
     // Deep copy
