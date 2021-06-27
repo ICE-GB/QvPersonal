@@ -4,7 +4,6 @@
 
 class QProcess;
 class APIWorker;
-class V2RayProfileGenerator;
 
 const inline KernelId v2ray_kernel_id{ QStringLiteral("v2ray_kernel") };
 
@@ -42,7 +41,6 @@ class V2RayKernel : public Qv2rayPlugin::Kernel::PluginKernel
     bool kernelStarted = false;
 
     QString configFilePath;
-    V2RayProfileGenerator *generator;
 };
 
 class V2RayKernelInterface : public Qv2rayPlugin::Kernel::IKernelHandler

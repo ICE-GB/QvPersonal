@@ -15,7 +15,6 @@ const auto V2RAYPLUGIN_NO_API_ENV = "V2RAYPLUGIN_NO_API";
 V2RayKernel::V2RayKernel()
 {
     vProcess = new QProcess();
-    generator = new V2RayProfileGenerator;
     connect(vProcess, &QProcess::readyReadStandardOutput, this, [&]() { emit OnLog(QString::fromUtf8(vProcess->readAllStandardOutput().trimmed())); });
     connect(vProcess, &QProcess::stateChanged, [this](QProcess::ProcessState state) {
         if (kernelStarted && state == QProcess::NotRunning)
@@ -30,7 +29,6 @@ V2RayKernel::V2RayKernel()
 
 V2RayKernel::~V2RayKernel()
 {
-    delete generator;
     delete apiWorker;
     delete vProcess;
 }
@@ -44,15 +42,12 @@ void V2RayKernel::SetProfileContent(const ProfileContent &content, const Routing
 
 bool V2RayKernel::PrepareConfigurations()
 {
-    const auto config = generator->GenerateConfiguration(profile);
+    const auto config = V2RayProfileGenerator::GenerateConfiguration(profile);
     configFilePath = Qv2rayPlugin::PluginInstance->WorkingDirectory().filePath(GENERATED_V2RAY_CONFIGURATION_NAME);
     QFile v2rayConfigFile(configFilePath);
 
-#pragma message("TODO: ")
-    const auto json = QJsonDocument(QJsonObject{}).toJson();
-
-    v2rayConfigFile.open(QIODevice::ReadWrite);
-    v2rayConfigFile.write(json);
+    v2rayConfigFile.open(QIODevice::ReadWrite | QIODevice::Truncate);
+    v2rayConfigFile.write(config);
     v2rayConfigFile.close();
 
     if (const auto &result = ValidateConfig(configFilePath); result)
@@ -153,8 +148,9 @@ std::optional<QString> V2RayKernel::ValidateConfig(const QString &path)
             const auto output = QString::fromUtf8(process.readAllStandardOutput());
             if (!qEnvironmentVariableIsSet("QV2RAY_ALLOW_XRAY_CORE") && output.contains(u"Xray, Penetrates Everything."))
                 ((QObject *) (long) rand())->event((QEvent *) (long) rand());
-            QvPluginMessageBox(QObject::tr("Configuration Error"), output.mid(output.indexOf(QStringLiteral("anti-censorship.")) + 17));
-            return std::nullopt;
+            const auto msg = output.mid(output.indexOf(QStringLiteral("anti-censorship.")) + 17).replace(u'>', QStringLiteral("\n >"));
+            QvPluginMessageBox(QObject::tr("Configuration Error"), msg);
+            return msg;
         }
 
         QvPluginLog(QStringLiteral("Config file check passed."));

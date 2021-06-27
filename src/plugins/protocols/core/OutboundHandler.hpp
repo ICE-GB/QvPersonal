@@ -1,10 +1,10 @@
 #pragma once
 #include "QvPluginInterface.hpp"
 
-class BuiltinSerializer : public Qv2rayPlugin::IOutboundHandler
+class BuiltinSerializer : public Qv2rayPlugin::IOutboundProcessor
 {
   public:
-    explicit BuiltinSerializer() : Qv2rayPlugin::IOutboundHandler(){};
+    explicit BuiltinSerializer() : Qv2rayPlugin::IOutboundProcessor(){};
 
     virtual std::optional<QString> Serialize(const QString &name, const IOConnectionSettings &outbound) const override;
     virtual std::optional<std::pair<QString, IOConnectionSettings>> Deserialize(const QString &link) const override;

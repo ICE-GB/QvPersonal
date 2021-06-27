@@ -22,10 +22,12 @@ const static inline auto QV2RAY_URL_SCHEME = "qv2ray-debug";
 const static inline QString QV2RAY_URL_SCHEME = "qv2ray";
 #endif
 
+Q_IMPORT_PLUGIN(Qv2rayInternalPlugin);
+
 Qv2rayApplication::Qv2rayApplication(int &argc, char *argv[]) : SingleApplication(argc, argv, true, User | ExcludeAppPath | ExcludeAppVersion)
 {
     baseLibrary = new Qv2rayBase::Qv2rayBaseLibrary;
-    Qv2rayLogo = QPixmap{ ":/qv2ray.png" };
+    Qv2rayLogo = QPixmap{ QStringLiteral(":/qv2ray.png") };
 }
 
 Qv2rayApplication::~Qv2rayApplication()

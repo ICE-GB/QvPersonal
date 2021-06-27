@@ -1,5 +1,279 @@
 #include "V2RayProfileGenerator.hpp"
 
+#include "BuiltinV2RayCorePlugin.hpp"
+#include "V2RayModels.hpp"
+
+#include <QJsonDocument>
+
+constexpr auto DEFAULT_API_TAG = "api";
+constexpr auto DEFAULT_API_IN_TAG = "api-in";
+
+V2RayProfileGenerator::V2RayProfileGenerator(const ProfileContent &profile) : profile(profile){};
+
+QByteArray V2RayProfileGenerator::GenerateConfiguration(const ProfileContent &p)
+{
+    return V2RayProfileGenerator(p).Generate();
+}
+
+QByteArray V2RayProfileGenerator::Generate()
+{
+    QJsonObject rootconf;
+    JsonStructHelper::MergeJson(rootconf, profile.extraOptions);
+
+    for (const auto &in : profile.inbounds)
+        ProcessInboundConfig(in);
+
+    for (const auto &out : profile.outbounds)
+        if (out.objectType == OutboundObject::ORIGINAL)
+            ProcessOutboundConfig(out);
+        else if (out.objectType == OutboundObject::BALANCER)
+            ProcessBalancerConfig(out);
+
+    for (const auto &rule : profile.routing.rules)
+        ProcessRoutingRule(rule);
+
+    QJsonObject routing;
+    if (const auto ds = profile.routing.options[QStringLiteral("domainStrategy")].toString(); !ds.isEmpty())
+        routing[QStringLiteral("domainStrategy")] = ds;
+
+    if (const auto dm = profile.routing.options[QStringLiteral("domainMatcher")].toString(); !dm.isEmpty())
+        routing[QStringLiteral("domainMatcher")] = dm;
+
+    // Override log level
+    const auto settings = Qv2rayPlugin::TPluginInstance<BuiltinV2RayCorePlugin>()->settings;
+    rootconf[QStringLiteral("log")] = QJsonObject{ { QStringLiteral("loglevel"), [](auto l) {
+                                                        switch (l)
+                                                        {
+                                                            case V2RayCorePluginSettings::None: return QStringLiteral("none");
+                                                            case V2RayCorePluginSettings::Error: QStringLiteral("error");
+                                                            case V2RayCorePluginSettings::Warning: QStringLiteral("warning");
+                                                            case V2RayCorePluginSettings::Info: QStringLiteral("info");
+                                                            case V2RayCorePluginSettings::Debug: QStringLiteral("debug");
+                                                            default: return QStringLiteral("warning");
+                                                        }
+                                                    }(settings.LogLevel) } };
+
+    if (!rootconf.contains(QStringLiteral("browserForwarder")) || rootconf.value(QStringLiteral("browserForwarder")).toObject().isEmpty())
+        rootconf[QStringLiteral("browserForwarder")] = settings.BrowserForwarderSettings.toJson();
+
+    if (!rootconf.contains(QStringLiteral("observatory")) || rootconf.value(QStringLiteral("observatory")).toObject().isEmpty())
+        rootconf[QStringLiteral("observatory")] = settings.ObservatorySettings.toJson();
+
+    if (settings.APIEnabled)
+    {
+        //
+        // Stats
+        rootconf.insert(QStringLiteral("stats"), QJsonObject());
+
+        //
+        // Policy
+        rootconf[QStringLiteral("policy")] = QJsonObject{ { QStringLiteral("system"), QJsonObject{ { QStringLiteral("statsInboundUplink"), true },
+                                                                                                   { QStringLiteral("statsInboundDownlink"), true },
+                                                                                                   { QStringLiteral("statsOutboundUplink"), true },
+                                                                                                   { QStringLiteral("statsOutboundDownlink"), true } } } };
+
+        //
+        // Inbound
+        inbounds.push_front(QJsonObject{ { QStringLiteral("listen"), QStringLiteral("127.0.0.1") },
+                                         { QStringLiteral("port"), *settings.APIPort },
+                                         { QStringLiteral("protocol"), QStringLiteral("dokodemo-door") },
+                                         { QStringLiteral("settings"), QJsonObject{ { QStringLiteral("address"), QStringLiteral("127.0.0.1") } } } });
+        //
+        // Rule
+        rules.push_front(QJsonObject{ { QStringLiteral("type"), QStringLiteral("field") },
+                                      { QStringLiteral("outboundTag"), QString::fromUtf8(DEFAULT_API_TAG) },
+                                      { QStringLiteral("inboundTag"), QJsonArray{ QString::fromUtf8(DEFAULT_API_IN_TAG) } } });
+
+        //
+        // API
+        rootconf[QStringLiteral("api")] = QJsonObject{ { QStringLiteral("tag"), QString::fromUtf8(DEFAULT_API_TAG) },
+                                                       { QStringLiteral("services"), QJsonArray{ QStringLiteral("ReflectionService"), //
+                                                                                                 QStringLiteral("HandlerService"),    //
+                                                                                                 QStringLiteral("LoggerService"),     //
+                                                                                                 QStringLiteral("StatsService") } } };
+    }
+
+    if (!rules.isEmpty())
+        routing[QStringLiteral("rules")] = rules;
+
+    if (!balancers.isEmpty())
+        routing[QStringLiteral("balancers")] = balancers;
+
+    rootconf[QStringLiteral("routing")] = routing;
+    rootconf[QStringLiteral("inbounds")] = inbounds;
+    rootconf[QStringLiteral("outbounds")] = outbounds;
+
+    if (!profile.dnsSettings.isEmpty())
+        rootconf[QStringLiteral("dns")] = profile.dnsSettings;
+
+    if (!profile.fakednsSettings.isEmpty())
+        rootconf[QStringLiteral("fakedns")] = profile.fakednsSettings;
+
+    return QJsonDocument(rootconf).toJson(QJsonDocument::Indented);
+}
+
+void V2RayProfileGenerator::ProcessRoutingRule(const RuleObject &r)
+{
+    QJsonObject rule;
+    rule[QStringLiteral("type")] = QStringLiteral("field");
+    if (!r.targetDomains.isEmpty())
+        rule[QStringLiteral("domains")] = QJsonArray::fromStringList(r.targetDomains);
+
+    if (!r.targetIPs.isEmpty())
+        rule[QStringLiteral("ip")] = QJsonArray::fromStringList(r.targetIPs);
+
+    if (r.targetPort.from != 0 && r.targetPort.to != 0)
+        rule[QStringLiteral("port")] = (QString) r.targetPort;
+
+    if (r.sourcePort.from != 0 && r.sourcePort.to != 0)
+        rule[QStringLiteral("sourcePort")] = (QString) r.sourcePort;
+
+    if (!r.networks.isEmpty())
+        rule[QStringLiteral("network")] = r.networks.join(u',');
+
+    if (!r.sourceAddresses.isEmpty())
+        rule[QStringLiteral("source")] = QJsonArray::fromStringList(r.sourceAddresses);
+
+    if (!r.inboundTags.isEmpty())
+        rule[QStringLiteral("inboundTag")] = QJsonArray::fromStringList(r.inboundTags);
+
+    if (!r.protocols.isEmpty())
+        rule[QStringLiteral("protocol")] = QJsonArray::fromStringList(r.protocols);
+
+    rule[QStringLiteral("user")] = r.extraSettings[QStringLiteral("user")];
+
+    const auto out = findOutbound(r.outboundTag);
+    rule[out.objectType == OutboundObject::ORIGINAL ? QStringLiteral("outboundTag") : QStringLiteral("balancerTag")] = r.outboundTag;
+
+    rules << rule;
+}
+
+void V2RayProfileGenerator::ProcessInboundConfig(const InboundObject &in)
+{
+    QJsonObject root;
+    root[QStringLiteral("tag")] = in.name;
+    root[QStringLiteral("listen")] = in.inboundSettings.address;
+    root[QStringLiteral("port")] = in.inboundSettings.port.from;
+    root[QStringLiteral("streamSettings")] = GenerateStreamSettings(in.inboundSettings.streamSettings);
+    root[QStringLiteral("protocol")] = in.inboundSettings.protocol;
+    root[QStringLiteral("settings")] = in.inboundSettings.protocolSettings;
+
+    if (in.inboundSettings.muxSettings.enabled)
+        root[QStringLiteral("mux")] = in.inboundSettings.muxSettings.toJson();
+
+    // Special Case: HTTP, SOCKS: with flattened users[]
+    if (in.inboundSettings.protocol == QStringLiteral("http") || in.inboundSettings.protocol == QStringLiteral("socks"))
+    {
+        Qv2ray::Models::HTTPSOCKSObject hso;
+        hso.loadJson(in.inboundSettings.protocolSettings);
+
+        // Move user and pass to subarray
+        QJsonArray accounts;
+        accounts << QJsonObject{ { QStringLiteral("user"), QJsonValue(hso.user) }, { QStringLiteral("pass"), QJsonValue(hso.pass) } };
+
+        QJsonObject settings = root[QStringLiteral("settings")].toObject();
+        settings.remove(QStringLiteral("user"));
+        settings.remove(QStringLiteral("pass"));
+        settings[QStringLiteral("accounts")] = accounts;
+        root[QStringLiteral("settings")] = settings;
+    }
+
+    JsonStructHelper::MergeJson(root, in.options);
+    inbounds << root;
+}
+
+void V2RayProfileGenerator::ProcessOutboundConfig(const OutboundObject &out)
+{
+    assert(out.objectType == OutboundObject::ORIGINAL);
+
+    QJsonObject root;
+    root[QStringLiteral("tag")] = out.name;
+    root[QStringLiteral("protocol")] = out.outboundSettings.protocol;
+    root[QStringLiteral("settings")] = out.outboundSettings.protocolSettings;
+    root[QStringLiteral("streamSettings")] = GenerateStreamSettings(out.outboundSettings.streamSettings);
+
+    if (out.outboundSettings.muxSettings.enabled)
+        root[QStringLiteral("mux")] = out.outboundSettings.muxSettings.toJson();
+
+    if (out.outboundSettings.protocol == QStringLiteral("http") || out.outboundSettings.protocol == QStringLiteral("socks"))
+    {
+        Qv2ray::Models::HTTPSOCKSObject serv;
+        serv.loadJson(out.outboundSettings.protocolSettings);
+
+        QJsonObject singleServer{
+            { QStringLiteral("address"), out.outboundSettings.address },
+            { QStringLiteral("port"), out.outboundSettings.port.from },
+        };
+
+        if (!serv.user->isEmpty() || !serv.pass->isEmpty())
+        {
+            QJsonObject userobject{ { QStringLiteral("user"), *serv.user }, { QStringLiteral("pass"), *serv.pass } };
+            singleServer[QStringLiteral("users")] = QJsonArray{ userobject };
+        }
+
+        root[QStringLiteral("settings")] = { { QStringLiteral("servers"), QJsonArray{ singleServer } } };
+    }
+
+    if (out.outboundSettings.protocol == QStringLiteral("vmess"))
+    {
+        Qv2ray::Models::VMessClientObject serv;
+        serv.loadJson(out.outboundSettings.protocolSettings);
+
+        QJsonObject singleServer{ { QStringLiteral("address"), out.outboundSettings.address },
+                                  { QStringLiteral("port"), out.outboundSettings.port.from },
+                                  { QStringLiteral("users"), QJsonArray{ QJsonObject{ { QStringLiteral("id"), *serv.id },
+                                                                                      { QStringLiteral("alterId"), *serv.alterId },
+                                                                                      { QStringLiteral("security"), *serv.security } } } } };
+
+        root[QStringLiteral("settings")] = QJsonObject{ { QStringLiteral("vnext"), QJsonArray{ singleServer } } };
+    }
+
+    if (out.outboundSettings.protocol == QStringLiteral("vless"))
+    {
+        Qv2ray::Models::VLESSClientObject serv;
+        serv.loadJson(out.outboundSettings.protocolSettings);
+        QJsonObject singleServer{ { QStringLiteral("address"), out.outboundSettings.address },
+                                  { QStringLiteral("port"), out.outboundSettings.port.from },
+                                  { QStringLiteral("users"), QJsonArray{ QJsonObject{ { QStringLiteral("id"), *serv.id },
+                                                                                      { QStringLiteral("encryption"), *serv.encryption },
+                                                                                      { QStringLiteral("flow"), *serv.flow } } } } };
+
+        root[QStringLiteral("settings")] = QJsonObject{ { QStringLiteral("vnext"), QJsonArray{ singleServer } } };
+    }
+
+    if (out.outboundSettings.protocol == QStringLiteral("shadowsocks"))
+    {
+        Qv2ray::Models::ShadowSocksClientObject ss;
+        ss.loadJson(out.outboundSettings.protocolSettings);
+
+        QJsonObject singleServer{ { QStringLiteral("method"), *ss.method },
+                                  { QStringLiteral("password"), *ss.password },
+                                  { QStringLiteral("address"), out.outboundSettings.address },
+                                  { QStringLiteral("port"), out.outboundSettings.port.from } };
+
+        root[QStringLiteral("settings")] = { { QStringLiteral("servers"), QJsonArray{ singleServer } } };
+    }
+
+    JsonStructHelper::MergeJson(root, out.options);
+    outbounds << root;
+}
+
+void V2RayProfileGenerator::ProcessBalancerConfig(const OutboundObject &out)
+{
+    assert(out.objectType == OutboundObject::BALANCER);
+    QJsonObject root;
+    root[QStringLiteral("tag")] = out.name;
+    root[QStringLiteral("selector")] = out.balancerSettings.selectorSettings;
+    root[QStringLiteral("strategy")] = QJsonObject{ { QStringLiteral("type"), out.balancerSettings.selectorType } };
+    balancers << root;
+}
+
+QJsonObject V2RayProfileGenerator::GenerateStreamSettings(const IOStreamSettings &stream)
+{
+    return stream;
+}
+
+#ifdef QV2RAY_V2RAY_PLUGIN_USE_PROTOBUF
 // App Settings
 #include "v2ray/app/browserforwarder/config.pb.h"
 #include "v2ray/app/dns/config.pb.h"
@@ -51,9 +325,6 @@
 #include "v2ray/transport/internet/udp/config.pb.h"
 #include "v2ray/transport/internet/websocket/config.pb.h"
 
-// General Headers
-#include "V2RayModels.hpp"
-
 #include <QHostAddress>
 
 std::string to_v2ray_addr(const QHostAddress &addr)
@@ -91,7 +362,29 @@ QByteArray V2RayProfileGenerator::GenerateConfiguration(const ProfileContent &pr
     for (const auto &out : profile.outbounds)
         GenerateOutboundConfig(out, config.add_outbound());
 
+    GenerateDNSConfig(profile.dnsOptions, config.add_app());
+
     return QByteArray::fromStdString(config.SerializeAsString());
+}
+
+void V2RayProfileGenerator::GenerateDNSConfig(const QJsonObject &_dns, google::protobuf::Any *app)
+{
+    using namespace v2ray::core::app::dns;
+    Config conf;
+    const auto dns = Qv2ray::Models::V2RayDNSObject::fromJson(_dns);
+
+    conf.set_client_ip(dns.clientIp->toStdString());
+    conf.set_tag(dns.tag->toStdString());
+    conf.set_disablecache(dns.disableCache);
+    conf.set_query_strategy((QueryStrategy) *dns.queryStrategy);
+    conf.set_disablefallback(dns.disableFallback);
+
+    for (auto it = dns.hosts.constKeyValueBegin(); it != dns.hosts.constKeyValueEnd(); it++)
+    {
+        conf.add_static_hosts();
+    }
+
+    app->PackFrom(conf);
 }
 
 void V2RayProfileGenerator::GenerateStreamSettings(const IOStreamSettings &s, ::v2ray::core::transport::internet::StreamConfig *vs)
@@ -582,3 +875,4 @@ void V2RayProfileGenerator::GenerateOutboundConfig(const OutboundObject &out, v2
     }
 #undef _out
 }
+#endif

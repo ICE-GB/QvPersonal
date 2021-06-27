@@ -69,7 +69,7 @@ QvMessageBusSlotImpl(DnsSettingsWidget)
     }
 }
 
-void DnsSettingsWidget::SetDNSObject(const Qv2ray::Models::DNSObject &_dns, const Qv2ray::Models::FakeDNSObject &_fakeDNS)
+void DnsSettingsWidget::SetDNSObject(const Qv2ray::Models::V2RayDNSObject &_dns, const Qv2ray::Models::FakeDNSObject &_fakeDNS)
 {
     this->dns = _dns;
     this->fakeDNS = _fakeDNS;
@@ -87,7 +87,7 @@ void DnsSettingsWidget::SetDNSObject(const Qv2ray::Models::DNSObject &_dns, cons
     }
 
     staticResolvedDomainsTable->clearContents();
-    for (const auto &[host, ip] : dns.hosts->toStdMap())
+    for (const auto &[host, ip] : dns.hosts.toStdMap())
     {
         const auto rowId = staticResolvedDomainsTable->rowCount();
         staticResolvedDomainsTable->insertRow(rowId);
@@ -130,8 +130,8 @@ void DnsSettingsWidget::ShowCurrentDnsServerDetails()
 {
     serverAddressTxt->setText((*dns.servers)[currentServerIndex].address);
     //
-    domainListTxt->setPlainText((*dns.servers)[currentServerIndex].domains->join(NEWLINE));
-    ipListTxt->setPlainText((*dns.servers)[currentServerIndex].expectIPs->join(NEWLINE));
+    domainListTxt->setPlainText((*dns.servers)[currentServerIndex].domains->join('\n'));
+    ipListTxt->setPlainText((*dns.servers)[currentServerIndex].expectIPs->join('\n'));
     //
     serverPortSB->setValue((*dns.servers)[currentServerIndex].port);
     detailsSettingsGB->setChecked((*dns.servers)[currentServerIndex].QV2RAY_DNS_IS_COMPLEX_DNS);
@@ -147,15 +147,15 @@ void DnsSettingsWidget::ShowCurrentDnsServerDetails()
     ProcessDnsPortEnabledState();
 }
 
-std::pair<Qv2ray::Models::DNSObject, Qv2ray::Models::FakeDNSObject> DnsSettingsWidget::GetDNSObject()
+std::pair<Qv2ray::Models::V2RayDNSObject, Qv2ray::Models::FakeDNSObject> DnsSettingsWidget::GetDNSObject()
 {
-    dns.hosts->clear();
+    dns.hosts.clear();
     for (auto i = 0; i < staticResolvedDomainsTable->rowCount(); i++)
     {
         const auto &item1 = staticResolvedDomainsTable->item(i, 0);
         const auto &item2 = staticResolvedDomainsTable->item(i, 1);
         if (item1 && item2)
-            dns.hosts->insert(item1->text(), item2->text());
+            dns.hosts.insert(item1->text(), item2->text());
     }
     return { dns, fakeDNS };
 }
@@ -171,8 +171,8 @@ void DnsSettingsWidget::on_dnsTagTxt_textEdited(const QString &arg1)
 }
 void DnsSettingsWidget::on_addServerBtn_clicked()
 {
-    Qv2ray::Models::DNSObject::DNSServerObject o;
-    o.address = "1.1.1.1";
+    Qv2ray::Models::V2RayDNSObject::V2RayDNSServerObject o;
+    o.address = QStringLiteral("1.1.1.1");
     o.port = 53;
     dns.servers->push_back(o);
     serversListbox->addItem(o.address);

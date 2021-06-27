@@ -30,6 +30,10 @@ list(APPEND QV2RAY_FULL_SOURCES
     ${CMAKE_SOURCE_DIR}/src/ui/windows/w_MainWindow_extra.cpp
     ${CMAKE_SOURCE_DIR}/src/components/GeositeReader/picoproto.h
     ${CMAKE_SOURCE_DIR}/src/components/GeositeReader/picoproto.cc
+    ${CMAKE_SOURCE_DIR}/src/plugins/internal/InternalPlugin.cpp
+    ${CMAKE_SOURCE_DIR}/src/plugins/internal/InternalPlugin.hpp
+    ${CMAKE_SOURCE_DIR}/src/plugins/internal/InternalProfilePreprocessor.cpp
+    ${CMAKE_SOURCE_DIR}/src/plugins/internal/InternalProfilePreprocessor.hpp
     )
 
 qv2ray_add_class(Qv2rayApplication)

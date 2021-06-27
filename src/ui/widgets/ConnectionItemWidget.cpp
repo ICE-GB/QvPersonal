@@ -70,7 +70,7 @@ ConnectionItemWidget::ConnectionItemWidget(const GroupId &id, QWidget *parent) :
     font.setBold(true);
     connNameLabel->setFont(font);
     //
-    OnGroupItemRenamed(id, "", originalItemName);
+    OnGroupItemRenamed(id, QLatin1String(""), originalItemName);
     connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnConnectionCreated, this, &ConnectionItemWidget::RecalculateConnections);
     connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnConnectionModified, this, &ConnectionItemWidget::RecalculateConnections);
     connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnConnectionLinkedWithGroup, this, &ConnectionItemWidget::RecalculateConnections);

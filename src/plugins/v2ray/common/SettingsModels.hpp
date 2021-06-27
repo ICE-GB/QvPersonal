@@ -5,16 +5,15 @@
 
 struct BrowserForwarderConfig
 {
-    Bindable<QString> ListeningAddress;
-    Bindable<int> ListeningPort;
-    QJS_FUNC_JSON(F(ListeningAddress, ListeningPort))
+    Bindable<QString> listenAddr;
+    Bindable<int> listenPort;
+    QJS_FUNC_JSON(F(listenAddr, listenPort))
 };
 
-struct ProfileConnectionConfig
+struct ObservatoryConfig
 {
-    Bindable<bool> UseV2RayDNSForDirectConnections;
-    Bindable<bool> DNSInterception;
-    QJS_FUNC_JSON(F(UseV2RayDNSForDirectConnections, DNSInterception))
+    QStringList subjectSelector;
+    QJS_FUNC_JSON(F(subjectSelector))
 };
 
 struct V2RayCorePluginSettings
@@ -35,8 +34,8 @@ struct V2RayCorePluginSettings
     Bindable<bool> APIEnabled;
     Bindable<int> APIPort;
 
-    ProfileConnectionConfig ConnectionSettings;
     BrowserForwarderConfig BrowserForwarderSettings;
+    ObservatoryConfig ObservatorySettings;
 
-    QJS_FUNC_JSON(F(LogLevel, CorePath, AssetsPath, APIEnabled, APIPort, ConnectionSettings, BrowserForwarderSettings))
+    QJS_FUNC_JSON(F(LogLevel, CorePath, AssetsPath, APIEnabled, APIPort, BrowserForwarderSettings, ObservatorySettings))
 };

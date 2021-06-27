@@ -59,6 +59,16 @@ namespace Qv2ray::Models
         Bindable<QList<QString>> DestinationOverride{ { "http", "tls" } };
         ProtocolInboundBase(int port = 0) : ListenPort(port){};
         QJS_FUNC_JSON(F(ListenPort, Sniffing, DestinationOverride))
+
+        virtual void Propagate(InboundObject &in) const
+        {
+            in.inboundSettings.port = ListenPort;
+            in.options[QStringLiteral("sniffing")] = QJsonObject{
+                { QStringLiteral("enabled"), Sniffing != SNIFFING_OFF },                             //
+                { QStringLiteral("metadataOnly"), Sniffing == SNIFFING_METADATA_ONLY },              //
+                { QStringLiteral("destOverride"), QJsonArray::fromStringList(DestinationOverride) }, //
+            };
+        }
     };
 
     struct SocksInboundConfig : public ProtocolInboundBase
@@ -67,6 +77,13 @@ namespace Qv2ray::Models
         Bindable<QString> UDPLocalAddress;
         SocksInboundConfig() : ProtocolInboundBase(1080){};
         QJS_FUNC_JSON(F(EnableUDP, UDPLocalAddress), B(ProtocolInboundBase))
+
+        virtual void Propagate(InboundObject &in) const
+        {
+            ProtocolInboundBase::Propagate(in);
+            in.inboundSettings.protocolSettings[QStringLiteral("udp")] = *EnableUDP;
+            in.inboundSettings.protocolSettings[QStringLiteral("ip")] = *UDPLocalAddress;
+        }
     };
 
     struct HTTPInboundConfig : public ProtocolInboundBase
@@ -83,9 +100,15 @@ namespace Qv2ray::Models
             REDIRECT
         };
         Bindable<DokoWorkingMode> WorkingMode{ TPROXY };
-        Bindable<int> OutboundMark{ 255 };
         DokodemoDoorInboundConfig() : ProtocolInboundBase(12345){};
-        QJS_FUNC_JSON(F(WorkingMode, OutboundMark), B(ProtocolInboundBase))
+        QJS_FUNC_JSON(F(WorkingMode), B(ProtocolInboundBase))
+
+        virtual void Propagate(InboundObject &in) const
+        {
+            ProtocolInboundBase::Propagate(in);
+            in.inboundSettings.protocolSettings[QStringLiteral("network")] = QStringLiteral("tcp,udp");
+            in.inboundSettings.protocolSettings[QStringLiteral("followRedirect")] = true;
+        }
     };
 
     struct Qv2rayInboundConfig
@@ -107,13 +130,16 @@ namespace Qv2ray::Models
 
     struct Qv2rayConnectionConfig
     {
+        Bindable<bool> BypassLAN{ false };
+        Bindable<bool> BypassCN{ false };
         Bindable<bool> BypassBittorrent{ false };
         Bindable<bool> ForceDirectConnection{ false };
-        Bindable<DNSObject> DNSConfig;
+        Bindable<bool> DNSInterception{ false };
+        Bindable<V2RayDNSObject> DNSConfig;
         Bindable<FakeDNSObject> FakeDNSConfig;
         Bindable<RouteMatrixConfig> RouteConfig;
         Bindable<int> OutboundMark;
-        QJS_FUNC_JSON(F(BypassBittorrent, ForceDirectConnection, DNSConfig, FakeDNSConfig, RouteConfig, OutboundMark))
+        QJS_FUNC_JSON(F(BypassBittorrent, ForceDirectConnection, DNSInterception, DNSConfig, FakeDNSConfig, RouteConfig, OutboundMark))
     };
 
     struct Qv2rayApplicationConfigObject

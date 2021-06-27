@@ -1,10 +1,5 @@
 find_package(Protobuf REQUIRED)
 
-set(PROTO_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/3rdparty/v2ray-core/")
-file(GLOB_RECURSE PROTO_FILES "${PROTO_SOURCE_DIR}/*.proto")
-
-set(PROTO_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/v2ray")
-make_directory(${PROTO_GENERATED_DIR})
 
 if(QV2RAY_AVOID_GRPC)
     add_compile_definitions(QV2RAY_NO_GRPC)
@@ -25,7 +20,7 @@ else()
     endif()
 endif()
 
-foreach(proto ${PROTO_FILES})
+macro(proto_gen_v2ray_files proto)
     get_filename_component(PROTO_ABS_DIR_PATH ${proto} DIRECTORY)
     file(RELATIVE_PATH _r ${PROTO_SOURCE_DIR} ${proto})
     get_filename_component(PROTO_FILE_DIR ${_r} DIRECTORY)
@@ -42,11 +37,11 @@ foreach(proto ${PROTO_FILES})
             OUTPUT "${PROTO_HEADER_FILE}" "${PROTO_SOURCE_FILE}" "${PROTO_GRPC_HEADER_FILE}" "${PROTO_GRPC_SOURCE_FILE}"
             COMMAND ${Protobuf_PROTOC_EXECUTABLE}
             ARGS
-                --grpc_out "${PROTO_GENERATED_DIR}"
-                --cpp_out "${PROTO_GENERATED_DIR}"
-                -I "${PROTO_SOURCE_DIR}"
-                --plugin=protoc-gen-grpc="${GRPC_CPP_PLUGIN}"
-                "${proto}"
+            --grpc_out "${PROTO_GENERATED_DIR}"
+            --cpp_out "${PROTO_GENERATED_DIR}"
+            -I "${PROTO_SOURCE_DIR}"
+            --plugin=protoc-gen-grpc="${GRPC_CPP_PLUGIN}"
+            "${proto}"
             DEPENDS "${proto}"
             )
     else()
@@ -55,26 +50,43 @@ foreach(proto ${PROTO_FILES})
             OUTPUT "${PROTO_HEADER_FILE}" "${PROTO_SOURCE_FILE}"
             COMMAND ${Protobuf_PROTOC_EXECUTABLE}
             ARGS
-                --cpp_out "${PROTO_GENERATED_DIR}"
-                -I "${PROTO_SOURCE_DIR}"
-                "${proto}"
+            --cpp_out "${PROTO_GENERATED_DIR}"
+            -I "${PROTO_SOURCE_DIR}"
+            "${proto}"
             DEPENDS "${proto}"
             )
     endif()
 
     list(APPEND PROTO_HEADERS ${PROTO_HEADER_FILE} ${PROTO_GRPC_HEADER_FILE})
     list(APPEND PROTO_SOURCES ${PROTO_SOURCE_FILE} ${PROTO_GRPC_SOURCE_FILE})
-endforeach()
+endmacro()
 
+set(PROTO_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/3rdparty/v2ray-core/")
+if(QV2RAY_V2RAY_PLUGIN_USE_PROTOBUF)
+    file(GLOB_RECURSE PROTO_FILES "${PROTO_SOURCE_DIR}/*.proto")
+else()
+    set(PROTO_FILES "${PROTO_SOURCE_DIR}/app/stats/command/command.proto")
+endif()
+
+set(PROTO_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/v2ray")
+make_directory(${PROTO_GENERATED_DIR})
+foreach(proto ${PROTO_FILES})
+    proto_gen_v2ray_files(${proto})
+endforeach()
 set_source_files_properties(FILES ${PROTO_HEADERS} ${PROTO_SOURCES} PROPERTIES SKIP_AUTOGEN TRUE)
 
 add_library(QvPlugin-BuiltinV2RaySupport SHARED
     ${PROTO_SOURCES} ${PROTO_HEADERS}
+    ${CMAKE_CURRENT_LIST_DIR}/ui/w_V2RayKernelSettings.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/ui/w_V2RayKernelSettings.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/ui/w_V2RayKernelSettings.ui
     ${CMAKE_CURRENT_LIST_DIR}/common/SettingsModels.hpp
     ${CMAKE_CURRENT_LIST_DIR}/common/CommonHelpers.hpp
     ${CMAKE_CURRENT_LIST_DIR}/common/CommonHelpers.cpp
     ${CMAKE_CURRENT_LIST_DIR}/BuiltinV2RayCorePlugin.hpp
     ${CMAKE_CURRENT_LIST_DIR}/BuiltinV2RayCorePlugin.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/core/Filters.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/core/Filters.cpp
     ${CMAKE_CURRENT_LIST_DIR}/core/V2RayAPIStats.hpp
     ${CMAKE_CURRENT_LIST_DIR}/core/V2RayAPIStats.cpp
     ${CMAKE_CURRENT_LIST_DIR}/core/V2RayKernel.hpp
@@ -82,6 +94,10 @@ add_library(QvPlugin-BuiltinV2RaySupport SHARED
     ${CMAKE_CURRENT_LIST_DIR}/core/V2RayProfileGenerator.hpp
     ${CMAKE_CURRENT_LIST_DIR}/core/V2RayProfileGenerator.cpp
     )
+
+if(QV2RAY_V2RAY_PLUGIN_USE_PROTOBUF)
+    target_compile_definitions(QvPlugin-BuiltinV2RaySupport PRIVATE QV2RAY_V2RAY_PLUGIN_USE_PROTOBUF)
+endif()
 
 target_compile_definitions(QvPlugin-BuiltinV2RaySupport PRIVATE QT_NO_CAST_FROM_ASCII)
 
@@ -93,9 +109,10 @@ target_link_libraries(QvPlugin-BuiltinV2RaySupport
     PRIVATE
     Qt::Core
     Qt::Network
+    Qt::Gui
     Qv2ray::QvPluginInterface
     protobuf::libprotobuf
     gRPC::grpc++)
 
 qv2ray_add_plugin_moc_sources(QvPlugin-BuiltinV2RaySupport)
-qv2ray_configure_plugin(QvPlugin-BuiltinV2RaySupport)
+qv2ray_configure_plugin(QvPlugin-BuiltinV2RaySupport Widgets)

@@ -113,7 +113,7 @@ RouteEditor::RouteEditor(ProfileContent connection, QWidget *parent) : QvDialog(
     SetUpLayout(dnsEditorUIWidget, dnsWidget);
     //
     nodeDispatcher->LoadFullConfig(root);
-    dnsWidget->SetDNSObject(DNSObject::fromJson(root.extraOptions["dns"].toObject()), FakeDNSObject::fromJson(root.extraOptions["fakedns"].toObject()));
+    dnsWidget->SetDNSObject(V2RayDNSObject::fromJson(root.dnsSettings), FakeDNSObject::fromJson(root.fakednsSettings));
     //
     domainStrategy = root.routing.options[QStringLiteral("domainStrategy")].toString();
     domainStrategyCombo->setCurrentText(domainStrategy);
@@ -250,8 +250,8 @@ ProfileContent RouteEditor::OpenEditor()
     }
     // Process DNS
     const auto &[dns, fakedns] = dnsWidget->GetDNSObject();
-    root.extraOptions[QStringLiteral("dns")] = dns.toJson();
-    root.extraOptions[QStringLiteral("fakedns")] = fakedns.toJson();
+    root.dnsSettings = dns.toJson();
+    root.fakednsSettings = fakedns.toJson();
     {
         // Process Browser Forwarder
         QJsonObject browserForwarder;

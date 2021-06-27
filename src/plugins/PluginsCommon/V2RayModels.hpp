@@ -36,32 +36,36 @@ namespace Qv2ray::Models
         QJS_FUNC_JSON(F(domainStrategy, domainMatcher, domains, ips))
     };
 
-    struct DNSObject
+    struct V2RayDNSObject : BasicDNSObject
     {
-        struct DNSServerObject
+        enum QueryStrategy
+        {
+            UseIP,
+            UseIPv4,
+            UseIPv6,
+        };
+
+        struct V2RayDNSServerObject : BasicDNSServerObject
         {
             Bindable<bool> QV2RAY_DNS_IS_COMPLEX_DNS{ false };
             Bindable<bool> SkipFallback{ false };
-            Bindable<int> port{ 53 };
-            Bindable<QString> address;
             Bindable<QList<QString>> domains;
             Bindable<QList<QString>> expectIPs;
-            QJS_FUNC_COMPARE(DNSServerObject, QV2RAY_DNS_IS_COMPLEX_DNS, SkipFallback, port, address, domains, expectIPs);
-            QJS_FUNC_JSON(F(QV2RAY_DNS_IS_COMPLEX_DNS, SkipFallback, port, address, domains, expectIPs))
+            QJS_FUNC_COMPARE(V2RayDNSServerObject, QV2RAY_DNS_IS_COMPLEX_DNS, SkipFallback, port, address, domains, expectIPs);
+            QJS_FUNC_JSON(F(QV2RAY_DNS_IS_COMPLEX_DNS, SkipFallback, port, address, domains, expectIPs), B(BasicDNSServerObject))
         };
 
-        Bindable<QMap<QString, QString>> hosts;
-        Bindable<QList<DNSServerObject>> servers;
+        Bindable<QList<V2RayDNSServerObject>> servers;
         Bindable<QString> clientIp;
         Bindable<QString> tag;
         Bindable<bool> disableCache{ false };
         Bindable<bool> disableFallback{ false };
         Bindable<QString> queryStrategy{ QStringLiteral("UseIP") };
-        QJS_FUNC_COMPARE(DNSObject, hosts, servers, clientIp, tag, disableCache, disableFallback, queryStrategy);
-        QJS_FUNC_JSON(F(hosts, servers, clientIp, tag, disableCache, disableFallback, queryStrategy));
+        QJS_FUNC_COMPARE(V2RayDNSObject, servers, clientIp, tag, disableCache, disableFallback, queryStrategy);
+        QJS_FUNC_JSON(F(servers, clientIp, tag, disableCache, disableFallback, queryStrategy), B(BasicDNSObject));
         static auto fromJson(const QJsonObject &o)
         {
-            DNSObject dns;
+            V2RayDNSObject dns;
             dns.loadJson(o);
             return dns;
         }
