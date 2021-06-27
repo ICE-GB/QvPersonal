@@ -130,7 +130,7 @@ namespace Qv2ray::components::LogHighlighter
     {
         for (const HighlightingRule &rule : qAsConst(highlightingRules))
         {
-            QRegularExpressionMatchIterator matchIterator = rule.pattern.globalMatch(text);
+            auto matchIterator = rule.pattern.globalMatch(text);
 
             while (matchIterator.hasNext())
             {

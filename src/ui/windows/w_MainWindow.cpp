@@ -110,9 +110,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     UpdateActionTranslations();
     //
     //
-    connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnKernelCrashed,
-            [this](const ProfileId &, const QString &reason)
-            {
+    connect(QvBaselib->KernelManager(), &Qv2rayBase::Profile::KernelManager::OnCrashed,
+            [this](const ProfileId &, const QString &reason) {
                 MWShowWindow();
                 qApp->processEvents();
                 QvBaselib->Warn(tr("Kernel terminated."),
@@ -120,10 +119,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
                                      tr("To solve the problem, read the kernel log in the log text browser."));
             });
 
-    connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnConnected, this, &MainWindow::OnConnected);
-    connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnDisconnected, this, &MainWindow::OnDisconnected);
-    connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnStatsAvailable, this, &MainWindow::OnStatsAvailable);
-    connect(QvBaselib->KernelManager(), &Qv2rayBase::Profile::KernelManager::OnKernelLogAvailable, this, &MainWindow::OnVCoreLogAvailable);
+    connect(QvBaselib->KernelManager(), &Qv2rayBase::Profile::KernelManager::OnConnected, this, &MainWindow::OnConnected);
+    connect(QvBaselib->KernelManager(), &Qv2rayBase::Profile::KernelManager::OnDisconnected, this, &MainWindow::OnDisconnected);
+    connect(QvBaselib->KernelManager(), &Qv2rayBase::Profile::KernelManager::OnStatsDataAvailable, this, &MainWindow::OnStatsAvailable);
+    connect(QvBaselib->KernelManager(), &Qv2rayBase::Profile::KernelManager::OnKernelLogAvailable, this, &MainWindow::OnKernelLogAvailable);
     connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnSubscriptionAsyncUpdateFinished,
             [](const GroupId &gid)
             {
@@ -339,7 +338,7 @@ void MainWindow::ProcessCommand(QString command, QStringList commands, QMap<QStr
 {
     if (commands.isEmpty())
         return;
-    if (command == QLatin1String("open"))
+    if (command == QStringLiteral("open"))
     {
         const auto subcommand = commands.takeFirst();
         QvDialog *w;
@@ -659,7 +658,7 @@ void MainWindow::on_connectionFilterTxt_textEdited(const QString &arg1)
     modelHelper->Filter(arg1);
 }
 
-void MainWindow::OnStatsAvailable(const ProfileId &id, const QMap<StatisticsObject::StatisticsType, StatisticsObject::StatsEntry> &data)
+void MainWindow::OnStatsAvailable(const ProfileId &id, const StatisticsObject &data)
 {
     if (!QvBaselib->ProfileManager()->IsConnected(id))
         return;
@@ -667,30 +666,16 @@ void MainWindow::OnStatsAvailable(const ProfileId &id, const QMap<StatisticsObje
     // This may not be, or may not precisely be, speed per second if the backend
     // has "any" latency. (Hope not...)
     QMap<SpeedWidget::GraphType, long> pointData;
-    for (const auto &[type, data] : data.toStdMap())
-    {
-        const auto upSpeed = data.up;
-        const auto downSpeed = data.down;
-        switch (type)
-        {
-            case StatisticsObject::API_ALL_INBOUND: break;
-            case StatisticsObject::API_OUTBOUND_PROXY:
-                pointData[SpeedWidget::OUTBOUND_PROXY_UP] = upSpeed;
-                pointData[SpeedWidget::OUTBOUND_PROXY_DOWN] = downSpeed;
-                break;
-            case StatisticsObject::API_OUTBOUND_DIRECT:
-                pointData[SpeedWidget::OUTBOUND_DIRECT_UP] = upSpeed;
-                pointData[SpeedWidget::OUTBOUND_DIRECT_DOWN] = downSpeed;
-
-                break;
-        }
-    }
+    pointData[SpeedWidget::OUTBOUND_PROXY_UP] = data.proxyUp;
+    pointData[SpeedWidget::OUTBOUND_PROXY_DOWN] = data.proxyDown;
+    pointData[SpeedWidget::OUTBOUND_DIRECT_UP] = data.directUp;
+    pointData[SpeedWidget::OUTBOUND_DIRECT_DOWN] = data.directDown;
 
     speedChartWidget->AddPointData(pointData);
-    auto totalSpeedUp = FormatBytes(data[StatisticsObject::API_OUTBOUND_PROXY].up) + "/s";
-    auto totalSpeedDown = FormatBytes(data[StatisticsObject::API_OUTBOUND_PROXY].down) + "/s";
+    auto totalSpeedUp = FormatBytes(data.proxyUp) + "/s";
+    auto totalSpeedDown = FormatBytes(data.proxyDown) + "/s";
 
-    const auto &[totalUp, totalDown] = GetConnectionUsageAmount(id.connectionId, StatisticsObject::API_OUTBOUND_PROXY);
+    const auto &[totalUp, totalDown] = GetConnectionUsageAmount(id.connectionId, StatisticsObject::PROXY);
     auto totalDataUp = FormatBytes(totalUp);
     auto totalDataDown = FormatBytes(totalDown);
     //
@@ -701,13 +686,14 @@ void MainWindow::OnStatsAvailable(const ProfileId &id, const QMap<StatisticsObje
                               NEWLINE "Up: " + totalSpeedUp + " Down: " + totalSpeedDown);
 }
 
-void MainWindow::OnVCoreLogAvailable(const ProfileId &id, const QString &log)
+void MainWindow::OnKernelLogAvailable(const ProfileId &id, const QString &log)
 {
     Q_UNUSED(id);
     FastAppendTextDocument(log.trimmed(), vCoreLogDocument);
+    return;
     // vCoreLogDocument->setPlainText(vCoreLogDocument->toPlainText() + log);
     // From https://gist.github.com/jemyzhang/7130092
-    auto maxLines = GlobalConfig->appearanceConfig->MaximizeLogLines;
+    const auto maxLines = GlobalConfig->appearanceConfig->MaximizeLogLines;
     auto block = vCoreLogDocument->begin();
 
     while (block.isValid())

@@ -14,14 +14,7 @@
 // Check 10 times before telling user that API has failed.
 constexpr auto QV2RAY_API_CALL_FAILEDCHECK_THRESHOLD = 30;
 
-struct APIConfigObject
-{
-    QString protocol;
-    StatisticsObject::StatisticsType type;
-};
-
-typedef std::map<QString, APIConfigObject> QvAPITagProtocolConfig;
-typedef std::map<StatisticsObject::StatisticsType, QStringList> QvAPIDataTypeConfig;
+typedef std::map<QString, StatisticsObject::StatisticsType> QvAPITagProtocolConfig;
 
 class APIWorker : public QObject
 {
@@ -29,7 +22,7 @@ class APIWorker : public QObject
   public:
     APIWorker();
     ~APIWorker();
-    void StartAPI(const QMap<bool, QMap<QString, QString>> &tagProtocolPair);
+    void StartAPI(const QMap<QString, QString> &tagProtocolPair);
     void StopAPI();
 
   signals:

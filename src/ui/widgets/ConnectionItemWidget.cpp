@@ -2,6 +2,7 @@
 
 #include "Common/ProfileHelpers.hpp"
 #include "Common/Utils.hpp"
+#include "Profile/KernelManager.hpp"
 #include "Profile/ProfileManager.hpp"
 #include "ui/WidgetUIBase.hpp"
 
@@ -12,9 +13,9 @@
 ConnectionItemWidget::ConnectionItemWidget(QWidget *parent) : QWidget(parent)
 {
     setupUi(this);
-    connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnConnected, this, &ConnectionItemWidget::OnConnected);
-    connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnDisconnected, this, &ConnectionItemWidget::OnDisConnected);
-    connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnStatsAvailable, this, &ConnectionItemWidget::OnConnectionStatsArrived);
+    connect(QvBaselib->KernelManager(), &Qv2rayBase::Profile::KernelManager::OnConnected, this, &ConnectionItemWidget::OnConnected);
+    connect(QvBaselib->KernelManager(), &Qv2rayBase::Profile::KernelManager::OnDisconnected, this, &ConnectionItemWidget::OnDisConnected);
+    connect(QvBaselib->KernelManager(), &Qv2rayBase::Profile::KernelManager::OnStatsDataAvailable, this, &ConnectionItemWidget::OnConnectionStatsArrived);
     connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnLatencyTestStarted, this, &ConnectionItemWidget::OnLatencyTestStart);
     connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnLatencyTestFinished, this, &ConnectionItemWidget::OnLatencyTestFinished);
 }
@@ -35,7 +36,7 @@ ConnectionItemWidget::ConnectionItemWidget(const ProfileId &id, QWidget *parent)
                                    (QString::number(latency) + " ms"))); //
 
     connTypeLabel->setText(GetConnectionProtocolDescription(id.connectionId).toUpper());
-    auto [uplink, downlink] = GetConnectionUsageAmount(connectionId, StatisticsObject::API_OUTBOUND_PROXY);
+    const auto [uplink, downlink] = GetConnectionUsageAmount(connectionId, StatisticsObject::PROXY);
     dataLabel->setText(FormatBytes(uplink) + " / " + FormatBytes(downlink));
     //
     if (QvBaselib->ProfileManager()->IsConnected(id))
@@ -132,12 +133,10 @@ void ConnectionItemWidget::OnDisConnected(const ProfileId &id)
     }
 }
 
-void ConnectionItemWidget::OnConnectionStatsArrived(const ProfileId &id, const QMap<StatisticsObject::StatisticsType, StatisticsObject::StatsEntry> &data)
+void ConnectionItemWidget::OnConnectionStatsArrived(const ProfileId &id, const StatisticsObject &data)
 {
     if (id.connectionId == connectionId)
-    {
-        dataLabel->setText(FormatBytes(data[StatisticsObject::API_OUTBOUND_PROXY].up) + " / " + FormatBytes(data[StatisticsObject::API_OUTBOUND_PROXY].down));
-    }
+        dataLabel->setText(FormatBytes(data.proxyUp) + " / " + FormatBytes(data.proxyDown));
 }
 
 void ConnectionItemWidget::OnConnectionModified(const ConnectionId &id)

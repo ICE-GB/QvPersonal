@@ -48,7 +48,7 @@
        </property>
        <property name="icon">
         <iconset resource="../../../../resources.new.qrc">
-         <normaloff>:/assets/icons/ui_light/edit.svg</normaloff>:/assets/icons/ui_light/edit.svg</iconset>
+         <normaloff>:/ui_dark/edit.svg</normaloff>:/ui_dark/edit.svg</iconset>
        </property>
       </widget>
      </item>

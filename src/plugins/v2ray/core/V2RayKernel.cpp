@@ -9,8 +9,8 @@
 #include <QJsonDocument>
 #include <QProcess>
 
-const QString GENERATED_V2RAY_CONFIGURATION_NAME = QStringLiteral("config.json");
-const auto V2RAYPLUGIN_NO_API_ENV = "V2RAYPLUGIN_NO_API";
+constexpr auto GENERATED_V2RAY_CONFIGURATION_NAME = "config.json";
+constexpr auto V2RAYPLUGIN_NO_API_ENV = "V2RAYPLUGIN_NO_API";
 
 V2RayKernel::V2RayKernel()
 {
@@ -43,7 +43,7 @@ void V2RayKernel::SetProfileContent(const ProfileContent &content, const Routing
 bool V2RayKernel::PrepareConfigurations()
 {
     const auto config = V2RayProfileGenerator::GenerateConfiguration(profile);
-    configFilePath = Qv2rayPlugin::PluginInstance->WorkingDirectory().filePath(GENERATED_V2RAY_CONFIGURATION_NAME);
+    configFilePath = Qv2rayPlugin::PluginInstance->WorkingDirectory().filePath(QString::fromUtf8(GENERATED_V2RAY_CONFIGURATION_NAME));
     QFile v2rayConfigFile(configFilePath);
 
     v2rayConfigFile.open(QIODevice::ReadWrite | QIODevice::Truncate);
@@ -54,6 +54,19 @@ bool V2RayKernel::PrepareConfigurations()
     {
         kernelStarted = false;
         return false;
+    }
+
+    tagProtocolMap.clear();
+    for (const auto &item : QJsonDocument::fromJson(config).object()[QStringLiteral("outbounds")].toArray())
+    {
+        const auto tag = item.toObject()[QStringLiteral("tag")].toString();
+
+        if (tag.isEmpty())
+        {
+            QvPluginLog(QStringLiteral("Ignored outbound with empty tag."));
+            continue;
+        }
+        tagProtocolMap[tag] = item.toObject()[QStringLiteral("protocol")].toString();
     }
 
     return true;
@@ -68,25 +81,10 @@ void V2RayKernel::Start()
     auto env = QProcessEnvironment::systemEnvironment();
     env.insert(QStringLiteral("v2ray.location.asset"), settings.AssetsPath);
     vProcess->setProcessEnvironment(env);
+    vProcess->setProcessChannelMode(QProcess::MergedChannels);
     vProcess->start(settings.CorePath, { QStringLiteral("-config"), configFilePath }, QIODevice::ReadWrite | QIODevice::Text);
     vProcess->waitForStarted();
     kernelStarted = true;
-
-    QMap<bool, QMap<QString, QString>> tagProtocolMap;
-    //    for (const auto isOutbound : { true, false })
-    //    {
-    //        for (const auto &item : root[isOutbound ? "outbounds" : "inbounds"].toArray())
-    //        {
-    //            const auto tag = item.toObject()[QStringLiteral("tag")].toString();
-
-    //            if (tag.isEmpty())
-    //            {
-    //                QvPluginLog(QStringLiteral("Ignored inbound with empty tag."));
-    //                continue;
-    //            }
-    //            tagProtocolMap[isOutbound][tag] = item.toObject()[QStringLiteral("protocol")].toString();
-    //        }
-    //    }
 
     apiEnabled = false;
     if (qEnvironmentVariableIsSet(V2RAYPLUGIN_NO_API_ENV))
@@ -139,6 +137,7 @@ std::optional<QString> V2RayKernel::ValidateConfig(const QString &path)
         //
         QProcess process;
         process.setProcessEnvironment(env);
+        process.setProcessChannelMode(QProcess::MergedChannels);
         QvPluginLog(QStringLiteral("Starting V2Ray core with test options"));
         process.start(settings.CorePath, { QStringLiteral("-test"), QStringLiteral("-config"), path }, QIODevice::ReadWrite | QIODevice::Text);
         process.waitForFinished();

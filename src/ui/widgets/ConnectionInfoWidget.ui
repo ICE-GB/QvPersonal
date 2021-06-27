@@ -61,8 +61,8 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="../../../../resources.new.qrc">
-           <normaloff>:/assets/icons/ui_dark/start.svg</normaloff>:/assets/icons/ui_dark/start.svg</iconset>
+          <iconset>
+           <normaloff>:/ui_dark/start.svg</normaloff>:/ui_dark/start.svg</iconset>
          </property>
         </widget>
        </item>
@@ -75,8 +75,8 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="../../../../resources.new.qrc">
-           <normaloff>:/assets/icons/ui_dark/edit.svg</normaloff>:/assets/icons/ui_dark/edit.svg</iconset>
+          <iconset>
+           <normaloff>:/ui_dark/edit.svg</normaloff>:/ui_dark/edit.svg</iconset>
          </property>
         </widget>
        </item>
@@ -89,8 +89,8 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="../../../../resources.new.qrc">
-           <normaloff>:/assets/icons/ui_dark/edit.svg</normaloff>:/assets/icons/ui_dark/edit.svg</iconset>
+          <iconset>
+           <normaloff>:/ui_dark/edit.svg</normaloff>:/ui_dark/edit.svg</iconset>
          </property>
         </widget>
        </item>
@@ -113,8 +113,8 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="../../../../resources.new.qrc">
-           <normaloff>:/assets/icons/ui_dark/ashbin.svg</normaloff>:/assets/icons/ui_dark/ashbin.svg</iconset>
+          <iconset>
+           <normaloff>:/ui_dark/ashbin.svg</normaloff>:/ui_dark/ashbin.svg</iconset>
          </property>
         </widget>
        </item>
@@ -327,7 +327,7 @@
              <string/>
             </property>
             <property name="pixmap">
-             <pixmap resource="../../../../resources.qrc">:/assets/icons/qv2ray.png</pixmap>
+             <pixmap>:/assets/icons/qv2ray.png</pixmap>
             </property>
             <property name="scaledContents">
              <bool>true</bool>
@@ -447,9 +447,6 @@
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="../../../../resources.qrc"/>
-  <include location="../../../../resources.new.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

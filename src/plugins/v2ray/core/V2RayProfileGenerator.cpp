@@ -54,7 +54,8 @@ QByteArray V2RayProfileGenerator::Generate()
                                                     }(settings.LogLevel) } };
 
     if (!rootconf.contains(QStringLiteral("browserForwarder")) || rootconf.value(QStringLiteral("browserForwarder")).toObject().isEmpty())
-        rootconf[QStringLiteral("browserForwarder")] = settings.BrowserForwarderSettings.toJson();
+        if (!settings.BrowserForwarderSettings.listenAddr->isEmpty())
+            rootconf[QStringLiteral("browserForwarder")] = settings.BrowserForwarderSettings.toJson();
 
     if (!rootconf.contains(QStringLiteral("observatory")) || rootconf.value(QStringLiteral("observatory")).toObject().isEmpty())
         rootconf[QStringLiteral("observatory")] = settings.ObservatorySettings.toJson();
@@ -74,7 +75,8 @@ QByteArray V2RayProfileGenerator::Generate()
 
         //
         // Inbound
-        inbounds.push_front(QJsonObject{ { QStringLiteral("listen"), QStringLiteral("127.0.0.1") },
+        inbounds.push_front(QJsonObject{ { QStringLiteral("tag"), QString::fromUtf8(DEFAULT_API_IN_TAG) },
+                                         { QStringLiteral("listen"), QStringLiteral("127.0.0.1") },
                                          { QStringLiteral("port"), *settings.APIPort },
                                          { QStringLiteral("protocol"), QStringLiteral("dokodemo-door") },
                                          { QStringLiteral("settings"), QJsonObject{ { QStringLiteral("address"), QStringLiteral("127.0.0.1") } } } });
@@ -211,7 +213,7 @@ void V2RayProfileGenerator::ProcessOutboundConfig(const OutboundObject &out)
             singleServer[QStringLiteral("users")] = QJsonArray{ userobject };
         }
 
-        root[QStringLiteral("settings")] = { { QStringLiteral("servers"), QJsonArray{ singleServer } } };
+        root[QStringLiteral("settings")] = QJsonObject{ { QStringLiteral("servers"), QJsonArray{ singleServer } } };
     }
 
     if (out.outboundSettings.protocol == QStringLiteral("vmess"))
@@ -251,7 +253,7 @@ void V2RayProfileGenerator::ProcessOutboundConfig(const OutboundObject &out)
                                   { QStringLiteral("address"), out.outboundSettings.address },
                                   { QStringLiteral("port"), out.outboundSettings.port.from } };
 
-        root[QStringLiteral("settings")] = { { QStringLiteral("servers"), QJsonArray{ singleServer } } };
+        root[QStringLiteral("settings")] = QJsonObject{ { QStringLiteral("servers"), QJsonArray{ singleServer } } };
     }
 
     JsonStructHelper::MergeJson(root, out.options);

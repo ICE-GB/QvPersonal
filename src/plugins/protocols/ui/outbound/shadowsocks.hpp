@@ -22,10 +22,7 @@ class ShadowsocksOutboundEditor
     const IOProtocolSettings GetContent() const override
     {
         auto result = content;
-        QJsonArray servers;
-        servers.append(shadowsocks.toJson());
-        result.insert("servers", servers);
-        return result;
+        return IOProtocolSettings{ shadowsocks.toJson() };
     }
 
   protected:

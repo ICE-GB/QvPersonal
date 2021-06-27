@@ -26,7 +26,7 @@ class RouteEditor
     Q_OBJECT
 
   public:
-    explicit RouteEditor(ProfileContent connection, QWidget *parent = nullptr);
+    explicit RouteEditor(const ProfileContent &connection, QWidget *parent = nullptr);
     ~RouteEditor();
     ProfileContent OpenEditor();
     void processCommands(QString, QStringList, QMap<QString, QString>) override{};

@@ -37,7 +37,7 @@ class ConnectionItemWidget
   private slots:
     void OnConnected(const ProfileId &id);
     void OnDisConnected(const ProfileId &id);
-    void OnConnectionStatsArrived(const ProfileId &id, const QMap<StatisticsObject::StatisticsType, StatisticsObject::StatsEntry> &data);
+    void OnConnectionStatsArrived(const ProfileId &id, const StatisticsObject &data);
     void OnLatencyTestStart(const ConnectionId &id);
     void OnConnectionModified(const ConnectionId &id);
     void OnLatencyTestFinished(const ConnectionId &id, const int average);

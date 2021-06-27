@@ -14,8 +14,14 @@ char **globalArgv;
 void init_msgbox(const QString &title, const QString &text);
 void signal_handler(int signum);
 
+void QtMessageHandle(QtMsgType, const QMessageLogContext &, const QString &str)
+{
+    std::cout << str.toStdString() << std::endl;
+}
+
 int main(int argc, char *argv[])
 {
+    qInstallMessageHandler(QtMessageHandle);
     globalArgc = argc;
     globalArgv = argv;
     // Register signal handlers.

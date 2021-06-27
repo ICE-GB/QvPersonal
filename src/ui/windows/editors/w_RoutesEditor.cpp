@@ -76,7 +76,7 @@ void RouteEditor::updateColorScheme()
     }
 }
 
-RouteEditor::RouteEditor(ProfileContent connection, QWidget *parent) : QvDialog("RouteEditor", parent), root(connection), original(connection)
+RouteEditor::RouteEditor(const ProfileContent &connection, QWidget *parent) : QvDialog("RouteEditor", parent), root(connection), original(connection)
 {
     setupUi(this);
     QvMessageBusConnect();
@@ -129,7 +129,7 @@ RouteEditor::RouteEditor(ProfileContent connection, QWidget *parent) : QvDialog(
     bfListenPortTxt->setValue(browserForwarder[QStringLiteral("listenPort")].toInt());
 
     const auto observatory = root.extraOptions[QStringLiteral("observatory")].toObject();
-    obSubjectSelectorTxt->setPlainText(observatory[QStringLiteral("subjectSelector")].toVariant().toStringList().join(NEWLINE));
+    obSubjectSelectorTxt->setPlainText(observatory[QStringLiteral("subjectSelector")].toVariant().toStringList().join('\n'));
 
     for (const auto &group : QvBaselib->ProfileManager()->GetGroups())
     {

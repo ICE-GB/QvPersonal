@@ -39,7 +39,7 @@ class V2RayKernel : public Qv2rayPlugin::Kernel::PluginKernel
     QProcess *vProcess;
     bool apiEnabled;
     bool kernelStarted = false;
-
+    QMap<QString, QString> tagProtocolMap;
     QString configFilePath;
 };
 
@@ -52,7 +52,7 @@ class V2RayKernelInterface : public Qv2rayPlugin::Kernel::IKernelHandler
         Qv2rayPlugin::Kernel::KernelFactory v2ray;
         v2ray.Capabilities.setFlag(Qv2rayPlugin::Kernel::KERNELCAP_ROUTER);
         v2ray.Id = v2ray_kernel_id;
-        v2ray.Name = QStringLiteral("V2Ray Core");
+        v2ray.Name = QStringLiteral("V2Ray");
         v2ray.Create = std::function{ []() { return std::make_unique<V2RayKernel>(); } };
         v2ray.SupportedProtocols << QStringLiteral("blackhole")   //
                                  << QStringLiteral("dns")         //

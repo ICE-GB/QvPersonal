@@ -10,9 +10,6 @@ V2RayKernelSettings::V2RayKernelSettings(QWidget *parent) : Qv2rayPlugin::Gui::P
     settings.AssetsPath.ReadWriteBind(vCoreAssetsPathTxt, "text", &QLineEdit::textEdited);
     settings.CorePath.ReadWriteBind(vCorePathTxt, "text", &QLineEdit::textEdited);
     settings.LogLevel.ReadWriteBind(logLevelComboBox, "currentIndex", &QComboBox::currentIndexChanged);
-
-    settings.ConnectionSettings.DNSInterception.ReadWriteBind(dnsIntercept, "checked", &QCheckBox::toggled);
-    settings.ConnectionSettings.UseV2RayDNSForDirectConnections.ReadWriteBind(dnsFreedomCb, "checked", &QCheckBox::toggled);
 }
 
 void V2RayKernelSettings::changeEvent(QEvent *e)

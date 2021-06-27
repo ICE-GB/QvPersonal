@@ -1,6 +1,6 @@
 #include "V2RayAPIStats.hpp"
 
-#include "QvPluginInterface.hpp"
+#include "BuiltinV2RayCorePlugin.hpp"
 
 #include <QStringBuilder>
 #include <QThread>
@@ -15,24 +15,21 @@ using grpc::Status;
 #define QV_MODULE_NAME "gRPCBackend"
 
 constexpr auto Qv2ray_GRPC_ERROR_RETCODE = -1;
-const QvAPIDataTypeConfig DefaultInboundAPIConfig{ { StatisticsObject::API_ALL_INBOUND,
-                                                     {
-                                                         QStringLiteral("dokodemo-door"), //
-                                                         QStringLiteral("http"),          //
-                                                         QStringLiteral("socks")          //
-                                                     } } };
-
-const QvAPIDataTypeConfig DefaultOutboundAPIConfig{ { StatisticsObject::API_OUTBOUND_PROXY,
-                                                      {
-                                                          QStringLiteral("dns"),         //
-                                                          QStringLiteral("http"),        //
-                                                          QStringLiteral("shadowsocks"), //
-                                                          QStringLiteral("socks"),       //
-                                                          QStringLiteral("vmess"),       //
-                                                          QStringLiteral("vless"),       //
-                                                          QStringLiteral("trojan")       //
-                                                      } },
-                                                    { StatisticsObject::API_OUTBOUND_DIRECT, { QStringLiteral("freedom") } } };
+const std::map<StatisticsObject::StatisticsType, QStringList> DefaultOutboundAPIConfig //
+    { { StatisticsObject::PROXY,
+        {
+            QStringLiteral("http"),        //
+            QStringLiteral("shadowsocks"), //
+            QStringLiteral("socks"),       //
+            QStringLiteral("vmess"),       //
+            QStringLiteral("vless"),       //
+            QStringLiteral("trojan")       //
+        } },
+      { StatisticsObject::DIRECT,
+        {
+            QStringLiteral("freedom"), //
+            QStringLiteral("dns"),     //
+        } } };
 
 APIWorker::APIWorker()
 {
@@ -45,20 +42,18 @@ APIWorker::APIWorker()
     workThread->start();
 }
 
-void APIWorker::StartAPI(const QMap<bool, QMap<QString, QString>> &tagProtocolPair)
+void APIWorker::StartAPI(const QMap<QString, QString> &tagProtocolPair)
 {
     // Config API
     tagProtocolConfig.clear();
     for (auto it = tagProtocolPair.constKeyValueBegin(); it != tagProtocolPair.constKeyValueEnd(); it++)
     {
-        const auto config = it->first ? DefaultOutboundAPIConfig : DefaultInboundAPIConfig;
-        for (const auto &[tag, protocol] : it->second.toStdMap())
+        const auto tag = it->first;
+        const auto protocol = it->second;
+        for (const auto &[type, protocols] : DefaultOutboundAPIConfig)
         {
-            for (const auto &[type, protocols] : config)
-            {
-                if (protocols.contains(protocol))
-                    tagProtocolConfig[tag] = { protocol, type };
-            }
+            if (protocols.contains(protocol))
+                tagProtocolConfig[tag] = type;
         }
     }
 
@@ -96,7 +91,7 @@ void APIWorker::process()
             if (!dialed)
             {
 #ifndef QV2RAY_NO_GRPC
-                const QString channelAddress = QStringLiteral("127.0.0.1:1919810"); // + QSTRN(GlobalConfig.kernelConfig->statsPort);
+                const QString channelAddress = QStringLiteral("127.0.0.1:") + QString::number(Qv2rayPlugin::TPluginInstance<BuiltinV2RayCorePlugin>()->settings.APIPort);
                 QvPluginLog(QStringLiteral("gRPC Version: ") + QString::fromStdString(grpc::Version()));
                 grpc_channel = grpc::CreateChannel(channelAddress.toStdString(), grpc::InsecureChannelCredentials());
                 stats_service_stub = v2ray::core::app::stats::command::StatsService::NewStub(grpc_channel);
@@ -120,14 +115,21 @@ void APIWorker::process()
 
             StatisticsObject statsResult;
             bool hasError = false;
-            for (const auto &[tag, config] : tagProtocolConfig)
+            for (const auto &[tag, statType] : tagProtocolConfig)
             {
-                const auto prefix = config.type == StatisticsObject::API_ALL_INBOUND ? QStringLiteral("inbound") : QStringLiteral("outbound");
-                const auto value_up = CallStatsAPIByName(prefix + QStringLiteral(">>>") + tag + QStringLiteral(">>>traffic>>>uplink"));
-                const auto value_down = CallStatsAPIByName(prefix + QStringLiteral(">>>") + tag + QStringLiteral(">>>traffic>>>downlink"));
+                const auto value_up = CallStatsAPIByName(QStringLiteral("outbound>>>") + tag + QStringLiteral(">>>traffic>>>uplink"));
+                const auto value_down = CallStatsAPIByName(QStringLiteral("outbound>>>") + tag + QStringLiteral(">>>traffic>>>downlink"));
                 hasError = hasError || value_up == Qv2ray_GRPC_ERROR_RETCODE || value_down == Qv2ray_GRPC_ERROR_RETCODE;
-                statsResult[config.type].up += std::max(value_up, 0LL);
-                statsResult[config.type].down += std::max(value_down, 0LL);
+                if (statType == StatisticsObject::PROXY)
+                {
+                    statsResult.proxyUp += std::max(value_up, 0LL);
+                    statsResult.proxyDown += std::max(value_down, 0LL);
+                }
+                if (statType == StatisticsObject::DIRECT)
+                {
+                    statsResult.directUp += std::max(value_up, 0LL);
+                    statsResult.directDown += std::max(value_down, 0LL);
+                }
             }
             apiFailCounter = hasError ? apiFailCounter + 1 : 0;
             // Changed: Removed isrunning check here

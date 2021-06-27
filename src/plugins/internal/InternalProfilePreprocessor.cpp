@@ -106,12 +106,13 @@ ProfileContent InternalProfilePreprocessor::PreprocessProfile(const ProfileConte
     bool hasIPv4 = !GlobalConfig->inboundConfig->ListenAddress->isEmpty();
     bool hasIPv6 = !GlobalConfig->inboundConfig->ListenAddressV6->isEmpty();
 
-#define AddInbound(PROTOCOL)                                                                                                                                             \
+#define AddInbound(PROTOCOL, _protocol)                                                                                                                                  \
     do                                                                                                                                                                   \
     {                                                                                                                                                                    \
         if (GlobalConfig->inboundConfig->Has##PROTOCOL)                                                                                                                  \
         {                                                                                                                                                                \
             InboundObject in;                                                                                                                                            \
+            in.inboundSettings.protocol = _protocol;                                                                                                                     \
             GlobalConfig->inboundConfig->PROTOCOL##Config->Propagate(in);                                                                                                \
             if (hasIPv4)                                                                                                                                                 \
             {                                                                                                                                                            \
@@ -128,9 +129,9 @@ ProfileContent InternalProfilePreprocessor::PreprocessProfile(const ProfileConte
         }                                                                                                                                                                \
     } while (false)
 
-    AddInbound(HTTP);
-    AddInbound(SOCKS);
-    AddInbound(DokodemoDoor);
+    AddInbound(HTTP, "http");
+    AddInbound(SOCKS, "socks");
+    AddInbound(DokodemoDoor, "dokodemo-door");
 
     result.routing = GenerateRoutes(GlobalConfig->connectionConfig->ForceDirectConnection, //
                                     GlobalConfig->connectionConfig->BypassCN,              //

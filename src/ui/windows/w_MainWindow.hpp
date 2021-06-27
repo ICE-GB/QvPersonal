@@ -86,8 +86,8 @@ class MainWindow
     void OnConnected(const ProfileId &id);
     void OnDisconnected(const ProfileId &id);
     //
-    void OnStatsAvailable(const ProfileId &id, const QMap<StatisticsObject::StatisticsType, StatisticsObject::StatsEntry> &speed);
-    void OnVCoreLogAvailable(const ProfileId &id, const QString &log);
+    void OnStatsAvailable(const ProfileId &id, const StatisticsObject &speed);
+    void OnKernelLogAvailable(const ProfileId &id, const QString &log);
     //
     void SortConnectionList(ConnectionInfoRole byCol, bool asending);
     //

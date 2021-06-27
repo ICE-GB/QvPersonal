@@ -2,6 +2,7 @@
 
 #include "Common/ProfileHelpers.hpp"
 #include "Common/Utils.hpp"
+#include "Profile/KernelManager.hpp"
 #include "Profile/ProfileManager.hpp"
 #include "Qv2rayBaseLibrary.hpp"
 #include "ui/widgets/ConnectionItemWidget.hpp"
@@ -40,11 +41,11 @@ ConnectionListHelper::ConnectionListHelper(QTreeView *view, QObject *parent) : Q
         }
     };
 
-    const auto statsLambda = [&](const ProfileId &id, const QMap<StatisticsObject::StatisticsType, StatisticsObject::StatsEntry> &) {
+    const auto statsLambda = [&](const ProfileId &id, const StatisticsObject &) {
         if (connections.contains(id.connectionId))
         {
             for (const auto &index : connections[id.connectionId])
-                index->setData(NumericString(GetConnectionTotalUsage(id.connectionId, StatisticsObject::API_OUTBOUND_PROXY)), ROLE_DATA_USAGE);
+                index->setData(NumericString(GetConnectionTotalUsage(id.connectionId, StatisticsObject::PROXY)), ROLE_DATA_USAGE);
         }
     };
 
@@ -55,7 +56,7 @@ ConnectionListHelper::ConnectionListHelper(QTreeView *view, QObject *parent) : Q
     connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnGroupDeleted, this, &ConnectionListHelper::OnGroupDeleted);
     connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnConnectionRenamed, renamedLambda);
     connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnLatencyTestFinished, latencyLambda);
-    connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnStatsAvailable, statsLambda);
+    connect(QvBaselib->KernelManager(), &Qv2rayBase::Profile::KernelManager::OnStatsDataAvailable, statsLambda);
 }
 
 ConnectionListHelper::~ConnectionListHelper()
@@ -94,7 +95,7 @@ QStandardItem *ConnectionListHelper::addConnectionItem(const ProfileId &id)
     auto connectionItem = new QStandardItem();
     connectionItem->setData(GetDisplayName(id.connectionId), ConnectionInfoRole::ROLE_DISPLAYNAME);
     connectionItem->setData(NumericString(GetConnectionLatency(id.connectionId)), ConnectionInfoRole::ROLE_LATENCY);
-    connectionItem->setData(NumericString(GetConnectionTotalUsage(id.connectionId, StatisticsObject::API_OUTBOUND_PROXY)), ConnectionInfoRole::ROLE_DATA_USAGE);
+    connectionItem->setData(NumericString(GetConnectionTotalUsage(id.connectionId, StatisticsObject::PROXY)), ConnectionInfoRole::ROLE_DATA_USAGE);
     //
     // Find groups
     const auto groupIndex = groups.contains(id.groupId) ? groups[id.groupId] : addGroupItem(id.groupId);

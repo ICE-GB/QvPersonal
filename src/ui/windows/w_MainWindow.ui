@@ -96,8 +96,8 @@
              <string>Locate Current Connection</string>
             </property>
             <property name="icon">
-             <iconset resource="../../../../resources.new.qrc">
-              <normaloff>:/assets/icons/ui_dark/map.svg</normaloff>:/assets/icons/ui_dark/map.svg</iconset>
+             <iconset resource="../../../assets/icons/resources.qrc">
+              <normaloff>:/ui_dark/map.svg</normaloff>:/ui_dark/map.svg</iconset>
             </property>
            </widget>
           </item>
@@ -110,8 +110,8 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset resource="../../../../resources.new.qrc">
-              <normaloff>:/assets/icons/ui_light/arrow-up.svg</normaloff>:/assets/icons/ui_light/arrow-up.svg</iconset>
+             <iconset>
+              <normaloff>:/ui_dark/arrow-up.svg</normaloff>:/ui_dark/arrow-up.svg</iconset>
             </property>
            </widget>
           </item>
@@ -124,8 +124,8 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset resource="../../../../resources.new.qrc">
-              <normaloff>:/assets/icons/ui_light/arrow-down-filling.svg</normaloff>:/assets/icons/ui_light/arrow-down-filling.svg</iconset>
+             <iconset>
+              <normaloff>:/ui_dark/arrow-down-filling.svg</normaloff>:/ui_dark/arrow-down-filling.svg</iconset>
             </property>
             <property name="popupMode">
              <enum>QToolButton::InstantPopup</enum>
@@ -308,8 +308,8 @@
                 <string/>
                </property>
                <property name="icon">
-                <iconset resource="../../../../resources.new.qrc">
-                 <normaloff>:/assets/icons/ui_light/ashbin.svg</normaloff>:/assets/icons/ui_light/ashbin.svg</iconset>
+                <iconset>
+                 <normaloff>:/ui_dark/ashbin.svg</normaloff>:/ui_dark/ashbin.svg</iconset>
                </property>
               </widget>
              </item>
@@ -377,8 +377,8 @@
                 <string/>
                </property>
                <property name="icon">
-                <iconset resource="../../../../resources.new.qrc">
-                 <normaloff>:/assets/icons/ui_light/ashbin.svg</normaloff>:/assets/icons/ui_light/ashbin.svg</iconset>
+                <iconset>
+                 <normaloff>:/ui_dark/ashbin.svg</normaloff>:/ui_dark/ashbin.svg</iconset>
                </property>
               </widget>
              </item>
@@ -557,7 +557,7 @@
   <tabstop>importConfigButton</tabstop>
  </tabstops>
  <resources>
-  <include location="../../../../resources.new.qrc"/>
+  <include location="../../../assets/icons/resources.qrc"/>
  </resources>
  <connections/>
 </ui>
