@@ -6,7 +6,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(BUILD_SHARED_LIBS ON)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -175,12 +174,7 @@ qt6_add_executable(qv2ray
     ${UISTYLE_QRCS}
     ${CMAKE_CURRENT_LIST_DIR}/assets/icons/resources.qrc)
 
-if(BUILD_SHARED_LIBS OR (QV2RAY_QV2RAYBASE_PROVIDER STREQUAL "package"))
-    # This is a dirty hack, in the static lib build, these generated sources
-    # would have been included by Qv2rayBase, however in a shared build, those
-    # symbols are not exported, we need to have our own.
-    qv2ray_add_plugin_moc_sources(qv2ray)
-endif()
+qv2ray_add_plugin_moc_sources(qv2ray)
 
 target_compile_definitions(qv2ray PRIVATE -DQV2RAY_VERSION_STRING="${CMAKE_PROJECT_VERSION}")
 target_include_directories(qv2ray PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
