@@ -4,7 +4,6 @@
 #include "V2RayAPIStats.hpp"
 #include "V2RayProfileGenerator.hpp"
 #include "common/CommonHelpers.hpp"
-#include "v2ray/config.pb.h"
 
 #include <QJsonDocument>
 #include <QProcess>
