@@ -112,5 +112,4 @@ target_link_libraries(QvPlugin-BuiltinV2RaySupport
     protobuf::libprotobuf
     gRPC::grpc++)
 
-qv2ray_add_plugin_moc_sources(QvPlugin-BuiltinV2RaySupport)
 qv2ray_configure_plugin(QvPlugin-BuiltinV2RaySupport Widgets)

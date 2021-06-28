@@ -175,7 +175,7 @@ qt6_add_executable(qv2ray
     ${UISTYLE_QRCS}
     ${CMAKE_CURRENT_LIST_DIR}/assets/icons/resources.qrc)
 
-if(BUILD_SHARED_LIBS)
+if(BUILD_SHARED_LIBS OR (QV2RAY_QV2RAYBASE_PROVIDER STREQUAL "package"))
     # This is a dirty hack, in the static lib build, these generated sources
     # would have been included by Qv2rayBase, however in a shared build, those
     # symbols are not exported, we need to have our own.
