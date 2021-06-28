@@ -38,7 +38,7 @@ std::pair<bool, std::optional<QString>> ValidateKernel(const QString &corePath, 
     // reason...
     proc.setProcessChannelMode(QProcess::MergedChannels);
     proc.setProgram(corePath);
-    proc.setNativeArguments("--version");
+    proc.setNativeArguments(QStringLiteral("--version"));
     proc.start();
 #else
     proc.start(corePath, { QStringLiteral("--version") });
