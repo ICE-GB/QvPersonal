@@ -18,14 +18,7 @@
 #include <QInputDialog>
 #include <QMessageBox>
 
-#define LOADINGCHECK                                                                                                                                                     \
-    if (!finishedLoading)                                                                                                                                                \
-        return;
-
-#define NEEDRESTART                                                                                                                                                      \
-    LOADINGCHECK                                                                                                                                                         \
-    if (finishedLoading)                                                                                                                                                 \
-        NeedRestart = true;
+#define NEEDRESTART NeedRestart = true;
 
 #define SET_PROXY_UI_ENABLE(_enabled)                                                                                                                                    \
     qvProxyAddressTxt->setEnabled(_enabled);                                                                                                                             \
@@ -58,13 +51,22 @@ PreferencesWindow::PreferencesWindow(QWidget *parent) : QvDialog(QStringLiteral(
     // Deep copy
     AppConfig.loadJson(GlobalConfig->toJson());
     BaselibConfig.loadJson(QvBaselib->GetConfig()->toJson());
-    //
+
+    AppConfig.appearanceConfig->MaximizeLogLines.ReadWriteBind(maxLogLinesSB, "value", &QSpinBox::valueChanged);
+    AppConfig.appearanceConfig->RecentJumpListSize.ReadWriteBind(jumpListCountSB, "value", &QSpinBox::valueChanged);
     AppConfig.appearanceConfig->UITheme.ReadWriteBind(themeCombo, "currentText", &QComboBox::currentIndexChanged);
     AppConfig.appearanceConfig->DarkModeTrayIcon.ReadWriteBind(darkTrayCB, "checked", &QCheckBox::stateChanged);
     AppConfig.appearanceConfig->Language.ReadWriteBind(languageComboBox, "currentText", &QComboBox::currentIndexChanged);
     AppConfig.behaviorConfig->QuietMode.ReadWriteBind(quietModeCB, "checked", &QCheckBox::stateChanged);
 
-    listenIPTxt->setText(AppConfig.inboundConfig->ListenAddress);
+    AppConfig.inboundConfig->ListenAddress.ReadWriteBind(listenIPTxt, "text", &QLineEdit::textEdited);
+    AppConfig.inboundConfig->ListenAddressV6.ReadWriteBind(listenIPv6Txt, "text", &QLineEdit::textEdited);
+
+    AppConfig.connectionConfig->BypassLAN.ReadWriteBind(bypassLANCB, "checked", &QCheckBox::toggled);
+    AppConfig.connectionConfig->BypassCN.ReadWriteBind(bypassCNCB, "checked", &QCheckBox::toggled);
+    AppConfig.connectionConfig->DNSInterception.ReadWriteBind(dnsInterceptCB, "checked", &QCheckBox::toggled);
+
+    pluginKernelPortAllocateCB->setValue(BaselibConfig.plugin_config.plugin_port_allocation);
 
     // BEGIN HTTP CONFIGURATION
     {
@@ -134,12 +136,6 @@ PreferencesWindow::PreferencesWindow(QWidget *parent) : QvDialog(QStringLiteral(
     }
     // END OF DOKODEMO_DOOR CONFIGURATION
 
-    AppConfig.connectionConfig->BypassLAN.ReadWriteBind(bypassLANCB, "checked", &QCheckBox::toggled);
-    AppConfig.connectionConfig->BypassCN.ReadWriteBind(bypassCNCB, "checked", &QCheckBox::toggled);
-    AppConfig.connectionConfig->DNSInterception.ReadWriteBind(dnsInterceptCB, "checked", &QCheckBox::toggled);
-
-    pluginKernelPortAllocateCB->setValue(BaselibConfig.plugin_config.plugin_port_allocation);
-
     // Connection Settings
     {
         AppConfig.connectionConfig->BypassBittorrent.Observe([](const auto &newval) {
@@ -182,8 +178,8 @@ PreferencesWindow::PreferencesWindow(QWidget *parent) : QvDialog(QStringLiteral(
 
         const auto &autoStartConnId = AppConfig.behaviorConfig->AutoConnectProfileId->connectionId;
         const auto &autoStartGroupId = AppConfig.behaviorConfig->AutoConnectProfileId->groupId;
-        //
-        for (const auto &group : QvBaselib->ProfileManager()->GetGroups()) //
+
+        for (const auto &group : QvBaselib->ProfileManager()->GetGroups())
             autoStartSubsCombo->addItem(GetDisplayName(group), group.toString());
 
         autoStartSubsCombo->setCurrentText(GetDisplayName(autoStartGroupId));
@@ -193,10 +189,6 @@ PreferencesWindow::PreferencesWindow(QWidget *parent) : QvDialog(QStringLiteral(
 
         autoStartConnCombo->setCurrentText(GetDisplayName(autoStartConnId));
     }
-
-    AppConfig.appearanceConfig->MaximizeLogLines.ReadWriteBind(maxLogLinesSB, "value", &QSpinBox::valueChanged);
-    AppConfig.appearanceConfig->RecentJumpListSize.ReadWriteBind(jumpListCountSB, "value", &QSpinBox::valueChanged);
-    finishedLoading = true;
 }
 
 QvMessageBusSlotImpl(PreferencesWindow)
@@ -215,7 +207,7 @@ PreferencesWindow::~PreferencesWindow(){};
 void PreferencesWindow::on_buttonBox_accepted()
 {
     // Note:
-    // A signal-slot connection from buttonbox_accpted to QDialog::accepted()
+    // A signal-slot connection from buttonbox_accepted to QDialog::accepted()
     // has been removed. To prevent closing this Dialog.
     QSet<int> ports;
     auto size = 0;
@@ -282,7 +274,8 @@ void PreferencesWindow::on_buttonBox_accepted()
         StyleManager->ApplyStyle(AppConfig.appearanceConfig->UITheme);
     }
 
-    GlobalConfig->loadJson(AppConfig.toJson());
+    const auto newnew = AppConfig.toJson();
+    GlobalConfig->loadJson(newnew);
     QvBaselib->GetConfig()->loadJson(BaselibConfig.toJson());
     accept();
 }
@@ -294,7 +287,6 @@ void PreferencesWindow::on_aboutQt_clicked()
 
 void PreferencesWindow::on_autoStartSubsCombo_currentIndexChanged(int arg1)
 {
-    LOADINGCHECK
     if (arg1 == -1)
     {
         AppConfig.behaviorConfig->AutoConnectProfileId->clear();
@@ -314,7 +306,6 @@ void PreferencesWindow::on_autoStartSubsCombo_currentIndexChanged(int arg1)
 
 void PreferencesWindow::on_autoStartConnCombo_currentIndexChanged(int arg1)
 {
-    LOADINGCHECK
     if (arg1 == -1)
     {
         AppConfig.behaviorConfig->AutoConnectProfileId->clear();
@@ -346,19 +337,16 @@ void PreferencesWindow::SetAutoStartButtonsState(bool isAutoStart)
 
 void PreferencesWindow::on_pluginKernelPortAllocateCB_valueChanged(int arg1)
 {
-    LOADINGCHECK
     BaselibConfig.plugin_config.plugin_port_allocation = arg1;
 }
 
 void PreferencesWindow::on_qvProxyAddressTxt_textEdited(const QString &arg1)
 {
-    LOADINGCHECK
     BaselibConfig.network_config.address = arg1;
 }
 
 void PreferencesWindow::on_qvProxyPortCB_valueChanged(int arg1)
 {
-    LOADINGCHECK
     BaselibConfig.network_config.port = arg1;
 }
 
@@ -394,7 +382,6 @@ void PreferencesWindow::on_tproxyOverrideFakeDNSCB_stateChanged(int arg1)
 
 void PreferencesWindow::on_httpOverrideHTTPCB_stateChanged(int arg1)
 {
-    LOADINGCHECK
     NEEDRESTART
     if (arg1 != Qt::Checked)
         AppConfig.inboundConfig->HTTPConfig->DestinationOverride->removeAll("http");
@@ -405,7 +392,6 @@ void PreferencesWindow::on_httpOverrideHTTPCB_stateChanged(int arg1)
 
 void PreferencesWindow::on_httpOverrideTLSCB_stateChanged(int arg1)
 {
-    LOADINGCHECK
     NEEDRESTART
     if (arg1 != Qt::Checked)
         AppConfig.inboundConfig->HTTPConfig->DestinationOverride->removeAll("tls");
@@ -426,7 +412,6 @@ void PreferencesWindow::on_httpOverrideFakeDNSCB_stateChanged(int arg1)
 
 void PreferencesWindow::on_socksOverrideHTTPCB_stateChanged(int arg1)
 {
-    LOADINGCHECK
     NEEDRESTART
     if (arg1 != Qt::Checked)
         AppConfig.inboundConfig->SOCKSConfig->DestinationOverride->removeAll("http");
@@ -437,7 +422,6 @@ void PreferencesWindow::on_socksOverrideHTTPCB_stateChanged(int arg1)
 
 void PreferencesWindow::on_socksOverrideTLSCB_stateChanged(int arg1)
 {
-    LOADINGCHECK
     NEEDRESTART
     if (arg1 != Qt::Checked)
         AppConfig.inboundConfig->SOCKSConfig->DestinationOverride->removeAll("tls");
@@ -463,25 +447,21 @@ void PreferencesWindow::on_openConfigDirCB_clicked()
 
 void PreferencesWindow::on_noAutoConnectRB_clicked()
 {
-    LOADINGCHECK
     AppConfig.behaviorConfig->AutoConnectBehavior = Qv2rayBehaviorConfig::AUTOCONNECT_NONE;
 }
 
 void PreferencesWindow::on_lastConnectedRB_clicked()
 {
-    LOADINGCHECK
     AppConfig.behaviorConfig->AutoConnectBehavior = Qv2rayBehaviorConfig::AUTOCONNECT_LAST_CONNECTED;
 }
 
 void PreferencesWindow::on_fixedAutoConnectRB_clicked()
 {
-    LOADINGCHECK
     AppConfig.behaviorConfig->AutoConnectBehavior = Qv2rayBehaviorConfig::AUTOCONNECT_FIXED;
 }
 
 void PreferencesWindow::on_qvNetworkUATxt_editTextChanged(const QString &arg1)
 {
-    LOADINGCHECK
     BaselibConfig.network_config.ua = arg1;
 }
 

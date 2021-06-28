@@ -80,9 +80,7 @@ class PreferencesWindow
     DnsSettingsWidget *dnsSettingsWidget;
     RouteSettingsMatrixWidget *routeSettingsWidget;
     void SetAutoStartButtonsState(bool isAutoStart);
-    //
     bool NeedRestart = false;
-    bool finishedLoading = false;
     Qv2ray::Models::Qv2rayApplicationConfigObject AppConfig;
     Qv2rayBase::Models::Qv2rayBaseConfigObject BaselibConfig;
 };

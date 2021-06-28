@@ -24,7 +24,8 @@ namespace Qv2ray::Models
         Bindable<qsizetype> RecentJumpListSize;
         Bindable<QList<ProfileId>> RecentConnections;
         Bindable<int> MaximizeLogLines;
-        QJS_FUNC_JSON(F(DarkModeTrayIcon, UITheme, Language, RecentJumpListSize, RecentConnections, MaximizeLogLines))
+        QJS_FUNC_COMPARE(Qv2rayAppearanceConfig, DarkModeTrayIcon, UITheme, Language, RecentJumpListSize, RecentConnections, MaximizeLogLines)
+        QJS_JSON(P(DarkModeTrayIcon, UITheme, Language, RecentJumpListSize, RecentConnections, MaximizeLogLines))
     };
 
     struct Qv2rayBehaviorConfig
@@ -42,7 +43,8 @@ namespace Qv2ray::Models
         Bindable<ProfileId> LastConnectedId;
         Bindable<QString> GeoIPPath;
         Bindable<QString> GeoSitePath;
-        QJS_FUNC_JSON(F(DefaultLatencyTestEngine, AutoConnectBehavior, QuietMode, AutoConnectProfileId, LastConnectedId, GeoIPPath, GeoSitePath))
+        QJS_FUNC_COMPARE(Qv2rayBehaviorConfig, DefaultLatencyTestEngine, AutoConnectBehavior, QuietMode, AutoConnectProfileId, LastConnectedId, GeoIPPath, GeoSitePath)
+        QJS_JSON(P(DefaultLatencyTestEngine, AutoConnectBehavior, QuietMode, AutoConnectProfileId, LastConnectedId, GeoIPPath, GeoSitePath))
     };
 
     struct ProtocolInboundBase
@@ -58,7 +60,7 @@ namespace Qv2ray::Models
         Bindable<SniffingBehavior> Sniffing{ SNIFFING_OFF };
         Bindable<QList<QString>> DestinationOverride{ { "http", "tls" } };
         ProtocolInboundBase(int port = 0) : ListenPort(port){};
-        QJS_FUNC_JSON(F(ListenPort, Sniffing, DestinationOverride))
+        QJS_JSON(P(ListenPort, Sniffing, DestinationOverride))
 
         virtual void Propagate(InboundObject &in) const
         {
@@ -76,7 +78,9 @@ namespace Qv2ray::Models
         Bindable<bool> EnableUDP;
         Bindable<QString> UDPLocalAddress;
         SocksInboundConfig() : ProtocolInboundBase(1080){};
-        QJS_FUNC_JSON(F(EnableUDP, UDPLocalAddress), B(ProtocolInboundBase))
+
+        QJS_FUNC_COMPARE(SocksInboundConfig, EnableUDP, UDPLocalAddress, ListenPort, Sniffing, DestinationOverride)
+        QJS_JSON(P(EnableUDP, UDPLocalAddress), B(ProtocolInboundBase))
 
         virtual void Propagate(InboundObject &in) const
         {
@@ -89,7 +93,8 @@ namespace Qv2ray::Models
     struct HTTPInboundConfig : public ProtocolInboundBase
     {
         HTTPInboundConfig() : ProtocolInboundBase(8080){};
-        QJS_FUNC_JSON(B(ProtocolInboundBase))
+        QJS_FUNC_COMPARE(HTTPInboundConfig, ListenPort, Sniffing, DestinationOverride)
+        QJS_JSON(B(ProtocolInboundBase))
     };
 
     struct DokodemoDoorInboundConfig : public ProtocolInboundBase
@@ -101,7 +106,9 @@ namespace Qv2ray::Models
         };
         Bindable<DokoWorkingMode> WorkingMode{ TPROXY };
         DokodemoDoorInboundConfig() : ProtocolInboundBase(12345){};
-        QJS_FUNC_JSON(F(WorkingMode), B(ProtocolInboundBase))
+
+        QJS_FUNC_COMPARE(DokodemoDoorInboundConfig, WorkingMode, ListenPort, Sniffing, DestinationOverride)
+        QJS_JSON(P(WorkingMode), B(ProtocolInboundBase))
 
         virtual void Propagate(InboundObject &in) const
         {
@@ -125,7 +132,8 @@ namespace Qv2ray::Models
         Bindable<bool> HasDokodemoDoor{ false };
         Bindable<DokodemoDoorInboundConfig> DokodemoDoorConfig;
 
-        QJS_FUNC_JSON(F(HasSOCKS, SOCKSConfig), F(HasHTTP, HTTPConfig), F(HasDokodemoDoor, DokodemoDoorConfig))
+        QJS_FUNC_COMPARE(Qv2rayInboundConfig, HasSOCKS, SOCKSConfig, HasHTTP, HTTPConfig, HasDokodemoDoor, DokodemoDoorConfig)
+        QJS_JSON(P(HasSOCKS, SOCKSConfig, HasHTTP, HTTPConfig, HasDokodemoDoor, DokodemoDoorConfig))
     };
 
     struct Qv2rayConnectionConfig
@@ -138,7 +146,9 @@ namespace Qv2ray::Models
         Bindable<V2RayDNSObject> DNSConfig;
         Bindable<FakeDNSObject> FakeDNSConfig;
         Bindable<RouteMatrixConfig> RouteConfig;
-        QJS_FUNC_JSON(F(BypassLAN, BypassCN, BypassBittorrent, ForceDirectConnection, DNSInterception, DNSConfig, FakeDNSConfig, RouteConfig))
+
+        QJS_FUNC_COMPARE(Qv2rayConnectionConfig, BypassLAN, BypassCN, BypassBittorrent, ForceDirectConnection, DNSInterception, DNSConfig, FakeDNSConfig, RouteConfig)
+        QJS_JSON(P(BypassLAN, BypassCN, BypassBittorrent, ForceDirectConnection, DNSInterception, DNSConfig, FakeDNSConfig, RouteConfig))
     };
 
     struct Qv2rayApplicationConfigObject
@@ -147,7 +157,9 @@ namespace Qv2ray::Models
         Bindable<Qv2rayBehaviorConfig> behaviorConfig;
         Bindable<Qv2rayConnectionConfig> connectionConfig;
         Bindable<Qv2rayInboundConfig> inboundConfig;
-        QJS_FUNC_JSON(F(appearanceConfig, behaviorConfig, connectionConfig, inboundConfig))
+
+        QJS_FUNC_COMPARE(Qv2rayApplicationConfigObject, appearanceConfig, behaviorConfig, connectionConfig, inboundConfig)
+        QJS_JSON(P(appearanceConfig, behaviorConfig, connectionConfig, inboundConfig))
     };
 
 } // namespace Qv2ray::models

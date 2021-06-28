@@ -30,6 +30,6 @@ namespace Qv2ray::components::RouteSchemeIO
          * @example "A scheme to bypass China mainland, while allowing bilibili to go through proxy."
          */
         Bindable<QString> description;
-        QJS_FUNC_JSON(F(name, author, description), B(RouteMatrixConfig))
+        QJS_JSON(P(name, author, description), B(RouteMatrixConfig))
     };
 } // namespace Qv2ray::components::RouteSchemeIO

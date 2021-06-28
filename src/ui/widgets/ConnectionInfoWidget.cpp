@@ -118,7 +118,7 @@ void ConnectionInfoWidget::ShowDetails(const ProfileId &idpair)
                 shareLinks.append(*link);
         }
 
-        groupShareTxt->setPlainText(shareLinks.join(NEWLINE));
+        groupShareTxt->setPlainText(shareLinks.join('\n'));
         const auto &groupMetaData = QvBaselib->ProfileManager()->GetGroupObject(groupId);
         groupSubsLinkTxt->setText(groupMetaData.subscription_config.isSubscription ? groupMetaData.subscription_config.address : tr("Not a subscription"));
     }

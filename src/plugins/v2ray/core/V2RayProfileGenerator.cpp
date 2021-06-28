@@ -6,8 +6,8 @@
 
 #include <QJsonDocument>
 
-constexpr auto DEFAULT_API_TAG = "api";
-constexpr auto DEFAULT_API_IN_TAG = "api-in";
+constexpr auto DEFAULT_API_TAG = "qv2ray-api";
+constexpr auto DEFAULT_API_IN_TAG = "qv2ray-api-in";
 
 inline void OutboundMarkSettingFilter(QJsonObject &root, int mark)
 {

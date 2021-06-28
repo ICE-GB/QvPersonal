@@ -85,8 +85,6 @@ add_library(QvPlugin-BuiltinV2RaySupport SHARED
     ${CMAKE_CURRENT_LIST_DIR}/common/CommonHelpers.cpp
     ${CMAKE_CURRENT_LIST_DIR}/BuiltinV2RayCorePlugin.hpp
     ${CMAKE_CURRENT_LIST_DIR}/BuiltinV2RayCorePlugin.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/core/Filters.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/core/Filters.cpp
     ${CMAKE_CURRENT_LIST_DIR}/core/V2RayAPIStats.hpp
     ${CMAKE_CURRENT_LIST_DIR}/core/V2RayAPIStats.cpp
     ${CMAKE_CURRENT_LIST_DIR}/core/V2RayKernel.hpp

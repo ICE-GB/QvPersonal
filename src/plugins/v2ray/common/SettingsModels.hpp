@@ -6,14 +6,14 @@
 struct BrowserForwarderConfig
 {
     Bindable<QString> listenAddr;
-    Bindable<int> listenPort;
-    QJS_FUNC_JSON(F(listenAddr, listenPort))
+    Bindable<int> listenPort{ 18888 };
+    QJS_JSON(P(listenAddr, listenPort))
 };
 
 struct ObservatoryConfig
 {
     QStringList subjectSelector;
-    QJS_FUNC_JSON(F(subjectSelector))
+    QJS_JSON(F(subjectSelector))
 };
 
 struct V2RayCorePluginSettings
@@ -30,13 +30,13 @@ struct V2RayCorePluginSettings
     Bindable<V2RayLogLevel> LogLevel;
     Bindable<QString> CorePath;
     Bindable<QString> AssetsPath;
-    Bindable<int> OutboundMark;
+    Bindable<int> OutboundMark{ 255 };
 
-    Bindable<bool> APIEnabled;
-    Bindable<int> APIPort;
+    Bindable<bool> APIEnabled{ true };
+    Bindable<int> APIPort{ 15480 };
 
     BrowserForwarderConfig BrowserForwarderSettings;
     ObservatoryConfig ObservatorySettings;
 
-    QJS_FUNC_JSON(F(LogLevel, CorePath, AssetsPath, APIEnabled, APIPort, BrowserForwarderSettings, ObservatorySettings, OutboundMark))
+    QJS_JSON(P(LogLevel, CorePath, AssetsPath, APIEnabled, APIPort, OutboundMark), F(BrowserForwarderSettings, ObservatorySettings))
 };

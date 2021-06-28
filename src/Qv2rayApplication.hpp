@@ -47,7 +47,7 @@ struct Qv2rayStartupArguments
     bool exitQv2ray;
     //
     QString _qvNewVersionPath;
-    QJS_FUNC_JSON(F(arguments, data, version, links, fullArgs))
+    QJS_JSON(F(arguments, data, version, links, fullArgs))
 };
 
 const static inline QMap<Qv2rayBase::MessageOpt, QMessageBox::StandardButton> MessageBoxButtonMap //

@@ -23,7 +23,7 @@ enum RuleType
 };
 
 template<RuleType t>
-RuleObject GenerateSingleRouteRule(const QStringList rules, const QString &outboundTag)
+RuleObject GenerateSingleRouteRule(const QStringList &rules, const QString &outboundTag)
 {
     RuleObject r;
     r.outboundTag = outboundTag;
@@ -98,7 +98,7 @@ ProfileContent InternalProfilePreprocessor::PreprocessProfile(const ProfileConte
     auto result = p;
 
     bool hasIPv4 = !GlobalConfig->inboundConfig->ListenAddress->isEmpty();
-    bool hasIPv6 = false; // = !GlobalConfig->inboundConfig->ListenAddressV6->isEmpty();
+    bool hasIPv6 = !GlobalConfig->inboundConfig->ListenAddressV6->isEmpty();
 
 #define AddInbound(PROTOCOL, _protocol)                                                                                                                                  \
     do                                                                                                                                                                   \
