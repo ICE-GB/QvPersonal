@@ -13,7 +13,18 @@ RouteSettingsMatrixWidget::RouteSettingsMatrixWidget(QWidget *parent) : QWidget(
 {
     setupUi(this);
     builtInSchemesMenu = new QMenu(this);
-    builtInSchemesMenu->addActions(this->getBuiltInSchemes());
+
+    {
+        const auto act = new QAction(tr("Empty scheme"), builtInSchemesMenu);
+        connect(act, &QAction::triggered, [this] { this->SetRouteConfig(RouteSchemeIO::EmptyScheme); });
+        builtInSchemesMenu->addAction(act);
+    }
+    {
+        const auto act = new QAction(tr("Empty scheme (no ads)"), builtInSchemesMenu);
+        connect(act, &QAction::triggered, [this] { this->SetRouteConfig(RouteSchemeIO::NoAdsScheme); });
+        builtInSchemesMenu->addAction(act);
+    }
+
     builtInSchemeBtn->setMenu(builtInSchemesMenu);
 
     const auto sourceStringsDomain = GeositeReader::ReadGeoSiteFromFile(GlobalConfig->behaviorConfig->GeoSitePath);
@@ -33,20 +44,6 @@ RouteSettingsMatrixWidget::RouteSettingsMatrixWidget(QWidget *parent) : QWidget(
     directIPLayout->addWidget(directIPTxt, 0, 0);
     proxyIPLayout->addWidget(proxyIPTxt, 0, 0);
     blockIPLayout->addWidget(blockIPTxt, 0, 0);
-}
-
-QList<QAction *> RouteSettingsMatrixWidget::getBuiltInSchemes()
-{
-    const static auto schemeToAction = [this](const QString &name, const Qv2ray::Models::RouteMatrixConfig &scheme) -> QAction * {
-        const auto action = new QAction(name, this);
-        connect(action, &QAction::triggered, [this, &scheme] { this->SetRouteConfig(scheme); });
-        return action;
-    };
-
-    QList<QAction *> list;
-    list.append(schemeToAction(tr("empty scheme"), RouteSchemeIO::EmptyScheme));
-    list.append(schemeToAction(tr("empty scheme (no ads)"), RouteSchemeIO::NoAdsScheme));
-    return list;
 }
 
 void RouteSettingsMatrixWidget::SetRouteConfig(const Qv2ray::Models::RouteMatrixConfig &conf)

@@ -16,6 +16,8 @@
 
 #define QV_MODULE_NAME "PlatformApplication"
 
+constexpr auto QV2RAY_GUI_EXTRASETTINGS_KEY = "gui-settings";
+
 #ifdef QT_DEBUG
 const static inline auto QV2RAY_URL_SCHEME = "qv2ray-debug";
 #else
@@ -110,8 +112,10 @@ bool Qv2rayApplication::Initialize()
         return false;
 
 #ifdef Q_OS_LINUX
-#pragma message("TODO Save Qv2rayApplicationConfig")
-    connect(this, &QGuiApplication::commitDataRequest, [] { QvBaselib->SaveConfigurations(); });
+    connect(this, &QGuiApplication::commitDataRequest, [this] {
+        QvBaselib->SaveConfigurations();
+        SaveQv2raySettings();
+    });
 #endif
 
 #ifdef Q_OS_WIN
@@ -127,6 +131,8 @@ bool Qv2rayApplication::Initialize()
     GUIPluginHost = new Qv2ray::ui::common::GuiPluginAPIHost;
     UIMessageBus = new MessageBus::QvMessageBusObject;
     StyleManager = new QvStyleManager::QvStyleManager;
+
+    GlobalConfig->loadJson(QvBaselib->StorageProvider()->GetExtraSettings(QString::fromUtf8(QV2RAY_GUI_EXTRASETTINGS_KEY)));
     return true;
 }
 
@@ -189,6 +195,7 @@ void Qv2rayApplication::quitInternal()
     delete hTray;
     delete StyleManager;
     delete GUIPluginHost;
+    SaveQv2raySettings();
     QvBaselib->Shutdown();
 }
 
@@ -312,6 +319,11 @@ Qv2rayBase::MessageOpt Qv2rayApplication::p_MessageBoxAsk(const QString &title, 
 void Qv2rayApplication::ShowTrayMessage(const QString &m, int msecs)
 {
     hTray->showMessage(QStringLiteral("Qv2ray"), m, QIcon(Qv2rayLogo), msecs);
+}
+
+void Qv2rayApplication::SaveQv2raySettings()
+{
+    QvBaselib->StorageProvider()->StoreExtraSettings(QString::fromUtf8(QV2RAY_GUI_EXTRASETTINGS_KEY), GlobalConfig->toJson());
 }
 
 void Qv2rayApplication::onMessageReceived(quint32 clientId, const QByteArray &_msg)

@@ -86,6 +86,8 @@ class Qv2rayApplication
 
     QPixmap Qv2rayLogo;
 
+    void SaveQv2raySettings();
+
   public:
     virtual void p_MessageBoxWarn(const QString &title, const QString &text) override;
     virtual void p_MessageBoxInfo(const QString &title, const QString &text) override;

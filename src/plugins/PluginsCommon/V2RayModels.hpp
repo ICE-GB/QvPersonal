@@ -36,7 +36,7 @@ namespace Qv2ray::Models
         QJS_FUNC_JSON(F(domainStrategy, domainMatcher, domains, ips))
     };
 
-    struct V2RayDNSObject : BasicDNSObject
+    struct V2RayDNSObject : public BasicDNSObject
     {
         enum QueryStrategy
         {
@@ -45,14 +45,14 @@ namespace Qv2ray::Models
             UseIPv6,
         };
 
-        struct V2RayDNSServerObject : BasicDNSServerObject
+        struct V2RayDNSServerObject : public BasicDNSServerObject
         {
             Bindable<bool> QV2RAY_DNS_IS_COMPLEX_DNS{ false };
             Bindable<bool> SkipFallback{ false };
             Bindable<QList<QString>> domains;
             Bindable<QList<QString>> expectIPs;
             QJS_FUNC_COMPARE(V2RayDNSServerObject, QV2RAY_DNS_IS_COMPLEX_DNS, SkipFallback, port, address, domains, expectIPs);
-            QJS_FUNC_JSON(F(QV2RAY_DNS_IS_COMPLEX_DNS, SkipFallback, port, address, domains, expectIPs), B(BasicDNSServerObject))
+            QJS_FUNC_JSON(F(QV2RAY_DNS_IS_COMPLEX_DNS, SkipFallback, port, address, domains, expectIPs))
         };
 
         Bindable<QList<V2RayDNSServerObject>> servers;
@@ -61,8 +61,8 @@ namespace Qv2ray::Models
         Bindable<bool> disableCache{ false };
         Bindable<bool> disableFallback{ false };
         Bindable<QString> queryStrategy{ QStringLiteral("UseIP") };
-        QJS_FUNC_COMPARE(V2RayDNSObject, servers, clientIp, tag, disableCache, disableFallback, queryStrategy);
-        QJS_FUNC_JSON(F(servers, clientIp, tag, disableCache, disableFallback, queryStrategy), B(BasicDNSObject));
+        QJS_FUNC_COMPARE(V2RayDNSObject, servers, clientIp, tag, disableCache, disableFallback, queryStrategy, servers, hosts, extraOptions);
+        QJS_FUNC_JSON(F(servers, clientIp, tag, disableCache, disableFallback, queryStrategy, servers, hosts, extraOptions));
         static auto fromJson(const QJsonObject &o)
         {
             V2RayDNSObject dns;

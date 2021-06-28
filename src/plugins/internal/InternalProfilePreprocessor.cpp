@@ -5,7 +5,7 @@
 
 constexpr auto DNS_INTERCEPTION_OUTBOUND_TAG = "dns-out";
 constexpr auto DEFAULT_FREEDOM_OUTBOUND_TAG = "direct";
-constexpr auto DEFAULT_BLACKHOLE_OUTBOUND_TAG = "direct";
+constexpr auto DEFAULT_BLACKHOLE_OUTBOUND_TAG = "blackhole";
 
 constexpr auto DEFAULT_DokodemoDoor_IPV4_TAG = "tproxy-in";
 constexpr auto DEFAULT_DokodemoDoor_IPV6_TAG = "tproxy-in-v6";
@@ -87,12 +87,6 @@ RoutingObject GenerateRoutes(bool ForceDirectConnection, bool bypassCN, bool byp
     return root;
 }
 
-inline void OutboundMarkSettingFilter(QJsonObject &root, int mark)
-{
-    for (auto i = 0; i < root[QStringLiteral("outbounds")].toArray().count(); i++)
-        QJsonIO::SetValue(root, mark, QStringLiteral("outbounds"), i, QStringLiteral("streamSettings"), QStringLiteral("sockopt"), QStringLiteral("mark"));
-}
-
 ProfileContent InternalProfilePreprocessor::PreprocessProfile(const ProfileContent &p)
 {
     // For "complex" profiles.
@@ -104,7 +98,7 @@ ProfileContent InternalProfilePreprocessor::PreprocessProfile(const ProfileConte
     auto result = p;
 
     bool hasIPv4 = !GlobalConfig->inboundConfig->ListenAddress->isEmpty();
-    bool hasIPv6 = !GlobalConfig->inboundConfig->ListenAddressV6->isEmpty();
+    bool hasIPv6 = false; // = !GlobalConfig->inboundConfig->ListenAddressV6->isEmpty();
 
 #define AddInbound(PROTOCOL, _protocol)                                                                                                                                  \
     do                                                                                                                                                                   \
@@ -112,7 +106,7 @@ ProfileContent InternalProfilePreprocessor::PreprocessProfile(const ProfileConte
         if (GlobalConfig->inboundConfig->Has##PROTOCOL)                                                                                                                  \
         {                                                                                                                                                                \
             InboundObject in;                                                                                                                                            \
-            in.inboundSettings.protocol = _protocol;                                                                                                                     \
+            in.inboundSettings.protocol = QStringLiteral(_protocol);                                                                                                     \
             GlobalConfig->inboundConfig->PROTOCOL##Config->Propagate(in);                                                                                                \
             if (hasIPv4)                                                                                                                                                 \
             {                                                                                                                                                            \
@@ -132,6 +126,15 @@ ProfileContent InternalProfilePreprocessor::PreprocessProfile(const ProfileConte
     AddInbound(HTTP, "http");
     AddInbound(SOCKS, "socks");
     AddInbound(DokodemoDoor, "dokodemo-door");
+    result.inbounds.last().inboundSettings.streamSettings[QStringLiteral("sockopt")] = //
+        QJsonObject{ { QStringLiteral("tproxy"), [](auto m) {
+                          switch (m)
+                          {
+                              case Qv2ray::Models::DokodemoDoorInboundConfig::TPROXY: return QStringLiteral("tproxy");
+                              case Qv2ray::Models::DokodemoDoorInboundConfig::REDIRECT: return QStringLiteral("redirect");
+                          }
+                          return QStringLiteral("redirect");
+                      }(GlobalConfig->inboundConfig->DokodemoDoorConfig->WorkingMode) } };
 
     result.routing = GenerateRoutes(GlobalConfig->connectionConfig->ForceDirectConnection, //
                                     GlobalConfig->connectionConfig->BypassCN,              //
@@ -175,7 +178,7 @@ ProfileContent InternalProfilePreprocessor::PreprocessProfile(const ProfileConte
             DNSOutbound.name = QString::fromUtf8(DNS_INTERCEPTION_OUTBOUND_TAG);
 
             RuleObject DNSRule;
-            DNSRule.sourcePort = 53;
+            DNSRule.targetPort = 53;
             DNSRule.inboundTags = dnsRuleInboundTags;
             DNSRule.outboundTag = QString::fromUtf8(DNS_INTERCEPTION_OUTBOUND_TAG);
 
@@ -183,6 +186,20 @@ ProfileContent InternalProfilePreprocessor::PreprocessProfile(const ProfileConte
             result.routing.rules.prepend(DNSRule);
         }
     }
+    {
+        // Generate Blackhole
+        OutboundObject black{ IOConnectionSettings{ QStringLiteral("blackhole"), QStringLiteral("0.0.0.0"), 0 } };
+        black.name = QString::fromUtf8(DEFAULT_BLACKHOLE_OUTBOUND_TAG);
+        result.outbounds << black;
+
+        // Generate Freedom
+        OutboundObject freedom{ IOConnectionSettings{ QStringLiteral("freedom"), QStringLiteral("0.0.0.0"), 0 } };
+        freedom.name = QString::fromUtf8(DEFAULT_FREEDOM_OUTBOUND_TAG);
+        result.outbounds << freedom;
+    }
+
+    result.dnsSettings = GlobalConfig->connectionConfig->DNSConfig->toJson();
+    result.fakednsSettings = GlobalConfig->connectionConfig->FakeDNSConfig->toJson();
 
     return result;
 }

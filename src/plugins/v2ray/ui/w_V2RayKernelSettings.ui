@@ -58,27 +58,27 @@
         </property>
         <item>
          <property name="text">
-          <string>none</string>
+          <string>None</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>debug</string>
+          <string>Error</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>info</string>
+          <string>Warning</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>warning</string>
+          <string>Info</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>error</string>
+          <string>Debug</string>
          </property>
         </item>
        </widget>
@@ -205,7 +205,14 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QSpinBox" name="somarkSB"/>
+       <widget class="QSpinBox" name="somarkSB">
+        <property name="maximum">
+         <number>65535</number>
+        </property>
+        <property name="value">
+         <number>39283</number>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

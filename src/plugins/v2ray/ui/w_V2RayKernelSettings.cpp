@@ -10,6 +10,7 @@ V2RayKernelSettings::V2RayKernelSettings(QWidget *parent) : Qv2rayPlugin::Gui::P
     settings.AssetsPath.ReadWriteBind(vCoreAssetsPathTxt, "text", &QLineEdit::textEdited);
     settings.CorePath.ReadWriteBind(vCorePathTxt, "text", &QLineEdit::textEdited);
     settings.LogLevel.ReadWriteBind(logLevelComboBox, "currentIndex", &QComboBox::currentIndexChanged);
+    settings.OutboundMark.ReadWriteBind(somarkSB, "value", &QSpinBox::valueChanged);
 }
 
 void V2RayKernelSettings::changeEvent(QEvent *e)

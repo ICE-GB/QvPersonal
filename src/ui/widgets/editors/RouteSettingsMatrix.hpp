@@ -23,7 +23,6 @@ class RouteSettingsMatrixWidget
   private:
     std::optional<QString> openFileDialog();
     std::optional<QString> saveFileDialog();
-    QList<QAction *> getBuiltInSchemes();
 
   private slots:
     void on_importSchemeBtn_clicked();

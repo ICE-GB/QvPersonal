@@ -96,8 +96,8 @@ namespace Qv2ray::Models
     {
         enum DokoWorkingMode
         {
+            REDIRECT,
             TPROXY,
-            REDIRECT
         };
         Bindable<DokoWorkingMode> WorkingMode{ TPROXY };
         DokodemoDoorInboundConfig() : ProtocolInboundBase(12345){};
@@ -130,16 +130,15 @@ namespace Qv2ray::Models
 
     struct Qv2rayConnectionConfig
     {
-        Bindable<bool> BypassLAN{ false };
-        Bindable<bool> BypassCN{ false };
+        Bindable<bool> BypassLAN{ true };
+        Bindable<bool> BypassCN{ true };
         Bindable<bool> BypassBittorrent{ false };
         Bindable<bool> ForceDirectConnection{ false };
         Bindable<bool> DNSInterception{ false };
         Bindable<V2RayDNSObject> DNSConfig;
         Bindable<FakeDNSObject> FakeDNSConfig;
         Bindable<RouteMatrixConfig> RouteConfig;
-        Bindable<int> OutboundMark;
-        QJS_FUNC_JSON(F(BypassBittorrent, ForceDirectConnection, DNSInterception, DNSConfig, FakeDNSConfig, RouteConfig, OutboundMark))
+        QJS_FUNC_JSON(F(BypassLAN, BypassCN, BypassBittorrent, ForceDirectConnection, DNSInterception, DNSConfig, FakeDNSConfig, RouteConfig))
     };
 
     struct Qv2rayApplicationConfigObject

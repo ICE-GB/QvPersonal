@@ -30,6 +30,7 @@ struct V2RayCorePluginSettings
     Bindable<V2RayLogLevel> LogLevel;
     Bindable<QString> CorePath;
     Bindable<QString> AssetsPath;
+    Bindable<int> OutboundMark;
 
     Bindable<bool> APIEnabled;
     Bindable<int> APIPort;
@@ -37,5 +38,5 @@ struct V2RayCorePluginSettings
     BrowserForwarderConfig BrowserForwarderSettings;
     ObservatoryConfig ObservatorySettings;
 
-    QJS_FUNC_JSON(F(LogLevel, CorePath, AssetsPath, APIEnabled, APIPort, BrowserForwarderSettings, ObservatorySettings))
+    QJS_FUNC_JSON(F(LogLevel, CorePath, AssetsPath, APIEnabled, APIPort, BrowserForwarderSettings, ObservatorySettings, OutboundMark))
 };

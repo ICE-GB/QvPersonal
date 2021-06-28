@@ -134,12 +134,12 @@ PreferencesWindow::PreferencesWindow(QWidget *parent) : QvDialog(QStringLiteral(
     }
     // END OF DOKODEMO_DOOR CONFIGURATION
 
-    AppConfig.connectionConfig->OutboundMark.ReadWriteBind(outboundMark, "value", &QSpinBox::valueChanged);
+    AppConfig.connectionConfig->BypassLAN.ReadWriteBind(bypassLANCB, "checked", &QCheckBox::toggled);
+    AppConfig.connectionConfig->BypassCN.ReadWriteBind(bypassCNCB, "checked", &QCheckBox::toggled);
+    AppConfig.connectionConfig->DNSInterception.ReadWriteBind(dnsInterceptCB, "checked", &QCheckBox::toggled);
 
-    // Kernel Settings
-    {
-        pluginKernelPortAllocateCB->setValue(BaselibConfig.plugin_config.plugin_port_allocation);
-    }
+    pluginKernelPortAllocateCB->setValue(BaselibConfig.plugin_config.plugin_port_allocation);
+
     // Connection Settings
     {
         AppConfig.connectionConfig->BypassBittorrent.Observe([](const auto &newval) {

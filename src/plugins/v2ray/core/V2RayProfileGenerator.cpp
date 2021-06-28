@@ -1,12 +1,19 @@
 #include "V2RayProfileGenerator.hpp"
 
 #include "BuiltinV2RayCorePlugin.hpp"
+#include "Utils/QJsonIO.hpp"
 #include "V2RayModels.hpp"
 
 #include <QJsonDocument>
 
 constexpr auto DEFAULT_API_TAG = "api";
 constexpr auto DEFAULT_API_IN_TAG = "api-in";
+
+inline void OutboundMarkSettingFilter(QJsonObject &root, int mark)
+{
+    for (auto i = 0; i < root[QStringLiteral("outbounds")].toArray().count(); i++)
+        QJsonIO::SetValue(root, mark, QStringLiteral("outbounds"), i, QStringLiteral("streamSettings"), QStringLiteral("sockopt"), QStringLiteral("mark"));
+}
 
 V2RayProfileGenerator::V2RayProfileGenerator(const ProfileContent &profile) : profile(profile){};
 
@@ -45,10 +52,10 @@ QByteArray V2RayProfileGenerator::Generate()
                                                         switch (l)
                                                         {
                                                             case V2RayCorePluginSettings::None: return QStringLiteral("none");
-                                                            case V2RayCorePluginSettings::Error: QStringLiteral("error");
-                                                            case V2RayCorePluginSettings::Warning: QStringLiteral("warning");
-                                                            case V2RayCorePluginSettings::Info: QStringLiteral("info");
-                                                            case V2RayCorePluginSettings::Debug: QStringLiteral("debug");
+                                                            case V2RayCorePluginSettings::Error: return QStringLiteral("error");
+                                                            case V2RayCorePluginSettings::Warning: return QStringLiteral("warning");
+                                                            case V2RayCorePluginSettings::Info: return QStringLiteral("info");
+                                                            case V2RayCorePluginSettings::Debug: return QStringLiteral("debug");
                                                             default: return QStringLiteral("warning");
                                                         }
                                                     }(settings.LogLevel) } };
@@ -57,8 +64,10 @@ QByteArray V2RayProfileGenerator::Generate()
         if (!settings.BrowserForwarderSettings.listenAddr->isEmpty())
             rootconf[QStringLiteral("browserForwarder")] = settings.BrowserForwarderSettings.toJson();
 
-    if (!rootconf.contains(QStringLiteral("observatory")) || rootconf.value(QStringLiteral("observatory")).toObject().isEmpty())
-        rootconf[QStringLiteral("observatory")] = settings.ObservatorySettings.toJson();
+#pragma message("TODO: empty observatory causing high CPU usage.")
+
+    //    if (!rootconf.contains(QStringLiteral("observatory")) || rootconf.value(QStringLiteral("observatory")).toObject().isEmpty())
+    //        rootconf[QStringLiteral("observatory")] = settings.ObservatorySettings.toJson();
 
     if (settings.APIEnabled)
     {
@@ -110,6 +119,8 @@ QByteArray V2RayProfileGenerator::Generate()
 
     if (!profile.fakednsSettings.isEmpty())
         rootconf[QStringLiteral("fakedns")] = profile.fakednsSettings;
+
+    OutboundMarkSettingFilter(rootconf, settings.OutboundMark);
 
     return QJsonDocument(rootconf).toJson(QJsonDocument::Indented);
 }
@@ -166,17 +177,16 @@ void V2RayProfileGenerator::ProcessInboundConfig(const InboundObject &in)
     // Special Case: HTTP, SOCKS: with flattened users[]
     if (in.inboundSettings.protocol == QStringLiteral("http") || in.inboundSettings.protocol == QStringLiteral("socks"))
     {
-        Qv2ray::Models::HTTPSOCKSObject hso;
-        hso.loadJson(in.inboundSettings.protocolSettings);
-
-        // Move user and pass to subarray
-        QJsonArray accounts;
-        accounts << QJsonObject{ { QStringLiteral("user"), QJsonValue(hso.user) }, { QStringLiteral("pass"), QJsonValue(hso.pass) } };
-
         QJsonObject settings = root[QStringLiteral("settings")].toObject();
         settings.remove(QStringLiteral("user"));
         settings.remove(QStringLiteral("pass"));
-        settings[QStringLiteral("accounts")] = accounts;
+        root[QStringLiteral("settings")] = settings;
+    }
+
+    if (in.inboundSettings.protocol == QStringLiteral("dokodemo-door"))
+    {
+        QJsonObject settings = root[QStringLiteral("settings")].toObject();
+        settings.insert(QStringLiteral("allowTransparent"), true);
         root[QStringLiteral("settings")] = settings;
     }
 
