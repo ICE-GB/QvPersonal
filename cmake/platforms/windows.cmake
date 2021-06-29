@@ -28,7 +28,7 @@ foreach(d ${DIRS})
 endforeach()
 set(DIRS ${NEW_DIRS})
 
-INSTALL(DIRECTORY "${Qt6Core_DIR}/../../../plugins/tls" DESTINATION ${CMAKE_INSTALL_PREFIX})
+INSTALL(DIRECTORY "${Qt6Core_DIR}/../../../plugins/tls/" DESTINATION "${CMAKE_INSTALL_PREFIX}/tls/")
 
 set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION .)
 
