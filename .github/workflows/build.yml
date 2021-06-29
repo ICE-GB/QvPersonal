@@ -77,14 +77,14 @@ jobs:
         cmake --build . --parallel
 
     - name: Install
-      if: false
+      if: matrix.config.os == 'windows-latest'
       run: |
         cd build
         cmake --install .
 
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v2.2.3
-      if: false
+      if: matrix.config.os == 'windows-latest'
       with:
         name: Qv2ray-${{ matrix.config.artifact }}.zip
         path: build/installed
