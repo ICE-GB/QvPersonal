@@ -9,6 +9,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+option(BUILD_TESTING "Build Testing" OFF)
+option(BUILD_SHARED_LIBS "Build Shared Libraries" ON)
+
 option(USE_MINGW "Use MinGW on Windows" OFF)
 
 if(WIN32)
@@ -41,7 +44,7 @@ endif()
 if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.17.0")
     cmake_policy(SET CMP0100 NEW)
 endif()
-
+cmake_policy(SET CMP0087 NEW)
 
 # ==================================================================================
 # Qv2ray Build Info
@@ -185,10 +188,19 @@ target_link_libraries(qv2ray PRIVATE
     Qv2ray::Qv2rayBase
     Qv2ray::QvPluginInterface
     NodeEditor::nodes
-    OpenSSL::SSL
-    OpenSSL::Crypto
+    #    OpenSSL::SSL
+    #    OpenSSL::Crypto
     SingleApplication
     )
+
+# BEGIN SPECIAL CASE
+if(USE_SYSTEM_LIBUV)
+# Qt deferred target finalizer will try looking for "unofficial::libuv::libuv" when USE_SYSTEM_LIBUV is on.
+    if(WIN32)
+        find_package(unofficial-libuv CONFIG REQUIRED)
+        add_library(Qv2ray::libuv ALIAS unofficial::libuv::libuv)
+    endif()
+endif()
 
 # ==================================================================================
 # Platform-dependent installation process and deployment

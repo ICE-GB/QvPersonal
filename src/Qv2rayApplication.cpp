@@ -21,7 +21,7 @@ constexpr auto QV2RAY_GUI_EXTRASETTINGS_KEY = "gui-settings";
 #ifdef QT_DEBUG
 const static inline auto QV2RAY_URL_SCHEME = "qv2ray-debug";
 #else
-const static inline QString QV2RAY_URL_SCHEME = "qv2ray";
+const static inline auto QV2RAY_URL_SCHEME = "qv2ray";
 #endif
 
 Q_IMPORT_PLUGIN(Qv2rayInternalPlugin);
@@ -46,17 +46,16 @@ bool Qv2rayApplication::Initialize()
 {
     if (!QSslSocket::supportsSsl())
     {
-        // Check OpenSSL version for auto-update and subscriptions
-        const auto osslReqVersion = QSslSocket::sslLibraryBuildVersionString();
-        const auto osslCurVersion = QSslSocket::sslLibraryVersionString();
-        QvLog() << "Current OpenSSL version:" << osslCurVersion;
-        QvLog() << "Required OpenSSL version:" << osslReqVersion;
-        QvLog() << "Qv2ray cannot run without OpenSSL.";
-        QvLog() << "This is usually caused by using the wrong version of OpenSSL";
-        QvLog() << "Required=" << osslReqVersion << "Current=" << osslCurVersion;
+        // Check TLS backend
+        const auto requiredVersion = QSslSocket::sslLibraryBuildVersionString();
+        const auto currentVersion = QSslSocket::sslLibraryVersionString();
+        QvLog() << "Current TLS backend version:" << currentVersion;
+        QvLog() << "Required TLS backend version:" << requiredVersion;
+        QvLog() << "This is usually caused by a corrupted Qt deployment without tls backend plugins.";
+        QvLog() << "Required=" << requiredVersion << "Current=" << currentVersion;
+
         return false;
     }
-
     QString errorMessage;
     bool canContinue;
     const auto hasError = parseCommandLine(&errorMessage, &canContinue);
@@ -72,7 +71,7 @@ bool Qv2rayApplication::Initialize()
 
 #ifdef Q_OS_WIN
     const auto appPath = QDir::toNativeSeparators(QCoreApplication::applicationFilePath());
-    const auto regPath = "HKEY_CURRENT_USER\\Software\\Classes\\" + QV2RAY_URL_SCHEME;
+    const auto regPath = "HKEY_CURRENT_USER\\Software\\Classes\\" + QString::fromUtf8(QV2RAY_URL_SCHEME);
     QSettings reg(regPath, QSettings::NativeFormat);
     reg.setValue("Default", "Qv2ray");
     reg.setValue("URL Protocol", "");

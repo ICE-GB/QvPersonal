@@ -35,7 +35,7 @@ macro(proto_gen_v2ray_files proto)
         set(PROTO_GRPC_SOURCE_FILE "${PROTO_GENERATED_DIR}/${PROTO_FILE_DIR}/${PROTO_FILE_NAME}.grpc.pb.cc")
         add_custom_command(
             OUTPUT "${PROTO_HEADER_FILE}" "${PROTO_SOURCE_FILE}" "${PROTO_GRPC_HEADER_FILE}" "${PROTO_GRPC_SOURCE_FILE}"
-            COMMAND ${Protobuf_PROTOC_EXECUTABLE}
+            COMMAND ${PROTOBUF_PROTOC_EXECUTABLE}
             ARGS
             --grpc_out "${PROTO_GENERATED_DIR}"
             --cpp_out "${PROTO_GENERATED_DIR}"
@@ -48,7 +48,7 @@ macro(proto_gen_v2ray_files proto)
         add_custom_command(
             COMMENT "Generate protobuf files for ${proto}"
             OUTPUT "${PROTO_HEADER_FILE}" "${PROTO_SOURCE_FILE}"
-            COMMAND ${Protobuf_PROTOC_EXECUTABLE}
+            COMMAND ${PROTOBUF_PROTOC_EXECUTABLE}
             ARGS
             --cpp_out "${PROTO_GENERATED_DIR}"
             -I "${PROTO_SOURCE_DIR}"
