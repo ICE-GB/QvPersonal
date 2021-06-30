@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Common/Utils.hpp"
 #include "NodeDispatcher.hpp"
+#include "Qv2rayBase/Common/Utils.hpp"
 #include "ui/WidgetUIBase.hpp"
 
 #include <QLabel>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Common/CommonTypes.hpp"
+#include "QvPlugin/Common/CommonTypes.hpp"
 #include "common/SettingsModels.hpp"
 
 #ifdef QV2RAY_V2RAY_PLUGIN_USE_PROTOBUF

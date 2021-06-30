@@ -1,7 +1,7 @@
 #include "InternalProfilePreprocessor.hpp"
 
 #include "Qv2rayApplication.hpp"
-#include "Utils/QJsonIO.hpp"
+#include "QvPlugin/Utils/QJsonIO.hpp"
 
 constexpr auto DNS_INTERCEPTION_OUTBOUND_TAG = "dns-out";
 constexpr auto DEFAULT_FREEDOM_OUTBOUND_TAG = "direct";

@@ -1,6 +1,6 @@
 #include "RuleWidget.hpp"
 
-#include "Common/Utils.hpp"
+#include "Qv2rayBase/Common/Utils.hpp"
 
 #define LOAD_FLAG_END isLoading = false;
 #define LOAD_FLAG_BEGIN isLoading = true;

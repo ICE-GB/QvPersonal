@@ -1,5 +1,5 @@
 #pragma once
-#include "Common/CommonTypes.hpp"
+#include "QvPlugin/Common/CommonTypes.hpp"
 #include "GuiPluginHost/GuiPluginHost.hpp"
 #include "MessageBus/MessageBus.hpp"
 #include "ui/widgets/editors/StreamSettingsWidget.hpp"

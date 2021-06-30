@@ -1,6 +1,6 @@
 #include "w_ScreenShot_Core.hpp"
 
-#include "Common/Utils.hpp"
+#include "Qv2rayBase/Common/Utils.hpp"
 
 #include <QMessageBox>
 #include <QStyleFactory>

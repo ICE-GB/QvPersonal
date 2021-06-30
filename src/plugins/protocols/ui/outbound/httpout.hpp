@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Gui/QvGUIPluginInterface.hpp"
+#include "QvPlugin/Gui/QvGUIPluginInterface.hpp"
 #include "V2RayModels.hpp"
 #include "ui_httpout.h"
 

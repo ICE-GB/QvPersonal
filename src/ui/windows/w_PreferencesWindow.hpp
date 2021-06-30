@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MessageBus/MessageBus.hpp"
+#include "Qv2rayBase/Common/Settings.hpp"
 #include "ui/WidgetUIBase.hpp"
 #include "ui_w_PreferencesWindow.h"
 

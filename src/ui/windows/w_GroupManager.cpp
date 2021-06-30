@@ -1,10 +1,10 @@
 #include "w_GroupManager.hpp"
 
-#include "Common/ProfileHelpers.hpp"
-#include "Common/Utils.hpp"
-#include "Plugin/PluginAPIHost.hpp"
-#include "Plugin/PluginManagerCore.hpp"
-#include "Profile/ProfileManager.hpp"
+#include "Qv2rayBase/Common/ProfileHelpers.hpp"
+#include "Qv2rayBase/Common/Utils.hpp"
+#include "Qv2rayBase/Plugin/PluginAPIHost.hpp"
+#include "Qv2rayBase/Plugin/PluginManagerCore.hpp"
+#include "Qv2rayBase/Profile/ProfileManager.hpp"
 #include "ui/widgets/editors/DnsSettingsWidget.hpp"
 #include "ui/widgets/editors/RouteSettingsMatrix.hpp"
 

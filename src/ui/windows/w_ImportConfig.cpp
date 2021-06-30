@@ -1,9 +1,9 @@
 #include "w_ImportConfig.hpp"
 
-#include "Common/ProfileHelpers.hpp"
-#include "Common/Utils.hpp"
-#include "Plugin/PluginAPIHost.hpp"
-#include "Profile/ProfileManager.hpp"
+#include "Qv2rayBase/Common/ProfileHelpers.hpp"
+#include "Qv2rayBase/Common/Utils.hpp"
+#include "Qv2rayBase/Plugin/PluginAPIHost.hpp"
+#include "Qv2rayBase/Profile/ProfileManager.hpp"
 #include "ui/windows/editors/w_JsonEditor.hpp"
 
 #include <QFileDialog>

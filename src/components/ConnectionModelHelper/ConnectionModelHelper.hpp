@@ -1,6 +1,6 @@
 #pragma once
 
-#include "QvPluginInterface.hpp"
+#include "QvPlugin/PluginInterface.hpp"
 
 #include <QStandardItem>
 #include <QStandardItemModel>

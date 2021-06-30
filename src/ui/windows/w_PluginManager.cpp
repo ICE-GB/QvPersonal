@@ -1,10 +1,9 @@
 #include "w_PluginManager.hpp"
 
-#include "Common/Utils.hpp"
 #include "GuiPluginHost/GuiPluginHost.hpp"
-#include "Interfaces/IStorageProvider.hpp"
-#include "Plugin/PluginAPIHost.hpp"
-//#include "core/settings/SettingsBackend.hpp"
+#include "Qv2rayBase/Common/Utils.hpp"
+#include "Qv2rayBase/Interfaces/IStorageProvider.hpp"
+#include "Qv2rayBase/Plugin/PluginAPIHost.hpp"
 #include "ui/windows/editors/w_JsonEditor.hpp"
 
 #include <QDesktopServices>

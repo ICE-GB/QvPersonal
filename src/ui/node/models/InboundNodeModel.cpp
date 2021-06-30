@@ -1,6 +1,6 @@
 #include "InboundNodeModel.hpp"
 
-#include "Common/ProfileHelpers.hpp"
+#include "Qv2rayBase/Common/ProfileHelpers.hpp"
 #include "ui/node/widgets/InboundOutboundWidget.hpp"
 
 InboundNodeModel::InboundNodeModel(std::shared_ptr<NodeDispatcher> _dispatcher, std::shared_ptr<node_data_t> data) : NodeDataModel()

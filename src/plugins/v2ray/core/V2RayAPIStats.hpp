@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Common/CommonTypes.hpp"
+#include "QvPlugin/Common/CommonTypes.hpp"
 
 #ifndef QV2RAY_NO_GRPC
 #include "v2ray/app/stats/command/command.grpc.pb.h"

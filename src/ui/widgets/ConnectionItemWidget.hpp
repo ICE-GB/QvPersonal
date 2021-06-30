@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Common/CommonTypes.hpp"
+#include "QvPlugin/Common/CommonTypes.hpp"
 #include "ui_ConnectionItemWidget.h"
 
 #include <QWidget>

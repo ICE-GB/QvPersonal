@@ -1,4 +1,4 @@
-#include "Gui/QvGUIPluginInterface.hpp"
+#include "QvPlugin/Gui/QvGUIPluginInterface.hpp"
 #include "PluginSettingsWidget.hpp"
 //
 #include "inbound/dokodemo-door.hpp"

@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Common/CommonTypes.hpp"
-#include "Common/Settings.hpp"
+#include "QvPlugin/Common/CommonTypes.hpp"
 #include "src/plugins/PluginsCommon/V2RayModels.hpp"
 
 #include <QJsonObject>

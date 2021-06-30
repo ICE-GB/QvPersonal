@@ -1,6 +1,6 @@
 #include "OutboundHandler.hpp"
 
-#include "Utils/QJsonIO.hpp"
+#include "QvPlugin/Utils/QJsonIO.hpp"
 #include "V2RayModels.hpp"
 
 #include <QUrl>

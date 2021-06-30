@@ -1,5 +1,5 @@
 #pragma once
-#include "QvPluginInterface.hpp"
+#include "QvPlugin/PluginInterface.hpp"
 
 #ifndef QT_STATICPLUGIN
 #define QT_STATICPLUGIN

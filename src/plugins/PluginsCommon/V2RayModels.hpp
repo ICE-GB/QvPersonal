@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Common/CommonTypes.hpp"
-#include "Utils/BindableProps.hpp"
+#include "QvPlugin/Common/CommonTypes.hpp"
+#include "QvPlugin/Utils/BindableProps.hpp"
 
 namespace Qv2ray::Models
 {

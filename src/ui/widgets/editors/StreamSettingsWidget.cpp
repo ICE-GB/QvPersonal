@@ -1,6 +1,6 @@
 #include "StreamSettingsWidget.hpp"
 
-#include "Common/Utils.hpp"
+#include "Qv2rayBase/Common/Utils.hpp"
 #include "ui/WidgetUIBase.hpp"
 #include "ui/windows/editors/w_JsonEditor.hpp"
 

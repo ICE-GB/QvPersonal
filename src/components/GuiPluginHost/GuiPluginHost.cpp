@@ -1,7 +1,7 @@
 #include "GuiPluginHost.hpp"
 
-#include "Plugin/PluginManagerCore.hpp"
-#include "Qv2rayBaseLibrary.hpp"
+#include "Qv2rayBase/Plugin/PluginManagerCore.hpp"
+#include "Qv2rayBase/Qv2rayBaseLibrary.hpp"
 
 namespace Qv2ray::ui::common
 {

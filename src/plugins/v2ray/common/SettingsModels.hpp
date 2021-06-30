@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Utils/BindableProps.hpp"
-#include "Utils/JsonConversion.hpp"
+#include "QvPlugin/Utils/BindableProps.hpp"
+#include "QvPlugin/Utils/JsonConversion.hpp"
 
 struct BrowserForwarderConfig
 {

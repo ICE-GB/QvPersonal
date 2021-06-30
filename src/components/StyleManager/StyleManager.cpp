@@ -1,6 +1,6 @@
 #include "StyleManager.hpp"
 
-#include "Common/Utils.hpp"
+#include "Qv2rayBase/Common/Utils.hpp"
 #include "DarkmodeDetector/DarkmodeDetector.hpp"
 #include "MessageBus/MessageBus.hpp"
 #include "Qv2rayApplication.hpp"

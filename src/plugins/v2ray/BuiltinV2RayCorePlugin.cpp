@@ -1,6 +1,6 @@
 #include "BuiltinV2RayCorePlugin.hpp"
 
-#include "Gui/QvGUIPluginInterface.hpp"
+#include "QvPlugin/Gui/QvGUIPluginInterface.hpp"
 #include "core/V2RayKernel.hpp"
 #include "ui/w_V2RayKernelSettings.hpp"
 

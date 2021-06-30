@@ -1,7 +1,7 @@
 #include "OutboundNodeModel.hpp"
 
-#include "Common/ProfileHelpers.hpp"
-#include "Profile/ProfileManager.hpp"
+#include "Qv2rayBase/Common/ProfileHelpers.hpp"
+#include "Qv2rayBase/Profile/ProfileManager.hpp"
 #include "ui/node/widgets/BalancerWidget.hpp"
 #include "ui/node/widgets/ChainWidget.hpp"
 #include "ui/node/widgets/InboundOutboundWidget.hpp"

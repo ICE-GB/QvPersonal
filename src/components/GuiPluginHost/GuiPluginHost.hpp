@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Gui/QvGUIPluginInterface.hpp"
-#include "Plugin/PluginAPIHost.hpp"
+#include "Qv2rayBase/Plugin/PluginAPIHost.hpp"
+#include "QvPlugin/Gui/QvGUIPluginInterface.hpp"
 
 namespace Qv2ray::ui::common
 {

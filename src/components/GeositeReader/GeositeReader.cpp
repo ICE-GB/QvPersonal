@@ -1,6 +1,6 @@
 #include "GeositeReader.hpp"
 
-#include "Qv2rayBaseFeatures.hpp"
+#include "Qv2rayBase/Qv2rayBaseFeatures.hpp"
 #include "picoproto.h"
 
 #include <QFile>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Handlers/KernelHandler.hpp"
+#include "QvPlugin/Handlers/KernelHandler.hpp"
 
 class QProcess;
 class APIWorker;

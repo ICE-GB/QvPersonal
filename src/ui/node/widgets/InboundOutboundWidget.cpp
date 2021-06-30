@@ -1,6 +1,6 @@
 #include "InboundOutboundWidget.hpp"
 
-#include "Profile/ProfileManager.hpp"
+#include "Qv2rayBase/Profile/ProfileManager.hpp"
 #include "ui/windows/editors/w_InboundEditor.hpp"
 #include "ui/windows/editors/w_JsonEditor.hpp"
 #include "ui/windows/editors/w_OutboundEditor.hpp"

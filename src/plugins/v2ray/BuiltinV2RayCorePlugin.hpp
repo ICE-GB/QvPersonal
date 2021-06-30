@@ -1,10 +1,10 @@
 #pragma once
 
+#include "QvPlugin/PluginInterface.hpp"
 #include "common/SettingsModels.hpp"
 
 #include <QObject>
 #include <QtPlugin>
-#include <QvPluginInterface.hpp>
 
 using namespace Qv2rayPlugin;
 

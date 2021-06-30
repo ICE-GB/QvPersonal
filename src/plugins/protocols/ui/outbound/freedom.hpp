@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Gui/QvGUIPluginInterface.hpp"
+#include "QvPlugin/Gui/QvGUIPluginInterface.hpp"
 #include "ui_freedom.h"
 
 class FreedomOutboundEditor

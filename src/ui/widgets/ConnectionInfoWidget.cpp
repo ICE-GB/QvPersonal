@@ -1,9 +1,9 @@
 #include "ConnectionInfoWidget.hpp"
 
-#include "Common/ProfileHelpers.hpp"
-#include "Common/Utils.hpp"
-#include "Profile/KernelManager.hpp"
-#include "Profile/ProfileManager.hpp"
+#include "Qv2rayBase/Common/ProfileHelpers.hpp"
+#include "Qv2rayBase/Common/Utils.hpp"
+#include "Qv2rayBase/Profile/KernelManager.hpp"
+#include "Qv2rayBase/Profile/ProfileManager.hpp"
 #include "QRCodeHelper/QRCodeHelper.hpp"
 #include "ui/WidgetUIBase.hpp"
 

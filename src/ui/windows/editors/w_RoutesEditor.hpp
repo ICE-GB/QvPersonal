@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Common/CommonTypes.hpp"
+#include "QvPlugin/Common/CommonTypes.hpp"
 #include "MessageBus/MessageBus.hpp"
 #include "ui/WidgetUIBase.hpp"
 #include "ui_w_RoutesEditor.h"

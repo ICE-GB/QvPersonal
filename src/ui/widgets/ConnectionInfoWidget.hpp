@@ -1,7 +1,7 @@
 #pragma once
 
 #include "MessageBus/MessageBus.hpp"
-#include "QvPluginInterface.hpp"
+#include "QvPlugin/PluginInterface.hpp"
 #include "ui_ConnectionInfoWidget.h"
 
 #include <QWidget>

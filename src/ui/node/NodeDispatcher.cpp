@@ -1,7 +1,7 @@
 #include "NodeDispatcher.hpp"
 
-#include "Common/ProfileHelpers.hpp"
-#include "Common/Utils.hpp"
+#include "Qv2rayBase/Common/ProfileHelpers.hpp"
+#include "Qv2rayBase/Common/Utils.hpp"
 #include "models/InboundNodeModel.hpp"
 #include "models/OutboundNodeModel.hpp"
 #include "models/RuleNodeModel.hpp"

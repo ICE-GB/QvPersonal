@@ -1,7 +1,7 @@
 #include "w_InboundEditor.hpp"
 
-#include "Common/ProfileHelpers.hpp"
-#include "Common/Utils.hpp"
+#include "Qv2rayBase/Common/ProfileHelpers.hpp"
+#include "Qv2rayBase/Common/Utils.hpp"
 #include "ui/WidgetUIBase.hpp"
 #include "ui/widgets/editors/StreamSettingsWidget.hpp"
 

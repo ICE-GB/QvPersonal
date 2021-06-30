@@ -1,10 +1,10 @@
 #include "ConnectionModelHelper.hpp"
 
-#include "Common/ProfileHelpers.hpp"
-#include "Common/Utils.hpp"
-#include "Profile/KernelManager.hpp"
-#include "Profile/ProfileManager.hpp"
-#include "Qv2rayBaseLibrary.hpp"
+#include "Qv2rayBase/Common/ProfileHelpers.hpp"
+#include "Qv2rayBase/Common/Utils.hpp"
+#include "Qv2rayBase/Profile/KernelManager.hpp"
+#include "Qv2rayBase/Profile/ProfileManager.hpp"
+#include "Qv2rayBase/Qv2rayBaseLibrary.hpp"
 #include "ui/widgets/ConnectionItemWidget.hpp"
 
 const auto NumericString = [](auto i) { return QString("%1").arg(i, 30, 10, QLatin1Char('0')); };

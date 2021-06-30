@@ -1,12 +1,11 @@
 #include "ProxyConfigurator.hpp"
 
-#include "Common/Utils.hpp"
-#include "Handlers/EventHandler.hpp"
-#include "Plugin/PluginAPIHost.hpp"
+#include "Qv2rayBase/Common/Utils.hpp"
+#include "Qv2rayBase/Plugin/PluginAPIHost.hpp"
+#include "Qv2rayBase/Qv2rayBaseLibrary.hpp"
+#include "QvPlugin/Handlers/EventHandler.hpp"
 
-#include <Plugin/PluginAPIHost.hpp>
 #include <QHostAddress>
-#include <Qv2rayBaseLibrary.hpp>
 #include <vector>
 
 #ifdef Q_OS_WIN

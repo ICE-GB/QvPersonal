@@ -1,8 +1,8 @@
-#include "Common/Utils.hpp"
-#include "Profile/KernelManager.hpp"
-#include "Profile/ProfileManager.hpp"
 #include "ProxyConfigurator/ProxyConfigurator.hpp"
 #include "Qv2rayApplication.hpp"
+#include "Qv2rayBase/Common/Utils.hpp"
+#include "Qv2rayBase/Profile/KernelManager.hpp"
+#include "Qv2rayBase/Profile/ProfileManager.hpp"
 #include "ui/WidgetUIBase.hpp"
 #include "w_MainWindow.hpp"
 

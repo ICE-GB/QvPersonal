@@ -1,12 +1,12 @@
 #pragma once
 
+#include "Qv2rayBase/Qv2rayBaseLibrary.hpp"
+#include "QvPlugin/Utils/JsonConversion.hpp"
 #include "models/SettingsModels.hpp"
 
 #include <QApplication>
 #include <QMessageBox>
-#include <Qv2rayBaseLibrary.hpp>
 #include <SingleApplication>
-#include <Utils/JsonConversion.hpp>
 
 #ifdef Q_OS_WIN
 #include <windows.h>

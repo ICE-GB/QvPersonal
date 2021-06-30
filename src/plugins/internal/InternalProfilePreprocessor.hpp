@@ -1,5 +1,5 @@
 #pragma once
-#include "Handlers/IProfilePreprocessor.hpp"
+#include "QvPlugin/Handlers/IProfilePreprocessor.hpp"
 
 class InternalProfilePreprocessor : public Qv2rayPlugin::Profile::IProfilePreprocessor
 {

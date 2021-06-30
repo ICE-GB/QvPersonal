@@ -1,7 +1,7 @@
 #include "V2RayProfileGenerator.hpp"
 
 #include "BuiltinV2RayCorePlugin.hpp"
-#include "Utils/QJsonIO.hpp"
+#include "QvPlugin/Utils/QJsonIO.hpp"
 #include "V2RayModels.hpp"
 
 #include <QJsonDocument>

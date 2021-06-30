@@ -1,8 +1,8 @@
 #include "w_RoutesEditor.hpp"
 
-#include "Common/ProfileHelpers.hpp"
-#include "Plugin/PluginAPIHost.hpp"
-#include "Profile/ProfileManager.hpp"
+#include "Qv2rayBase/Common/ProfileHelpers.hpp"
+#include "Qv2rayBase/Plugin/PluginAPIHost.hpp"
+#include "Qv2rayBase/Profile/ProfileManager.hpp"
 #include "ui/node/NodeBase.hpp"
 #include "ui/node/models/InboundNodeModel.hpp"
 #include "ui/node/models/OutboundNodeModel.hpp"

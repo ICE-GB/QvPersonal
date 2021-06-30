@@ -1,6 +1,6 @@
 #pragma once
 #include "ConnectionModelHelper/ConnectionModelHelper.hpp"
-#include "Gui/QvGUIPluginInterface.hpp"
+#include "QvPlugin/Gui/QvGUIPluginInterface.hpp"
 #include "LogHighlighter/LogHighlighter.hpp"
 #include "MessageBus/MessageBus.hpp"
 #include "SpeedWidget/SpeedWidget.hpp"

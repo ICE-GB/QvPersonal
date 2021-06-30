@@ -1,6 +1,6 @@
 #include "RuleNodeModel.hpp"
 
-#include "Common/ProfileHelpers.hpp"
+#include "Qv2rayBase/Common/ProfileHelpers.hpp"
 #include "ui/node/widgets/RuleWidget.hpp"
 
 #define QV_MODULE_NAME "Node::RuleNodeModel"

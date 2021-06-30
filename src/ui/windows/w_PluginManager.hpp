@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Gui/QvGUIPluginInterface.hpp"
-#include "Plugin/PluginManagerCore.hpp"
+#include "Qv2rayBase/Plugin/PluginManagerCore.hpp"
+#include "QvPlugin/Gui/QvGUIPluginInterface.hpp"
 #include "ui/WidgetUIBase.hpp"
 #include "ui_w_PluginManager.h"
 
