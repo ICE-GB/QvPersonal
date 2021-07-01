@@ -57,6 +57,7 @@ jobs:
       with:
         version: 6.2.0
         arch: ${{ matrix.config.arch }}
+        aqtversion: 1.2.2
 
     - name: run-vcpkg
       uses: lukka/run-vcpkg@v7.3
