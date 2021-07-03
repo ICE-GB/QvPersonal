@@ -113,9 +113,9 @@ RouteEditor::RouteEditor(const ProfileContent &connection, QWidget *parent) : Qv
     SetUpLayout(dnsEditorUIWidget, dnsWidget);
     //
     nodeDispatcher->LoadFullConfig(root);
-    dnsWidget->SetDNSObject(V2RayDNSObject::fromJson(root.dnsSettings), FakeDNSObject::fromJson(root.fakednsSettings));
+    dnsWidget->SetDNSObject(V2RayDNSObject::fromJson(root.routing.dns), V2RayFakeDNSObject::fromJson(root.routing.fakedns));
     //
-    domainStrategy = root.routing.options[QStringLiteral("domainStrategy")].toString();
+    domainStrategy = root.routing.extraOptions[QStringLiteral("domainStrategy")].toString();
     domainStrategyCombo->setCurrentText(domainStrategy);
     //
     // Set default outboung combo text AFTER adding all outbounds.
@@ -237,7 +237,7 @@ ProfileContent RouteEditor::OpenEditor()
         rules << m_rules[ruleTag];
     }
 
-    root.routing.options[QStringLiteral("domainStrategy")] = domainStrategy;
+    root.routing.extraOptions[QStringLiteral("domainStrategy")] = domainStrategy;
     root.routing.rules = rules;
 
     root.outbounds.clear();
@@ -250,8 +250,8 @@ ProfileContent RouteEditor::OpenEditor()
     }
     // Process DNS
     const auto &[dns, fakedns] = dnsWidget->GetDNSObject();
-    root.dnsSettings = dns.toJson();
-    root.fakednsSettings = fakedns.toJson();
+    root.routing.dns = dns.toJson();
+    root.routing.fakedns = fakedns.toJson();
     {
         // Process Browser Forwarder
         QJsonObject browserForwarder;
@@ -496,7 +496,6 @@ void RouteEditor::on_importOutboundBtn_clicked()
 {
     LOADINGCHECK
     ImportConfigWindow w(this);
-    // True here for not keep the inbounds.
     auto [_, configs] = w.DoImportConnections();
 
     for (auto it = configs.constKeyValueBegin(); it != configs.constKeyValueEnd(); it++)

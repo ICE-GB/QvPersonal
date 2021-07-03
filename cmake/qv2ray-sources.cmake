@@ -61,6 +61,7 @@ qv2ray_add_component(RouteSchemeIO)
 qv2ray_add_component(SpeedWidget)
 qv2ray_add_component(StyleManager)
 
+qv2ray_add_window(w_AboutWindow)
 qv2ray_add_window(w_GroupManager)
 qv2ray_add_window(w_ImportConfig)
 qv2ray_add_window(w_MainWindow)

@@ -37,6 +37,34 @@
 // table of supposed nice steps for grid marks to get nice looking quarters of scale
 const static double roundingTable[] = { 1.2, 1.6, 2, 2.4, 2.8, 3.2, 4, 6, 8 };
 
+// use binary prefix standards from IEC 60027-2
+// see http://en.wikipedia.org/wiki/Kilobyte
+enum SizeUnit : int
+{
+    Byte,  // 1000^0,
+    KByte, // 1000^1,
+    MByte, // 1000^2,
+    GByte, // 1000^3,
+    TByte, // 1000^4,
+    PByte, // 1000^5,
+    EByte  // 1000^6
+};
+
+struct SplittedValue
+{
+    double arg;
+    SizeUnit unit;
+    qint64 sizeInBytes() const
+    {
+        auto size = arg;
+        for (int i = 0; i < static_cast<int>(unit); ++i)
+        {
+            size *= 1024;
+        }
+        return size;
+    }
+};
+
 SpeedWidget::SpeedWidget(QWidget *parent) : QGraphicsView(parent)
 {
     UpdateSpeedPlotSettings();
@@ -61,19 +89,6 @@ void SpeedWidget::AddPointData(QMap<SpeedWidget::GraphType, long> data)
     replot();
 }
 
-// use binary prefix standards from IEC 60027-2
-// see http://en.wikipedia.org/wiki/Kilobyte
-enum SizeUnit : int
-{
-    Byte,  // 1000^0,
-    KByte, // 1000^1,
-    MByte, // 1000^2,
-    GByte, // 1000^3,
-    TByte, // 1000^4,
-    PByte, // 1000^5,
-    EByte  // 1000^6
-};
-
 QString unitString(const SizeUnit unit, const bool isSpeed)
 {
     const static QStringList units{ "B", "KB", "MB", "GB", "TB", "PB", "EB" };
@@ -95,20 +110,6 @@ int friendlyUnitPrecision(const SizeUnit unit)
         default: return 3;
     }
 }
-struct SplittedValue
-{
-    double arg;
-    SizeUnit unit;
-    qint64 sizeInBytes() const
-    {
-        auto size = arg;
-        for (int i = 0; i < static_cast<int>(unit); ++i)
-        {
-            size *= 1024;
-        }
-        return size;
-    }
-};
 
 SplittedValue getRoundedYScale(double value)
 {
@@ -165,15 +166,6 @@ struct QvGraphPenConfig
     int B = 150;
     float width = 1.5f;
     Qt::PenStyle style = Qt::SolidLine;
-
-    QvGraphPenConfig(int R, int G, int B, float w, Qt::PenStyle s)
-    {
-        this->R = R;
-        this->G = G;
-        this->B = B;
-        this->width = w;
-        this->style = s;
-    };
 };
 
 void SpeedWidget::UpdateSpeedPlotSettings()
@@ -229,8 +221,12 @@ void SpeedWidget::paintEvent(QPaintEvent *)
 {
     const auto fullRect = viewport()->rect();
     auto rect = viewport()->rect();
-    rect.adjust(4, 4, 0, -4); // Add padding
+
+    // Add padding
+    rect.adjust(4, 4, 0, -4);
+
     const auto niceScale = getRoundedYScale(maxYValue());
+
     // draw Y axis speed labels
     const QVector<QString> speedLabels = {
         formatLabel(niceScale.arg, niceScale.unit),
@@ -242,10 +238,10 @@ void SpeedWidget::paintEvent(QPaintEvent *)
 
     QPainter painter(viewport());
     painter.setRenderHints(QPainter::Antialiasing);
-    //
+
     const auto fontMetrics = painter.fontMetrics();
     rect.adjust(0, fontMetrics.height(), 0, 0); // Add top padding for top speed text
-    //
+
     int yAxisWidth = 0;
     for (const auto &label : speedLabels)
         if (fontMetrics.horizontalAdvance(label) > yAxisWidth)
@@ -264,6 +260,7 @@ void SpeedWidget::paintEvent(QPaintEvent *)
     gridPen.setStyle(Qt::DashLine);
     gridPen.setWidthF(1);
     gridPen.setColor(QColor(128, 128, 128, 128));
+
     // Set antialiasing for graphs
     painter.setPen(gridPen);
     painter.drawLine(fullRect.left(), rect.top(), rect.right(), rect.top());
@@ -286,18 +283,18 @@ void SpeedWidget::paintEvent(QPaintEvent *)
     const double yMultiplier = (niceScale.arg == 0.0) ? 0.0 : (static_cast<double>(rect.height()) / niceScale.sizeInBytes());
     const double xTickSize = static_cast<double>(rect.width()) / VIEWABLE;
 
-    for (const auto &id : m_properties.keys())
+    for (auto it = m_properties.constKeyValueBegin(); it != m_properties.constKeyValueEnd(); it++)
     {
         QVector<QPoint> points;
 
         for (int i = static_cast<int>(dataCollection.size()) - 1, j = 0; (i >= 0) && (j <= VIEWABLE); --i, ++j)
         {
             const int newX = rect.right() - j * xTickSize;
-            const int newY = rect.bottom() - dataCollection[i].y[id] * yMultiplier;
+            const int newY = rect.bottom() - dataCollection[i].y[it->first] * yMultiplier;
             points.push_back({ newX, newY });
         }
 
-        painter.setPen(m_properties[id].pen);
+        painter.setPen(it->second.pen);
         painter.drawPolyline(points.data(), points.size());
     }
 
@@ -305,7 +302,7 @@ void SpeedWidget::paintEvent(QPaintEvent *)
     double legendHeight = 0;
     int legendWidth = 0;
 
-    for (const auto &property : m_properties)
+    for (const auto &property : qAsConst(m_properties))
     {
         if (fontMetrics.horizontalAdvance(property.name) > legendWidth)
             legendWidth = fontMetrics.horizontalAdvance(property.name);
@@ -321,7 +318,7 @@ void SpeedWidget::paintEvent(QPaintEvent *)
         painter.fillRect(legendBackgroundRect, legendBackgroundColor);
 
         int i = 0;
-        for (const auto &property : m_properties)
+        for (const auto &property : qAsConst(m_properties))
         {
             int nameSize = fontMetrics.horizontalAdvance(property.name);
             double indent = 1.5 * (i++) * fontMetrics.height();

@@ -28,9 +28,7 @@ PreferencesWindow::PreferencesWindow(QWidget *parent) : QvDialog(QStringLiteral(
 {
     setupUi(this);
     QvMessageBusConnect();
-    textBrowser->setHtml(ReadFile(QStringLiteral("://../credit.html")));
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
-    configdirLabel->setText(QvBaselib->StorageProvider()->StorageLocation());
 
     // We add locales
     {
@@ -42,11 +40,6 @@ PreferencesWindow::PreferencesWindow(QWidget *parent) : QvDialog(QStringLiteral(
     // Set auto start button state
     SetAutoStartButtonsState(GetLaunchAtLoginStatus());
     themeCombo->addItems(StyleManager->AllStyles());
-    //
-    qvVersion->setText(QStringLiteral(QV2RAY_VERSION_STRING));
-    qvBuildInfo->setText(QStringLiteral(QV2RAY_BUILD_INFO));
-    qvBuildExInfo->setText(QStringLiteral(QV2RAY_BUILD_EXTRA_INFO));
-    qvPluginInterfaceVersionLabel->setText(tr("Version: %1").arg(Qv2rayPlugin::QV2RAY_PLUGIN_INTERFACE_VERSION));
     //
     // Deep copy
     AppConfig.loadJson(GlobalConfig->toJson());
@@ -155,12 +148,13 @@ PreferencesWindow::PreferencesWindow(QWidget *parent) : QvDialog(QStringLiteral(
     }
 
     {
+        const auto defaultRouteObject = QvBaselib->ProfileManager()->GetRouting();
         dnsSettingsWidget = new DnsSettingsWidget(this);
-        dnsSettingsWidget->SetDNSObject(AppConfig.connectionConfig->DNSConfig, AppConfig.connectionConfig->FakeDNSConfig);
+        dnsSettingsWidget->SetDNSObject(V2RayDNSObject::fromJson(defaultRouteObject.dns), V2RayFakeDNSObject::fromJson(defaultRouteObject.fakedns));
         dnsSettingsLayout->addWidget(dnsSettingsWidget);
-        //
+
         routeSettingsWidget = new RouteSettingsMatrixWidget(this);
-        routeSettingsWidget->SetRouteConfig(AppConfig.connectionConfig->RouteConfig);
+        routeSettingsWidget->SetRoute(RouteMatrixConfig::fromJson(defaultRouteObject.extraOptions[RouteMatrixConfig::EXTRA_OPTIONS_ID].toObject()));
         advRouteSettingsLayout->addWidget(routeSettingsWidget);
     }
 
@@ -249,23 +243,24 @@ void PreferencesWindow::on_buttonBox_accepted()
         return;
     }
 
-    AppConfig.connectionConfig->RouteConfig = routeSettingsWidget->GetRouteConfig();
-    if (!(AppConfig.connectionConfig->RouteConfig == GlobalConfig->connectionConfig->RouteConfig))
+    auto defaultRouteObject = QvBaselib->ProfileManager()->GetRouting();
+    if (const auto newval = routeSettingsWidget->GetRouteConfig().toJson(); newval != defaultRouteObject.extraOptions[RouteMatrixConfig::EXTRA_OPTIONS_ID].toObject())
     {
+        defaultRouteObject.extraOptions.insert(RouteMatrixConfig::EXTRA_OPTIONS_ID, newval);
         NEEDRESTART
     }
 
     const auto &[dns, fakedns] = dnsSettingsWidget->GetDNSObject();
-    AppConfig.connectionConfig->DNSConfig = dns;
-    AppConfig.connectionConfig->FakeDNSConfig = fakedns;
 
-    if (!(AppConfig.connectionConfig->DNSConfig == GlobalConfig->connectionConfig->DNSConfig))
+    if (const auto newval = dns.toJson(); defaultRouteObject.dns != newval)
     {
+        defaultRouteObject.dns = newval;
         NEEDRESTART
     }
 
-    if (!(AppConfig.connectionConfig->FakeDNSConfig == GlobalConfig->connectionConfig->FakeDNSConfig))
+    if (const auto newval = fakedns.toJson(); defaultRouteObject.fakedns != newval)
     {
+        defaultRouteObject.fakedns = newval;
         NEEDRESTART
     }
 
@@ -438,11 +433,6 @@ void PreferencesWindow::on_socksOverrideFakeDNSCB_stateChanged(int arg1)
     else if (!AppConfig.inboundConfig->SOCKSConfig->DestinationOverride->contains("fakedns"))
         AppConfig.inboundConfig->SOCKSConfig->DestinationOverride->append(QStringLiteral("fakedns"));
     AppConfig.inboundConfig->SOCKSConfig->DestinationOverride.EmitNotify();
-}
-
-void PreferencesWindow::on_openConfigDirCB_clicked()
-{
-    QvBaselib->OpenURL(QvBaselib->StorageProvider()->StorageLocation());
 }
 
 void PreferencesWindow::on_noAutoConnectRB_clicked()

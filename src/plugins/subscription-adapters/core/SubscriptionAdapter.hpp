@@ -4,11 +4,6 @@
 
 using namespace Qv2rayPlugin;
 
-const inline QStringList SplitLines(const QString &_string)
-{
-    return _string.split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
-}
-
 class SimpleBase64Decoder : public SubscriptionDecoder
 {
   public:
@@ -16,40 +11,23 @@ class SimpleBase64Decoder : public SubscriptionDecoder
     SubscriptionDecodeResult DecodeData(const QByteArray &data) const override;
 };
 
-class SIP008Decoder : public SubscriptionDecoder
+class OOCv1Decoder : public SubscriptionDecoder
 {
   public:
-    explicit SIP008Decoder() : SubscriptionDecoder(){};
+    explicit OOCv1Decoder() : SubscriptionDecoder(){};
     SubscriptionDecodeResult DecodeData(const QByteArray &data) const override;
 };
 
 class BuiltinSubscriptionAdapterInterface : public ISubscriptionHandler
 {
   public:
-    explicit BuiltinSubscriptionAdapterInterface() : ISubscriptionHandler()
-    {
-        simple_base64 = std::make_shared<SimpleBase64Decoder>();
-        sip008 = std::make_shared<SIP008Decoder>();
-    }
+    explicit BuiltinSubscriptionAdapterInterface() = default;
 
-    QList<SubscriptionInfoObject> SupportedSubscriptionTypes() const override
+    QList<SubscriptionInfoObject> GetInfo() const override
     {
-        // "simple_base64" = magic value in Qv2ray main application
         return {
-            SubscriptionInfoObject{ "sip008", "SIP008" },             //
-            SubscriptionInfoObject{ "simple_base64", "Basic Base64" } //
+            { SubscriptionDecoderId{ "ooc-v1" }, "Open Online Config v1", []() { return std::make_unique<OOCv1Decoder>(); } },
+            { SubscriptionDecoderId{ "simple_base64" }, "Base64", []() { return std::make_unique<SimpleBase64Decoder>(); } },
         };
     }
-
-    std::shared_ptr<SubscriptionDecoder> GetSubscriptionDecoder(const QString &type) const override
-    {
-        if (type == "simple_base64")
-            return simple_base64;
-        if (type == "sip008")
-            return sip008;
-        return nullptr;
-    }
-
-    std::shared_ptr<SubscriptionDecoder> simple_base64;
-    std::shared_ptr<SubscriptionDecoder> sip008;
 };

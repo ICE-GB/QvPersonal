@@ -1,16 +1,17 @@
 #include "w_MainWindow.hpp"
 
+#include "GuiPluginHost/GuiPluginHost.hpp"
+#include "Qv2rayApplication.hpp"
 #include "Qv2rayBase/Common/ProfileHelpers.hpp"
 #include "Qv2rayBase/Common/Utils.hpp"
-#include "GuiPluginHost/GuiPluginHost.hpp"
 #include "Qv2rayBase/Profile/KernelManager.hpp"
 #include "Qv2rayBase/Profile/ProfileManager.hpp"
-#include "Qv2rayApplication.hpp"
 #include "ui/WidgetUIBase.hpp"
 #include "ui/widgets/ConnectionInfoWidget.hpp"
 #include "ui/windows/editors/w_JsonEditor.hpp"
 #include "ui/windows/editors/w_OutboundEditor.hpp"
 #include "ui/windows/editors/w_RoutesEditor.hpp"
+#include "ui/windows/w_AboutWindow.hpp"
 #include "ui/windows/w_GroupManager.hpp"
 #include "ui/windows/w_ImportConfig.hpp"
 #include "ui/windows/w_PluginManager.hpp"
@@ -21,7 +22,6 @@
 #include <QScrollBar>
 
 #define QV_MODULE_NAME "MainWindow"
-#define TRAY_TOOLTIP_PREFIX "Qv2ray " QV2RAY_VERSION_STRING
 
 #define CheckCurrentWidget                                                                                                                                               \
     auto widget = GetIndexWidget(connectionTreeView->currentIndex());                                                                                                    \
@@ -31,7 +31,7 @@
 #define GetIndexWidget(item) (qobject_cast<ConnectionItemWidget *>(connectionTreeView->indexWidget(item)))
 #define NumericString(i) (QString("%1").arg(i, 30, 10, QLatin1Char('0')))
 
-#define PLUGIN_BUTTON_PROPERTY_KEY "plugin_list_index"
+constexpr auto BUTTON_PROP_PLUGIN_MAINWIDGETITEM_INDEX = "plugin_list_index";
 
 QvMessageBusSlotImpl(MainWindow)
 {
@@ -105,7 +105,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     modelHelper = new ConnectionListHelper(connectionTreeView);
 
-    this->setWindowIcon(QIcon(":/assets/icons/qv2ray.png"));
+    this->setWindowIcon(QvApp->Qv2rayLogo);
     updateColorScheme();
     UpdateActionTranslations();
     //
@@ -135,7 +135,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     connect(masterLogBrowser->verticalScrollBar(), &QSlider::valueChanged, this, &MainWindow::OnLogScrollbarValueChanged);
     //
     // Setup System tray icons and menus
-    qvAppTrayIcon->setToolTip(TRAY_TOOLTIP_PREFIX);
+    qvAppTrayIcon->setToolTip("Qv2ray " QV2RAY_VERSION_STRING);
     qvAppTrayIcon->show();
     //
     // Basic tray actions
@@ -290,16 +290,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
         }
     }
     ReloadRecentConnectionList();
-    //
-    //
+
     if (!connectionStarted || !GlobalConfig->behaviorConfig->QuietMode)
         MWShowWindow();
     if (GlobalConfig->behaviorConfig->QuietMode)
-        MWToggleVisibilitySetText();
-    //
+        MWHideWindow();
+
     CheckSubscriptionsUpdate();
     qvLogTimerId = startTimer(1000);
-    //
 
     for (const auto &[pluginInterface, guiInterface] : GUIPluginHost->GUI_QueryByComponent(Qv2rayPlugin::GUI_COMPONENT_MAIN_WINDOW_ACTIONS))
     {
@@ -314,7 +312,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
         }
         auto btn = new QPushButton(pluginInterface->GetMetadata().Name, this);
         connect(btn, &QPushButton::clicked, this, &MainWindow::OnPluginButtonClicked);
-        btn->setProperty(PLUGIN_BUTTON_PROPERTY_KEY, index);
+        btn->setProperty(BUTTON_PROP_PLUGIN_MAINWIDGETITEM_INDEX, index);
         topButtonsLayout->addWidget(btn);
     }
 }
@@ -324,13 +322,16 @@ void MainWindow::OnPluginButtonClicked()
     const auto senderWidget = qobject_cast<QPushButton *>(sender());
     if (!senderWidget)
         return;
+
     bool ok = false;
-    const auto index = senderWidget->property(PLUGIN_BUTTON_PROPERTY_KEY).toInt(&ok);
+    const auto index = senderWidget->property(BUTTON_PROP_PLUGIN_MAINWIDGETITEM_INDEX).toInt(&ok);
     if (!ok)
         return;
+
     const auto widget = pluginWidgets.at(index);
     if (!widget)
         return;
+
     widget->setVisible(!widget->isVisible());
 }
 
@@ -441,10 +442,12 @@ void MainWindow::keyReleaseEvent(QKeyEvent *e)
 
 void MainWindow::changeEvent(QEvent *e)
 {
-
     if (e->type() == QEvent::WindowStateChange)
     {
-        MWToggleVisibilitySetText();
+        if (isHidden() || isMinimized())
+            tray_action_ToggleVisibility->setText(tr("Show"));
+        else
+            tray_action_ToggleVisibility->setText(tr("Hide"));
     }
 }
 
@@ -452,9 +455,7 @@ void MainWindow::Action_Start()
 {
     CheckCurrentWidget;
     if (widget->IsConnection())
-    {
         widget->BeginConnection();
-    }
 }
 
 MainWindow::~MainWindow()
@@ -472,10 +473,11 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::on_activatedTray(QSystemTrayIcon::ActivationReason reason)
 {
-#ifndef __APPLE__
-    const auto toggleTriggerEvent = QSystemTrayIcon::Trigger;
-#else
+#ifdef Q_OS_MACOS
+    // special arrangement needed for macOS
     const auto toggleTriggerEvent = QSystemTrayIcon::DoubleClick;
+#else
+    const auto toggleTriggerEvent = QSystemTrayIcon::Trigger;
 #endif
     if (reason == toggleTriggerEvent)
         MWToggleVisibility();
@@ -486,11 +488,6 @@ void MainWindow::Action_Exit()
     QvApp->quit();
 }
 
-void MainWindow::on_preferencesBtn_clicked()
-{
-    PreferencesWindow{ this }.exec();
-}
-
 void MainWindow::on_clearlogButton_clicked()
 {
     masterLogBrowser->document()->clear();
@@ -498,8 +495,9 @@ void MainWindow::on_clearlogButton_clicked()
 void MainWindow::on_connectionTreeView_customContextMenuRequested(const QPoint &pos)
 {
     Q_UNUSED(pos)
+
     auto _pos = QCursor::pos();
-    auto item = connectionTreeView->indexAt(connectionTreeView->mapFromGlobal(_pos));
+    const auto item = connectionTreeView->indexAt(connectionTreeView->mapFromGlobal(_pos));
     if (item.isValid())
     {
         bool isConnection = GetIndexWidget(item)->IsConnection();
@@ -512,7 +510,6 @@ void MainWindow::on_connectionTreeView_customContextMenuRequested(const QPoint &
         action_RCM_RenameConnection->setEnabled(isConnection);
         action_RCM_DuplicateConnection->setEnabled(isConnection);
         action_RCM_UpdateSubscription->setEnabled(!isConnection);
-        //        action_RCM_RealLatencyTest->setEnabled(isConnection && QvBaselib->ProfileManager()->IsConnected(GetIndexWidget(item)->Identifier()));
         connectionListRCM_Menu->popup(_pos);
     }
 }
@@ -537,33 +534,24 @@ void MainWindow::Action_DeleteConnections()
         }
 
         for (const auto &conns : QvBaselib->ProfileManager()->GetConnections(identifier.groupId))
-        {
             connlist.append(ProfileId{ conns, identifier.groupId });
-        }
 
         const auto message = tr("Do you want to remove this group as well?") + NEWLINE + tr("Group: ") + GetDisplayName(identifier.groupId);
         if (QvBaselib->Ask(tr("Removing Connection"), message) == Qv2rayBase::MessageOpt::Yes)
-        {
             groupsList << identifier.groupId;
-        }
     }
 
     const auto strRemoveConnTitle = tr("Removing Connection(s)", "", connlist.count());
     const auto strRemoveConnContent = tr("Are you sure to remove selected connection(s)?", "", connlist.count());
+
     if (QvBaselib->Ask(strRemoveConnTitle, strRemoveConnContent) != Qv2rayBase::MessageOpt::Yes)
-    {
         return;
-    }
 
     for (const auto &conn : connlist)
-    {
         QvBaselib->ProfileManager()->RemoveFromGroup(conn.connectionId, conn.groupId);
-    }
 
     for (const auto &group : groupsList)
-    {
         QvBaselib->ProfileManager()->DeleteGroup(group, false);
-    }
 }
 
 void MainWindow::on_importConfigButton_clicked()
@@ -579,11 +567,11 @@ void MainWindow::Action_EditComplex()
     CheckCurrentWidget;
     if (widget->IsConnection())
     {
-        auto id = widget->Identifier();
+        const auto id = widget->Identifier();
         ProfileContent root = QvBaselib->ProfileManager()->GetConnection(id.connectionId);
         bool isChanged = false;
         //
-        QvLog() << "INFO: Opening route editor.";
+        QvLog() << "Opening route editor.";
         RouteEditor routeWindow(root, this);
         root = routeWindow.OpenEditor();
         isChanged = routeWindow.result() == QDialog::Accepted;
@@ -613,7 +601,7 @@ void MainWindow::OnDisconnected(const ProfileId &id)
     {
         QvApp->ShowTrayMessage(tr("Disconnected from: ") + GetDisplayName(id.connectionId));
     }
-    qvAppTrayIcon->setToolTip(TRAY_TOOLTIP_PREFIX);
+    qvAppTrayIcon->setToolTip("Qv2ray " QV2RAY_VERSION_STRING);
     netspeedLabel->setText("0.00 B/s" NEWLINE "0.00 B/s");
     dataamountLabel->setText("0.00 B" NEWLINE "0.00 B");
     connetionStatusLabel->setText(tr("Not Connected"));
@@ -640,7 +628,7 @@ void MainWindow::OnConnected(const ProfileId &id)
     {
         QvApp->ShowTrayMessage(tr("Connected: ") + name);
     }
-    qvAppTrayIcon->setToolTip(TRAY_TOOLTIP_PREFIX NEWLINE + tr("Connected: ") + name);
+    qvAppTrayIcon->setToolTip("Qv2ray " QV2RAY_VERSION_STRING NEWLINE + tr("Connected: ") + name);
     connetionStatusLabel->setText(tr("Connected: ") + name);
     //
     GlobalConfig->appearanceConfig->RecentConnections->removeAll(id);
@@ -682,16 +670,20 @@ void MainWindow::OnStatsAvailable(const ProfileId &id, const StatisticsObject &d
     netspeedLabel->setText(totalSpeedUp + NEWLINE + totalSpeedDown);
     dataamountLabel->setText(totalDataUp + NEWLINE + totalDataDown);
     //
-    qvAppTrayIcon->setToolTip(TRAY_TOOLTIP_PREFIX NEWLINE + tr("Connected: ") + GetDisplayName(id.connectionId) + //
-                              NEWLINE "Up: " + totalSpeedUp + " Down: " + totalSpeedDown);
+    qvAppTrayIcon->setToolTip(QString("Qv2ray %1\n"
+                                      "Connected: %2\n"
+                                      "Up: %3 Down: %4")
+                                  .arg(QV2RAY_VERSION_STRING)
+                                  .arg(GetDisplayName(id.connectionId))
+                                  .arg(totalSpeedUp)
+                                  .arg(totalSpeedDown));
 }
 
 void MainWindow::OnKernelLogAvailable(const ProfileId &id, const QString &log)
 {
     Q_UNUSED(id);
     FastAppendTextDocument(log.trimmed(), vCoreLogDocument);
-    return;
-    // vCoreLogDocument->setPlainText(vCoreLogDocument->toPlainText() + log);
+
     // From https://gist.github.com/jemyzhang/7130092
     const auto maxLines = GlobalConfig->appearanceConfig->MaximizeLogLines;
     auto block = vCoreLogDocument->begin();
@@ -714,7 +706,7 @@ void MainWindow::OnKernelLogAvailable(const ProfileId &id, const QString &log)
 
 void MainWindow::OnEditRequested(const ConnectionId &id)
 {
-    auto original = QvBaselib->ProfileManager()->GetConnection(id);
+    const auto original = QvBaselib->ProfileManager()->GetConnection(id);
     if (IsComplexConfig(id))
     {
         QvLog() << "INFO: Opening route editor.";
@@ -792,15 +784,14 @@ void MainWindow::Action_DuplicateConnection()
 
     const auto strDupConnTitle = tr("Duplicating Connection(s)", "", connlist.count());
     const auto strDupConnContent = tr("Are you sure to duplicate these connection(s)?", "", connlist.count());
+
     if (connlist.count() > 1 && QvBaselib->Ask(strDupConnTitle, strDupConnContent) != Qv2rayBase::MessageOpt::Yes)
-    {
         return;
-    }
 
     for (const auto &conn : connlist)
     {
-        QvBaselib->ProfileManager()->CreateConnection(QvBaselib->ProfileManager()->GetConnection(conn.connectionId), GetDisplayName(conn.connectionId) + tr(" (Copy)"),
-                                                      conn.groupId);
+        const auto profile = QvBaselib->ProfileManager()->GetConnection(conn.connectionId);
+        QvBaselib->ProfileManager()->CreateConnection(profile, GetDisplayName(conn.connectionId) + tr(" (Copy)"), conn.groupId);
     }
 }
 
@@ -841,19 +832,18 @@ void MainWindow::on_masterLogBrowser_textChanged()
 
 void MainWindow::Action_SetAutoConnection()
 {
-    auto current = connectionTreeView->currentIndex();
+    const auto current = connectionTreeView->currentIndex();
     if (current.isValid())
     {
-        auto widget = GetIndexWidget(current);
+        const auto widget = GetIndexWidget(current);
         const auto identifier = widget->Identifier();
         GlobalConfig->behaviorConfig->AutoConnectProfileId = identifier;
         GlobalConfig->behaviorConfig->AutoConnectBehavior = Qv2rayBehaviorConfig::AUTOCONNECT_FIXED;
         if (!GlobalConfig->behaviorConfig->QuietMode)
         {
-            QvApp->ShowTrayMessage(tr("%1 has been set as auto connect.").arg(GetDisplayName(identifier.connectionId)));
+            QvApp->ShowTrayMessage(tr("%1 has been set to be auto connected.").arg(GetDisplayName(identifier.connectionId)));
         }
-#pragma message("TODO")
-        //        SaveGlobalSettings();
+        QvApp->SaveQv2raySettings();
     }
 }
 
@@ -901,28 +891,12 @@ void MainWindow::Action_TestLatency()
         const auto widget = GetIndexWidget(current);
         if (!widget)
             continue;
-
-#pragma message("TODO Add Default LatencyTestEngineId")
-        //        if (widget->IsConnection())
-        //            QvBaselib->ProfileManager()->StartLatencyTest(widget->Identifier().connectionId);
-        //        else
-        //            QvBaselib->ProfileManager()->StartLatencyTest(widget->Identifier().groupId);
+        if (widget->IsConnection())
+            QvBaselib->ProfileManager()->StartLatencyTest(widget->Identifier().connectionId, GlobalConfig->behaviorConfig->DefaultLatencyTestEngine);
+        else
+            QvBaselib->ProfileManager()->StartLatencyTest(widget->Identifier().groupId, GlobalConfig->behaviorConfig->DefaultLatencyTestEngine);
     }
 }
-
-// void MainWindow::Action_TestRealLatency()
-//{
-//    for (const auto &current : connectionTreeView->selectionModel()->selectedIndexes())
-//    {
-//        if (!current.isValid())
-//            continue;
-//        const auto widget = GetIndexWidget(current);
-//        if (!widget)
-//            continue;
-//        if (widget->IsConnection() && QvBaselib->ProfileManager()->IsConnected(widget->Identifier()))
-//            QvBaselib->ProfileManager()->StartLatencyTest(widget->Identifier().connectionId, REALPING);
-//    }
-//}
 
 void MainWindow::Action_CopyGraphAsImage()
 {
@@ -938,12 +912,11 @@ void MainWindow::on_pluginsBtn_clicked()
 void MainWindow::on_newConnectionBtn_clicked()
 {
     OutboundEditor w(this);
-    auto outboundEntry = w.OpenEditor();
+    const ProfileContent root{ w.OpenEditor() };
     bool isChanged = w.result() == QDialog::Accepted;
     if (isChanged)
     {
         const auto alias = w.GetFriendlyName();
-        ProfileContent root{ outboundEntry };
         const auto item = connectionTreeView->currentIndex();
         const auto id = item.isValid() ? GetIndexWidget(item)->Identifier().groupId : DefaultGroupId;
         QvBaselib->ProfileManager()->CreateConnection(root, alias, id);
@@ -953,7 +926,7 @@ void MainWindow::on_newConnectionBtn_clicked()
 void MainWindow::on_newComplexConnectionBtn_clicked()
 {
     RouteEditor w({}, this);
-    auto root = w.OpenEditor();
+    const auto root = w.OpenEditor();
     if (w.result() == QDialog::Accepted)
     {
         const auto item = connectionTreeView->currentIndex();
@@ -986,7 +959,7 @@ void MainWindow::Action_CopyRecentLogs()
 
 void MainWindow::on_connectionTreeView_doubleClicked(const QModelIndex &index)
 {
-    auto widget = GetIndexWidget(index);
+    const auto widget = GetIndexWidget(index);
     if (widget == nullptr)
         return;
     if (widget->IsConnection())
@@ -995,8 +968,18 @@ void MainWindow::on_connectionTreeView_doubleClicked(const QModelIndex &index)
 
 void MainWindow::on_connectionTreeView_clicked(const QModelIndex &index)
 {
-    auto widget = GetIndexWidget(index);
+    const auto widget = GetIndexWidget(index);
     if (widget == nullptr)
         return;
     infoWidget->ShowDetails(widget->Identifier());
+}
+
+void MainWindow::on_preferencesBtn_clicked()
+{
+    PreferencesWindow(this).exec();
+}
+
+void MainWindow::on_aboutBtn_clicked()
+{
+    AboutWindow(this).exec();
 }

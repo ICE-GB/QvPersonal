@@ -44,12 +44,13 @@ Qv2rayExitReason Qv2rayApplication::GetExitReason() const
 
 bool Qv2rayApplication::Initialize()
 {
+    const auto currentVersion = QSslSocket::sslLibraryVersionString();
+    QvLog() << "Current TLS backend version:" << currentVersion;
+
     if (!QSslSocket::supportsSsl())
     {
         // Check TLS backend
         const auto requiredVersion = QSslSocket::sslLibraryBuildVersionString();
-        const auto currentVersion = QSslSocket::sslLibraryVersionString();
-        QvLog() << "Current TLS backend version:" << currentVersion;
         QvLog() << "Required TLS backend version:" << requiredVersion;
         QvLog() << "This is usually caused by a corrupted Qt deployment without tls backend plugins.";
         QvLog() << "Required=" << requiredVersion << "Current=" << currentVersion;

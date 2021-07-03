@@ -42,9 +42,9 @@ GroupManager::GroupManager(QWidget *parent) : QvDialog("GroupManager", parent)
     setupUi(this);
     QvMessageBusConnect();
 
-    for (const auto &[pluginInfo, type] : QvBaselib->PluginAPIHost()->Subscription_GetAllAdapters())
+    for (const auto &[pluginInfo, info] : QvBaselib->PluginAPIHost()->Subscription_GetAllAdapters())
     {
-        subscriptionTypeCB->addItem(pluginInfo->metadata().Name + ": " + type.displayName, type.type);
+        subscriptionTypeCB->addItem(pluginInfo->metadata().Name + ": " + info.displayName, info.type.toString());
     }
 
     dnsSettingsWidget = new DnsSettingsWidget(this);
@@ -362,9 +362,9 @@ void GroupManager::on_groupList_itemClicked(QListWidgetItem *item)
     updateIntervalSB->setValue(_group.subscription_config.updateInterval);
     {
         const auto type = _group.subscription_config.type;
-        const auto index = subscriptionTypeCB->findData(type);
+        const auto index = subscriptionTypeCB->findData(type.toString());
         if (index < 0)
-            QvBaselib->Warn(tr("Unknown Subscription Type"), tr("Unknown subscription type \"%1\", a plugin may be missing.").arg(type));
+            QvBaselib->Warn(tr("Unknown Subscription Type"), tr("Unknown subscription type \"%1\", a plugin may be missing.").arg(type.toString()));
         else
             subscriptionTypeCB->setCurrentIndex(index);
     }
@@ -396,47 +396,65 @@ void GroupManager::on_groupList_itemClicked(QListWidgetItem *item)
     // Load DNS / Route config
     const auto routeId = QvBaselib->ProfileManager()->GetGroupRoutingId(currentGroupId);
     {
-        //        const auto &[overrideDns, dns, fakedns] = RouteManager->GetDNSSettings(routeId);
-        //        dnsSettingsWidget->SetDNSObject(dns, fakedns);
-        //        dnsSettingsGB->setChecked(overrideDns);
-        //        //
-        //        const auto &[overrideRoute, route] = RouteManager->GetAdvancedRoutingSettings(routeId);
-        //        routeSettingsWidget->SetRouteConfig(route);
-        //        routeSettingsGB->setChecked(overrideRoute);
+        const auto routingObject = QvBaselib->ProfileManager()->GetRouting(routeId);
+        dnsSettingsWidget->SetDNSObject(V2RayDNSObject::fromJson(routingObject.dns), V2RayFakeDNSObject::fromJson(routingObject.fakedns));
+        dnsSettingsGB->setChecked(routingObject.overrideDNS);
+        //
+        RouteMatrixConfig c;
+        c.loadJson(routingObject.extraOptions.value(RouteMatrixConfig::EXTRA_OPTIONS_ID));
+        routeSettingsWidget->SetRoute(c);
+        routeSettingsGB->setChecked(routingObject.overrideRules);
     }
     reloadConnectionsList(currentGroupId);
 }
 
 void GroupManager::on_IncludeRelation_currentTextChanged(const QString &)
 {
-    //    QvBaselib->ProfileManager()->SetSubscriptionIncludeRelation(currentGroupId, (SubscriptionConfigObject::SubscriptionFilterRelation)
-    //    IncludeRelation->currentIndex());
+    auto subscription = QvBaselib->ProfileManager()->GetGroupObject(currentGroupId).subscription_config;
+    subscription.includeRelation = (SubscriptionConfigObject::SubscriptionFilterRelation) IncludeRelation->currentIndex();
+    QvBaselib->ProfileManager()->SetSubscriptionData(currentGroupId, subscription);
 }
 
 void GroupManager::on_ExcludeRelation_currentTextChanged(const QString &)
 {
-    //    QvBaselib->ProfileManager()->SetSubscriptionExcludeRelation(currentGroupId, (SubscriptionConfigObject::SubscriptionFilterRelation)
-    //    ExcludeRelation->currentIndex());
+    auto subscription = QvBaselib->ProfileManager()->GetGroupObject(currentGroupId).subscription_config;
+    subscription.excludeRelation = (SubscriptionConfigObject::SubscriptionFilterRelation) ExcludeRelation->currentIndex();
+    QvBaselib->ProfileManager()->SetSubscriptionData(currentGroupId, subscription);
 }
 
 void GroupManager::on_IncludeKeywords_textChanged()
 {
     QStringList keywords = IncludeKeywords->toPlainText().replace("\r", "").split("\n");
-    //    QvBaselib->ProfileManager()->SetSubscriptionIncludeKeywords(currentGroupId, keywords);
+    auto subscription = QvBaselib->ProfileManager()->GetGroupObject(currentGroupId).subscription_config;
+    subscription.includeKeywords = keywords;
+    QvBaselib->ProfileManager()->SetSubscriptionData(currentGroupId, subscription);
 }
 
 void GroupManager::on_ExcludeKeywords_textChanged()
 {
     QStringList keywords = ExcludeKeywords->toPlainText().replace("\r", "").split("\n");
-    //    QvBaselib->ProfileManager()->SetSubscriptionExcludeKeywords(currentGroupId, keywords);
+    auto subscription = QvBaselib->ProfileManager()->GetGroupObject(currentGroupId).subscription_config;
+    subscription.excludeKeywords = keywords;
+    QvBaselib->ProfileManager()->SetSubscriptionData(currentGroupId, subscription);
 }
 
 void GroupManager::on_groupList_currentItemChanged(QListWidgetItem *current, QListWidgetItem *priv)
 {
     if (priv)
     {
-        const auto group = QvBaselib->ProfileManager()->GetGroupObject(currentGroupId);
+
+        const auto routingId = QvBaselib->ProfileManager()->GetGroupObject(currentGroupId).route_id;
+        auto routing = QvBaselib->ProfileManager()->GetRouting(routingId);
+
         const auto &[dns, fakedns] = dnsSettingsWidget->GetDNSObject();
+        routing.overrideDNS = dnsSettingsGB->isChecked();
+        routing.dns = dns.toJson();
+        routing.fakedns = fakedns.toJson();
+
+        const auto routematrix = routeSettingsWidget->GetRouteConfig();
+        routing.extraOptions.insert(RouteMatrixConfig::EXTRA_OPTIONS_ID, routematrix.toJson());
+
+        QvBaselib->ProfileManager()->UpdateRouting(routingId, routing);
         //        RouteManager->SetDNSSettings(group.route_id, dnsSettingsGB->isChecked(), dns, fakedns);
         //        RouteManager->SetAdvancedRouteSettings(group.route_id, routeSettingsGB->isChecked(), routeSettingsWidget->GetRouteConfig());
     }
@@ -448,12 +466,16 @@ void GroupManager::on_groupList_currentItemChanged(QListWidgetItem *current, QLi
 
 void GroupManager::on_subAddrTxt_textEdited(const QString &arg1)
 {
-    //    QvBaselib->ProfileManager()->SetSubscriptionData(currentGroupId, std::nullopt, arg1);
+    auto subscription = QvBaselib->ProfileManager()->GetGroupObject(currentGroupId).subscription_config;
+    subscription.address = arg1;
+    QvBaselib->ProfileManager()->SetSubscriptionData(currentGroupId, subscription);
 }
 
 void GroupManager::on_updateIntervalSB_valueChanged(double arg1)
 {
-    //    QvBaselib->ProfileManager()->SetSubscriptionData(currentGroupId, std::nullopt, std::nullopt, arg1);
+    auto subscription = QvBaselib->ProfileManager()->GetGroupObject(currentGroupId).subscription_config;
+    subscription.updateInterval = arg1;
+    QvBaselib->ProfileManager()->SetSubscriptionData(currentGroupId, subscription);
 }
 
 void GroupManager::on_connectionsList_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous)
@@ -467,7 +489,9 @@ void GroupManager::on_connectionsList_currentItemChanged(QListWidgetItem *curren
 
 void GroupManager::on_groupIsSubscriptionGroup_clicked(bool checked)
 {
-    //    QvBaselib->ProfileManager()->SetSubscriptionData(currentGroupId, checked);
+    auto subscription = QvBaselib->ProfileManager()->GetGroupObject(currentGroupId).subscription_config;
+    subscription.isSubscription = checked;
+    QvBaselib->ProfileManager()->SetSubscriptionData(currentGroupId, subscription);
 }
 
 void GroupManager::on_groupNameTxt_textEdited(const QString &arg1)
@@ -505,5 +529,7 @@ void GroupManager::on_connectionsTable_customContextMenuRequested(const QPoint &
 
 void GroupManager::on_subscriptionTypeCB_currentIndexChanged(int)
 {
-    //    QvBaselib->ProfileManager()->SetSubscriptionType(currentGroupId, subscriptionTypeCB->currentData().toString());
+    auto subscription = QvBaselib->ProfileManager()->GetGroupObject(currentGroupId).subscription_config;
+    subscription.type = SubscriptionDecoderId{ subscriptionTypeCB->currentData().toString() };
+    QvBaselib->ProfileManager()->SetSubscriptionData(currentGroupId, subscription);
 }

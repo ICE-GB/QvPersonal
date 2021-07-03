@@ -14,7 +14,7 @@ class ConnectionItemWidget
     explicit ConnectionItemWidget(const ProfileId &id, QWidget *parent = nullptr);
     explicit ConnectionItemWidget(const GroupId &groupId, QWidget *parent = nullptr);
     //
-    void BeginConnection();
+    void BeginConnection() const;
     ~ConnectionItemWidget();
     //
     void BeginRename();

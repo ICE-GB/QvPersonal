@@ -69,7 +69,7 @@ QvMessageBusSlotImpl(DnsSettingsWidget)
     }
 }
 
-void DnsSettingsWidget::SetDNSObject(const Qv2ray::Models::V2RayDNSObject &_dns, const Qv2ray::Models::FakeDNSObject &_fakeDNS)
+void DnsSettingsWidget::SetDNSObject(const Qv2ray::Models::V2RayDNSObject &_dns, const Qv2ray::Models::V2RayFakeDNSObject &_fakeDNS)
 {
     this->dns = _dns;
     this->fakeDNS = _fakeDNS;
@@ -147,7 +147,7 @@ void DnsSettingsWidget::ShowCurrentDnsServerDetails()
     ProcessDnsPortEnabledState();
 }
 
-std::pair<Qv2ray::Models::V2RayDNSObject, Qv2ray::Models::FakeDNSObject> DnsSettingsWidget::GetDNSObject()
+std::pair<Qv2ray::Models::V2RayDNSObject, Qv2ray::Models::V2RayFakeDNSObject> DnsSettingsWidget::GetDNSObject()
 {
     dns.hosts.clear();
     for (auto i = 0; i < staticResolvedDomainsTable->rowCount(); i++)

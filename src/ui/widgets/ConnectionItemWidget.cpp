@@ -38,11 +38,7 @@ ConnectionItemWidget::ConnectionItemWidget(const ProfileId &id, QWidget *parent)
     connTypeLabel->setText(GetConnectionProtocolDescription(id.connectionId).toUpper());
     const auto [uplink, downlink] = GetConnectionUsageAmount(connectionId, StatisticsObject::PROXY);
     dataLabel->setText(FormatBytes(uplink) + " / " + FormatBytes(downlink));
-    //
-    if (QvBaselib->ProfileManager()->IsConnected(id))
-    {
-        emit RequestWidgetFocus(this);
-    }
+
     // Fake trigger
     OnConnectionItemRenamed(id.connectionId, "", originalItemName);
     connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnConnectionRenamed, this, &ConnectionItemWidget::OnConnectionItemRenamed);
@@ -80,7 +76,7 @@ ConnectionItemWidget::ConnectionItemWidget(const GroupId &id, QWidget *parent) :
     connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnGroupRenamed, this, &ConnectionItemWidget::OnGroupItemRenamed);
 }
 
-void ConnectionItemWidget::BeginConnection()
+void ConnectionItemWidget::BeginConnection() const
 {
     if (IsConnection())
     {
@@ -133,10 +129,13 @@ void ConnectionItemWidget::OnDisConnected(const ProfileId &id)
     }
 }
 
-void ConnectionItemWidget::OnConnectionStatsArrived(const ProfileId &id, const StatisticsObject &data)
+void ConnectionItemWidget::OnConnectionStatsArrived(const ProfileId &id, const StatisticsObject &)
 {
     if (id.connectionId == connectionId)
-        dataLabel->setText(FormatBytes(data.proxyUp) + " / " + FormatBytes(data.proxyDown));
+    {
+        const auto &[up, down] = Qv2rayBase::Utils::GetConnectionUsageAmount(id.connectionId, StatisticsObject::PROXY);
+        dataLabel->setText(FormatBytes(up) + " / " + FormatBytes(down));
+    }
 }
 
 void ConnectionItemWidget::OnConnectionModified(const ConnectionId &id)
@@ -196,7 +195,7 @@ void ConnectionItemWidget::OnConnectionItemRenamed(const ConnectionId &id, const
 {
     if (id == connectionId)
     {
-        connNameLabel->setText((QvBaselib->ProfileManager()->IsConnected({ connectionId, groupId }) ? "● " : "") + newName);
+        connNameLabel->setText((QvBaselib->ProfileManager()->IsConnected({ connectionId, groupId }) ? QStringLiteral("● ") : QStringLiteral("")) + newName);
         originalItemName = newName;
         const auto conn = QvBaselib->ProfileManager()->GetConnectionObject(connectionId);
         this->setToolTip(newName + NEWLINE + tr("Last Connected: ") + TimeToString(conn.last_connected) + NEWLINE + tr("Last Updated: ") + TimeToString(conn.updated));

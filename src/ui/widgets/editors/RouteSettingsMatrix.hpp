@@ -16,7 +16,7 @@ class RouteSettingsMatrixWidget
 
   public:
     RouteSettingsMatrixWidget(QWidget *parent = nullptr);
-    void SetRouteConfig(const Qv2ray::Models::RouteMatrixConfig &conf);
+    void SetRoute(const Qv2ray::Models::RouteMatrixConfig &conf);
     Qv2ray::Models::RouteMatrixConfig GetRouteConfig() const;
     ~RouteSettingsMatrixWidget();
 

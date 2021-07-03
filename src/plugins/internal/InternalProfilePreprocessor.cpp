@@ -1,6 +1,7 @@
 #include "InternalProfilePreprocessor.hpp"
 
 #include "Qv2rayApplication.hpp"
+#include "Qv2rayBase/Profile/ProfileManager.hpp"
 #include "QvPlugin/Utils/QJsonIO.hpp"
 
 constexpr auto DNS_INTERCEPTION_OUTBOUND_TAG = "dns-out";
@@ -38,8 +39,8 @@ RuleObject GenerateSingleRouteRule(const QStringList &rules, const QString &outb
 RoutingObject GenerateRoutes(bool ForceDirectConnection, bool bypassCN, bool bypassLAN, const QString &outTag, const RouteMatrixConfig &routeConfig)
 {
     RoutingObject root;
-    root.options.insert(QStringLiteral("domainStrategy"), *routeConfig.domainStrategy);
-    root.options.insert(QStringLiteral("domainMatcher"), *routeConfig.domainMatcher);
+    root.extraOptions.insert(QStringLiteral("domainStrategy"), *routeConfig.domainStrategy);
+    root.extraOptions.insert(QStringLiteral("domainMatcher"), *routeConfig.domainMatcher);
     //
     // For Rules list
     QList<RuleObject> rulesList;
@@ -136,11 +137,13 @@ ProfileContent InternalProfilePreprocessor::PreprocessProfile(const ProfileConte
                           return QStringLiteral("redirect");
                       }(GlobalConfig->inboundConfig->DokodemoDoorConfig->WorkingMode) } };
 
+    const auto routeMatrixConfig = RouteMatrixConfig::fromJson(p.routing.extraOptions[RouteMatrixConfig::EXTRA_OPTIONS_ID].toObject());
+
     result.routing = GenerateRoutes(GlobalConfig->connectionConfig->ForceDirectConnection, //
                                     GlobalConfig->connectionConfig->BypassCN,              //
                                     GlobalConfig->connectionConfig->BypassLAN,             //
                                     result.outbounds.first().name,                         //
-                                    GlobalConfig->connectionConfig->RouteConfig);
+                                    routeMatrixConfig);
 
     if (GlobalConfig->connectionConfig->BypassBittorrent)
     {
@@ -197,9 +200,6 @@ ProfileContent InternalProfilePreprocessor::PreprocessProfile(const ProfileConte
         freedom.name = QString::fromUtf8(DEFAULT_FREEDOM_OUTBOUND_TAG);
         result.outbounds << freedom;
     }
-
-    result.dnsSettings = GlobalConfig->connectionConfig->DNSConfig->toJson();
-    result.fakednsSettings = GlobalConfig->connectionConfig->FakeDNSConfig->toJson();
 
     return result;
 }

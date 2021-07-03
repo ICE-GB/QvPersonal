@@ -43,18 +43,12 @@ void StreamSettingsWidget::SetStreamObject(const Qv2ray::Models::StreamSettingsO
         else
             QvLog() << "Unsupported Security Type:" << stream.security;
 
-#define tls_xtls_process(prefix)                                                                                                                     \
-    {                                                                                                                                                \
-        serverNameTxt->setText(stream.prefix##Settings->serverName);                                                                                 \
-        disableSessionResumptionCB->setChecked(stream.prefix##Settings->disableSessionResumption);                                                   \
-        disableSystemRoot->setChecked(stream.prefix##Settings->disableSystemRoot);                                                                   \
-        alpnTxt->setText(stream.prefix##Settings->alpn->join("|"));                                                                                  \
-    }
-
-        tls_xtls_process(tls);
-
-        if (stream.security == QStringLiteral("xtls"))
-            tls_xtls_process(xtls);
+        {
+            serverNameTxt->setText(stream.tlsSettings->serverName);
+            disableSessionResumptionCB->setChecked(stream.tlsSettings->disableSessionResumption);
+            disableSystemRoot->setChecked(stream.tlsSettings->disableSystemRoot);
+            alpnTxt->setText(stream.tlsSettings->alpn->join("|"));
+        }
     }
     // TCP
     {
@@ -292,30 +286,21 @@ void StreamSettingsWidget::on_securityTypeCB_currentIndexChanged(int arg1)
 void StreamSettingsWidget::on_serverNameTxt_textEdited(const QString &arg1)
 {
     stream.tlsSettings->serverName = arg1.trimmed();
-    stream.xtlsSettings->serverName = arg1.trimmed();
 }
 
 void StreamSettingsWidget::on_disableSessionResumptionCB_stateChanged(int arg1)
 {
     stream.tlsSettings->disableSessionResumption = arg1 == Qt::Checked;
-    stream.xtlsSettings->disableSessionResumption = arg1 == Qt::Checked;
 }
 
 void StreamSettingsWidget::on_alpnTxt_textEdited(const QString &arg1)
 {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     stream.tlsSettings->alpn = arg1.split('|', Qt::SplitBehaviorFlags::SkipEmptyParts);
-    stream.xtlsSettings->alpn = arg1.split('|', Qt::SplitBehaviorFlags::SkipEmptyParts);
-#else
-    stream.tlsSettings->alpn = arg1.split('|', QString::SkipEmptyParts);
-    stream.xtlsSettings->alpn = arg1.split('|', QString::SkipEmptyParts);
-#endif
 }
 
 void StreamSettingsWidget::on_disableSystemRoot_stateChanged(int arg1)
 {
     stream.tlsSettings->disableSystemRoot = arg1;
-    stream.xtlsSettings->disableSystemRoot = arg1;
 }
 
 void StreamSettingsWidget::on_openCertEditorBtn_clicked()

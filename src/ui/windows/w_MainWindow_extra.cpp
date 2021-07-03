@@ -12,14 +12,6 @@
 
 #define QV_MODULE_NAME "MainWindowExtra"
 
-void MainWindow::MWToggleVisibilitySetText()
-{
-    if (isHidden() || isMinimized())
-        tray_action_ToggleVisibility->setText(tr("Show"));
-    else
-        tray_action_ToggleVisibility->setText(tr("Hide"));
-}
-
 void MainWindow::MWToggleVisibility()
 {
     if (isHidden() || isMinimized())
@@ -33,15 +25,12 @@ void MainWindow::MWShowWindow()
     this->show();
 #ifdef Q_OS_WIN
     setWindowState(Qt::WindowNoState);
-    SetWindowPos(HWND(this->winId()), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
-    QThread::msleep(20);
-    SetWindowPos(HWND(this->winId()), HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
-#endif
-#ifdef Q_OS_MAC
+    this->activateWindow();
+#elif defined(Q_OS_MAC)
     ProcessSerialNumber psn = { 0, kCurrentProcess };
     TransformProcessType(&psn, kProcessTransformToForegroundApplication);
 #endif
-    MWToggleVisibilitySetText();
+    tray_action_ToggleVisibility->setText(tr("Hide"));
 }
 
 void MainWindow::MWHideWindow()
@@ -51,7 +40,7 @@ void MainWindow::MWHideWindow()
     TransformProcessType(&psn, kProcessTransformToUIElementApplication);
 #endif
     this->hide();
-    MWToggleVisibilitySetText();
+    tray_action_ToggleVisibility->setText(tr("Show"));
 }
 
 void MainWindow::MWSetSystemProxy()
@@ -64,19 +53,19 @@ void MainWindow::MWSetSystemProxy()
     QString httpAddress;
     QString socksAddress;
 
-    for (const auto &info : inboundInfo)
+    for (const auto &[protocol, listenAddr, listenPort] : inboundInfo)
     {
-        if (std::get<0>(info) == "http")
+        if (protocol == "http")
         {
             httpEnabled = true;
-            httpAddress = std::get<1>(info);
-            httpPort = std::get<2>(info).from;
+            httpAddress = listenAddr;
+            httpPort = listenPort.from;
         }
-        else if (std::get<0>(info) == "socks")
+        else if (protocol == "socks")
         {
             socksEnabled = true;
-            socksAddress = std::get<1>(info);
-            socksPort = std::get<2>(info).from;
+            socksAddress = listenAddr;
+            socksPort = listenPort.from;
         }
     }
 
@@ -159,7 +148,7 @@ void MainWindow::CheckSubscriptionsUpdate()
             QvLog() << QString("Subscription update \"%1\": L=%2 R=%3 I=%4")
                            .arg(info.name)
                            .arg(lastRenewDate.toString())
-                           .arg(QString::number(info.subscription_config.updateInterval))
+                           .arg(info.subscription_config.updateInterval)
                            .arg(renewTime.toString());
         }
     }

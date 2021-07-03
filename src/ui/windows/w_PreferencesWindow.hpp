@@ -53,7 +53,6 @@ class PreferencesWindow
     void on_lastConnectedRB_clicked();
 
     void on_noAutoConnectRB_clicked();
-    void on_openConfigDirCB_clicked();
     void on_pluginKernelPortAllocateCB_valueChanged(int arg1);
 
     void on_qvNetworkUATxt_editTextChanged(const QString &arg1);

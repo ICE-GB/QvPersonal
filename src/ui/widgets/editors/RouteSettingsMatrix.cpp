@@ -16,12 +16,12 @@ RouteSettingsMatrixWidget::RouteSettingsMatrixWidget(QWidget *parent) : QWidget(
 
     {
         const auto act = new QAction(tr("Empty scheme"), builtInSchemesMenu);
-        connect(act, &QAction::triggered, [this] { this->SetRouteConfig(RouteSchemeIO::EmptyScheme); });
+        connect(act, &QAction::triggered, [this] { this->SetRoute(RouteSchemeIO::EmptyScheme); });
         builtInSchemesMenu->addAction(act);
     }
     {
         const auto act = new QAction(tr("Empty scheme (no ads)"), builtInSchemesMenu);
-        connect(act, &QAction::triggered, [this] { this->SetRouteConfig(RouteSchemeIO::NoAdsScheme); });
+        connect(act, &QAction::triggered, [this] { this->SetRoute(RouteSchemeIO::NoAdsScheme); });
         builtInSchemesMenu->addAction(act);
     }
 
@@ -46,7 +46,7 @@ RouteSettingsMatrixWidget::RouteSettingsMatrixWidget(QWidget *parent) : QWidget(
     blockIPLayout->addWidget(blockIPTxt, 0, 0);
 }
 
-void RouteSettingsMatrixWidget::SetRouteConfig(const Qv2ray::Models::RouteMatrixConfig &conf)
+void RouteSettingsMatrixWidget::SetRoute(const Qv2ray::Models::RouteMatrixConfig &conf)
 {
     domainStrategyCombo->setCurrentText(conf.domainStrategy);
     domainMatcherCombo->setCurrentIndex(conf.domainMatcher == QStringLiteral("mph") ? 1 : 0);
@@ -97,7 +97,7 @@ void RouteSettingsMatrixWidget::on_importSchemeBtn_clicked()
         return;
 
     QvLog() << "Imported route config:" << scheme.name << "by:" << scheme.author;
-    this->SetRouteConfig(scheme);
+    this->SetRoute(scheme);
 }
 
 /**

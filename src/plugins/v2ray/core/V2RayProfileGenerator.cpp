@@ -40,10 +40,10 @@ QByteArray V2RayProfileGenerator::Generate()
         ProcessRoutingRule(rule);
 
     QJsonObject routing;
-    if (const auto ds = profile.routing.options[QStringLiteral("domainStrategy")].toString(); !ds.isEmpty())
+    if (const auto ds = profile.routing.extraOptions[QStringLiteral("domainStrategy")].toString(); !ds.isEmpty())
         routing[QStringLiteral("domainStrategy")] = ds;
 
-    if (const auto dm = profile.routing.options[QStringLiteral("domainMatcher")].toString(); !dm.isEmpty())
+    if (const auto dm = profile.routing.extraOptions[QStringLiteral("domainMatcher")].toString(); !dm.isEmpty())
         routing[QStringLiteral("domainMatcher")] = dm;
 
     // Override log level
@@ -114,11 +114,11 @@ QByteArray V2RayProfileGenerator::Generate()
     rootconf[QStringLiteral("inbounds")] = inbounds;
     rootconf[QStringLiteral("outbounds")] = outbounds;
 
-    if (!profile.dnsSettings.isEmpty())
-        rootconf[QStringLiteral("dns")] = profile.dnsSettings;
+    if (!profile.routing.dns.isEmpty())
+        rootconf[QStringLiteral("dns")] = profile.routing.dns;
 
-    if (!profile.fakednsSettings.isEmpty())
-        rootconf[QStringLiteral("fakedns")] = profile.fakednsSettings;
+    if (!profile.routing.fakedns.isEmpty())
+        rootconf[QStringLiteral("fakedns")] = profile.routing.fakedns;
 
     OutboundMarkSettingFilter(rootconf, settings.OutboundMark);
 

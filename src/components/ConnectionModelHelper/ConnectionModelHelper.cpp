@@ -103,13 +103,13 @@ QStandardItem *ConnectionListHelper::addConnectionItem(const ProfileId &id)
     groupIndex->appendRow(connectionItem);
     const auto connectionIndex = connectionItem->index();
     //
-    auto widget = new ConnectionItemWidget(id, parentView);
-    connect(widget, &ConnectionItemWidget::RequestWidgetFocus, [connectionIndex, this]() {
+    auto widget = new ConnectionItemWidget(id);
+    connect(widget, &ConnectionItemWidget::RequestWidgetFocus, [this, connectionIndex]() {
         parentView->setCurrentIndex(connectionIndex);
         parentView->scrollTo(connectionIndex);
-        parentView->clicked(connectionIndex);
+        emit parentView->clicked(connectionIndex);
     });
-    //
+
     parentView->setIndexWidget(connectionIndex, widget);
     pairs[id] = connectionItem;
     connections[id.connectionId].append(connectionItem);

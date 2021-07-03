@@ -22,7 +22,7 @@
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,1,0">
     <item>
-     <layout class="QHBoxLayout" name="topButtonsLayout" stretch="0,0,0,0">
+     <layout class="QHBoxLayout" name="topButtonsLayout" stretch="0,0,0,0,0">
       <property name="spacing">
        <number>5</number>
       </property>
@@ -44,6 +44,13 @@
        <widget class="QPushButton" name="preferencesBtn">
         <property name="text">
          <string>Preferences</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="aboutBtn">
+        <property name="text">
+         <string>About</string>
         </property>
        </widget>
       </item>
@@ -110,7 +117,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../../../assets/icons/resources.qrc">
               <normaloff>:/ui_dark/arrow-up.svg</normaloff>:/ui_dark/arrow-up.svg</iconset>
             </property>
            </widget>
@@ -124,7 +131,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../../../assets/icons/resources.qrc">
               <normaloff>:/ui_dark/arrow-down-filling.svg</normaloff>:/ui_dark/arrow-down-filling.svg</iconset>
             </property>
             <property name="popupMode">
@@ -308,7 +315,7 @@
                 <string/>
                </property>
                <property name="icon">
-                <iconset>
+                <iconset resource="../../../assets/icons/resources.qrc">
                  <normaloff>:/ui_dark/ashbin.svg</normaloff>:/ui_dark/ashbin.svg</iconset>
                </property>
               </widget>
@@ -377,7 +384,7 @@
                 <string/>
                </property>
                <property name="icon">
-                <iconset>
+                <iconset resource="../../../assets/icons/resources.qrc">
                  <normaloff>:/ui_dark/ashbin.svg</normaloff>:/ui_dark/ashbin.svg</iconset>
                </property>
               </widget>
@@ -557,6 +564,7 @@
   <tabstop>importConfigButton</tabstop>
  </tabstops>
  <resources>
+  <include location="../../../assets/icons/resources.qrc"/>
   <include location="../../../assets/icons/resources.qrc"/>
  </resources>
  <connections/>

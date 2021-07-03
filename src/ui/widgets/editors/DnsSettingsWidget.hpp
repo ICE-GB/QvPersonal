@@ -17,8 +17,8 @@ class DnsSettingsWidget
 
   public:
     explicit DnsSettingsWidget(QWidget *parent = nullptr);
-    void SetDNSObject(const Qv2ray::Models::V2RayDNSObject &dns, const Qv2ray::Models::FakeDNSObject &fakeDNS);
-    std::pair<Qv2ray::Models::V2RayDNSObject, Qv2ray::Models::FakeDNSObject> GetDNSObject();
+    void SetDNSObject(const Qv2ray::Models::V2RayDNSObject &dns, const Qv2ray::Models::V2RayFakeDNSObject &fakeDNS);
+    std::pair<Qv2ray::Models::V2RayDNSObject, Qv2ray::Models::V2RayFakeDNSObject> GetDNSObject();
     bool CheckIsValidDNS() const;
 
   private slots:
@@ -47,7 +47,7 @@ class DnsSettingsWidget
     void ProcessDnsPortEnabledState();
     QvMessageBusSlotDecl;
     Qv2ray::Models::V2RayDNSObject dns;
-    Qv2ray::Models::FakeDNSObject fakeDNS;
+    Qv2ray::Models::V2RayFakeDNSObject fakeDNS;
     // int currentServerIndex;
     //
     Qv2ray::ui::widgets::AutoCompleteTextEdit *domainListTxt;

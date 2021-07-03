@@ -59,9 +59,10 @@ class MainWindow
     void on_connectionTreeView_doubleClicked(const QModelIndex &index);
     void on_connectionTreeView_clicked(const QModelIndex &index);
 
+    void on_aboutBtn_clicked();
+
   private:
     // Do not declare as slots, we connect them manually.
-
     void Action_Exit();
     void Action_Start();
     void Action_SetAutoConnection();
@@ -79,7 +80,6 @@ class MainWindow
     void Action_CopyRecentLogs();
 
   private:
-    void MWToggleVisibilitySetText();
     void MWToggleVisibility();
     void OnEditRequested(const ConnectionId &id);
     void OnEditJsonRequested(const ConnectionId &id);
@@ -152,8 +152,8 @@ class MainWindow
     DECL_ACTION(graphWidgetMenu, action_RCM_CopyGraph);
     DECL_ACTION(logRCM_Menu, action_RCM_SwitchCoreLog);
     DECL_ACTION(logRCM_Menu, action_RCM_SwitchQv2rayLog);
-    DECL_ACTION(logRCM_Menu, action_RCM_CopyRecentLogs);
     DECL_ACTION(logRCM_Menu, action_RCM_CopySelected);
+    DECL_ACTION(logRCM_Menu, action_RCM_CopyRecentLogs);
 #undef DECL_ACTION
 
     QTextDocument *vCoreLogDocument = new QTextDocument(this);

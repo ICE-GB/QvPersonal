@@ -7,6 +7,7 @@ namespace Qv2ray::Models
 {
     struct RouteMatrixConfig
     {
+        const static inline auto EXTRA_OPTIONS_ID = QStringLiteral("RouteMatrixConfig");
         struct Detail
         {
             Detail(const QList<QString> &_direct = {}, const QList<QString> &_block = {}, const QList<QString> &_proxy = {})
@@ -18,7 +19,7 @@ namespace Qv2ray::Models
             Bindable<QList<QString>> direct;
             Bindable<QList<QString>> block;
             Bindable<QList<QString>> proxy;
-            QJS_FUNC_COMPARE(Detail, direct, block, proxy);
+            QJS_COMPARE(Detail, direct, block, proxy);
             QJS_JSON(P(proxy, block, direct))
         };
 
@@ -32,10 +33,17 @@ namespace Qv2ray::Models
         Bindable<QString> domainMatcher{ QStringLiteral("mph") };
         Bindable<Detail> domains;
         Bindable<Detail> ips;
-        QJS_FUNC_COMPARE(RouteMatrixConfig, domainStrategy, domainMatcher, domains, ips);
+        QJS_COMPARE(RouteMatrixConfig, domainStrategy, domainMatcher, domains, ips);
         QJS_JSON(P(domainStrategy, domainMatcher, domains, ips))
+        static auto fromJson(const QJsonObject &o)
+        {
+            RouteMatrixConfig route;
+            route.loadJson(o);
+            return route;
+        }
     };
 
+    // We don't use any of the inheritance features, just here to ensure the Json level compatibility.
     struct V2RayDNSObject : public BasicDNSObject
     {
         enum QueryStrategy
@@ -45,13 +53,14 @@ namespace Qv2ray::Models
             UseIPv6,
         };
 
+        // Same as above.
         struct V2RayDNSServerObject : public BasicDNSServerObject
         {
             Bindable<bool> QV2RAY_DNS_IS_COMPLEX_DNS{ false };
             Bindable<bool> SkipFallback{ false };
             Bindable<QList<QString>> domains;
             Bindable<QList<QString>> expectIPs;
-            QJS_FUNC_COMPARE(V2RayDNSServerObject, QV2RAY_DNS_IS_COMPLEX_DNS, SkipFallback, port, address, domains, expectIPs);
+            QJS_COMPARE(V2RayDNSServerObject, QV2RAY_DNS_IS_COMPLEX_DNS, SkipFallback, port, address, domains, expectIPs);
             QJS_JSON(P(QV2RAY_DNS_IS_COMPLEX_DNS, SkipFallback), F(address, port, domains, expectIPs))
         };
 
@@ -61,7 +70,7 @@ namespace Qv2ray::Models
         Bindable<bool> disableCache{ false };
         Bindable<bool> disableFallback{ false };
         Bindable<QString> queryStrategy{ QStringLiteral("UseIP") };
-        QJS_FUNC_COMPARE(V2RayDNSObject, servers, clientIp, tag, disableCache, disableFallback, queryStrategy, servers, hosts, extraOptions);
+        QJS_COMPARE(V2RayDNSObject, servers, clientIp, tag, disableCache, disableFallback, queryStrategy, servers, hosts, extraOptions);
         QJS_JSON(P(clientIp, tag, disableCache, disableFallback, queryStrategy), F(servers, hosts, extraOptions));
         static auto fromJson(const QJsonObject &o)
         {
@@ -71,15 +80,15 @@ namespace Qv2ray::Models
         }
     };
 
-    struct FakeDNSObject
+    struct V2RayFakeDNSObject
     {
         Bindable<QString> ipPool{ QStringLiteral("198.18.0.0/15") };
         Bindable<int> poolSize{ 65535 };
         QJS_JSON(P(ipPool, poolSize))
-        QJS_FUNC_COMPARE(FakeDNSObject, ipPool, poolSize)
+        QJS_COMPARE(V2RayFakeDNSObject, ipPool, poolSize)
         static auto fromJson(const QJsonObject &o)
         {
-            FakeDNSObject dns;
+            V2RayFakeDNSObject dns;
             dns.loadJson(o);
             return dns;
         }
@@ -102,7 +111,7 @@ namespace Qv2ray::Models
                   { QStringLiteral("Connection"), { QStringLiteral("keep-alive") } },
                   { QStringLiteral("Pragma"), { QStringLiteral("no-cache") } } }
             };
-            QJS_FUNC_COMPARE(HTTPRequestObject, version, method, path, headers)
+            QJS_COMPARE(HTTPRequestObject, version, method, path, headers)
             QJS_JSON(P(version, method, path, headers))
         };
 
@@ -116,7 +125,7 @@ namespace Qv2ray::Models
                                                             { QStringLiteral("Transfer-Encoding"), { QStringLiteral("chunked") } },
                                                             { QStringLiteral("Connection"), { QStringLiteral("keep-alive") } },
                                                             { QStringLiteral("Pragma"), { QStringLiteral("no-cache") } } } };
-            QJS_FUNC_COMPARE(HTTPResponseObject, version, reason, status, status)
+            QJS_COMPARE(HTTPResponseObject, version, reason, status, status)
             QJS_JSON(P(version, reason, status, status))
         };
 
@@ -125,21 +134,21 @@ namespace Qv2ray::Models
             Bindable<QString> type{ QStringLiteral("none") };
             Bindable<HTTPRequestObject> request;
             Bindable<HTTPResponseObject> response;
-            QJS_FUNC_COMPARE(TCPHeader_Internal, type, request, response)
+            QJS_COMPARE(TCPHeader_Internal, type, request, response)
             QJS_JSON(P(type, request, response))
         };
 
         struct ObfsHeaderObject
         {
             Bindable<QString> type{ QStringLiteral("none") };
-            QJS_FUNC_COMPARE(ObfsHeaderObject, type);
+            QJS_COMPARE(ObfsHeaderObject, type);
             QJS_JSON(P(type))
         };
 
         struct TCPObject
         {
             Bindable<TCPHeader_Internal> header;
-            QJS_FUNC_COMPARE(TCPObject, header);
+            QJS_COMPARE(TCPObject, header);
             QJS_JSON(P(header))
         };
 
@@ -154,7 +163,7 @@ namespace Qv2ray::Models
             Bindable<int> writeBufferSize{ 2 };
             Bindable<QString> seed;
             Bindable<ObfsHeaderObject> header;
-            QJS_FUNC_COMPARE(KCPObject, mtu, tti, uplinkCapacity, congestion, readBufferSize, writeBufferSize, seed, header);
+            QJS_COMPARE(KCPObject, mtu, tti, uplinkCapacity, congestion, readBufferSize, writeBufferSize, seed, header);
             QJS_JSON(P(mtu, tti, uplinkCapacity, congestion, readBufferSize, writeBufferSize, seed, header))
         };
 
@@ -165,7 +174,7 @@ namespace Qv2ray::Models
             Bindable<int> maxEarlyData{ 0 };
             Bindable<bool> useBrowserForwarding{ false };
             Bindable<QString> earlyDataHeaderName;
-            QJS_FUNC_COMPARE(WebSocketObject, path, headers, maxEarlyData, useBrowserForwarding, useBrowserForwarding);
+            QJS_COMPARE(WebSocketObject, path, headers, maxEarlyData, useBrowserForwarding, useBrowserForwarding);
             QJS_JSON(P(path, headers, maxEarlyData, useBrowserForwarding, useBrowserForwarding))
         };
 
@@ -174,7 +183,7 @@ namespace Qv2ray::Models
             Bindable<QList<QString>> host;
             Bindable<QString> path{ QStringLiteral("/") };
             Bindable<QString> method;
-            QJS_FUNC_COMPARE(HttpObject, host, path, method);
+            QJS_COMPARE(HttpObject, host, path, method);
             QJS_JSON(P(host, path, method))
         };
 
@@ -183,7 +192,7 @@ namespace Qv2ray::Models
             Bindable<QString> path{ QStringLiteral("/") };
             Bindable<bool> abstract{ false };
             Bindable<bool> padding{ false };
-            QJS_FUNC_COMPARE(DomainSocketObject, path, abstract, padding);
+            QJS_COMPARE(DomainSocketObject, path, abstract, padding);
             QJS_JSON(P(path, abstract, padding))
         };
 
@@ -192,14 +201,14 @@ namespace Qv2ray::Models
             Bindable<QString> security{ QStringLiteral("none") };
             Bindable<QString> key;
             Bindable<ObfsHeaderObject> header;
-            QJS_FUNC_COMPARE(QuicObject, security, key, header);
+            QJS_COMPARE(QuicObject, security, key, header);
             QJS_JSON(P(security, key, header))
         };
 
         struct gRPCObject
         {
             Bindable<QString> serviceName{ QStringLiteral("GunService") };
-            QJS_FUNC_COMPARE(gRPCObject, serviceName);
+            QJS_COMPARE(gRPCObject, serviceName);
             QJS_JSON(P(serviceName))
         };
 
@@ -209,7 +218,7 @@ namespace Qv2ray::Models
             Bindable<int> tcpKeepAliveInterval{ 0 };
             Bindable<bool> tcpFastOpen{ false };
             Bindable<QString> tproxy{ QStringLiteral("off") };
-            QJS_FUNC_COMPARE(SockoptObject, mark, tcpKeepAliveInterval, tcpFastOpen, tproxy);
+            QJS_COMPARE(SockoptObject, mark, tcpKeepAliveInterval, tcpFastOpen, tproxy);
             QJS_JSON(P(mark, tcpKeepAliveInterval, tcpFastOpen, tproxy))
         };
 
@@ -220,7 +229,7 @@ namespace Qv2ray::Models
             Bindable<QString> keyFile;
             Bindable<QList<QString>> certificate;
             Bindable<QList<QString>> key;
-            QJS_FUNC_COMPARE(CertificateObject, usage, certificateFile, keyFile, certificate, key);
+            QJS_COMPARE(CertificateObject, usage, certificateFile, keyFile, certificate, key);
             QJS_JSON(P(usage, certificateFile, keyFile, certificate, key))
         };
 
@@ -231,18 +240,7 @@ namespace Qv2ray::Models
             Bindable<bool> disableSystemRoot{ false };
             Bindable<QList<QString>> alpn;
             Bindable<QList<CertificateObject>> certificates;
-            QJS_FUNC_COMPARE(TLSObject, serverName, disableSessionResumption, disableSystemRoot, alpn, certificates);
-            QJS_JSON(P(serverName, disableSessionResumption, disableSystemRoot, alpn, certificates))
-        };
-
-        struct XTLSObject
-        {
-            Bindable<QString> serverName;
-            Bindable<bool> disableSessionResumption{ true };
-            Bindable<bool> disableSystemRoot{ false };
-            Bindable<QList<QString>> alpn;
-            Bindable<QList<CertificateObject>> certificates;
-            QJS_FUNC_COMPARE(XTLSObject, serverName, disableSessionResumption, disableSystemRoot, alpn, certificates);
+            QJS_COMPARE(TLSObject, serverName, disableSessionResumption, disableSystemRoot, alpn, certificates);
             QJS_JSON(P(serverName, disableSessionResumption, disableSystemRoot, alpn, certificates))
         };
     } // namespace transfer
@@ -253,17 +251,16 @@ namespace Qv2ray::Models
         Bindable<QString> security{ QStringLiteral("none") };
         Bindable<transfer::SockoptObject> sockopt;
         Bindable<transfer::TLSObject> tlsSettings;
-        Bindable<transfer::XTLSObject> xtlsSettings;
         Bindable<transfer::TCPObject> tcpSettings;
-        Bindable<transfer::KCPObject> kcpSettings;
-        Bindable<transfer::WebSocketObject> wsSettings;
         Bindable<transfer::HttpObject> httpSettings;
+        Bindable<transfer::WebSocketObject> wsSettings;
+        Bindable<transfer::KCPObject> kcpSettings;
         Bindable<transfer::DomainSocketObject> dsSettings;
         Bindable<transfer::QuicObject> quicSettings;
         Bindable<transfer::gRPCObject> grpcSettings;
-        QJS_FUNC_COMPARE(StreamSettingsObject, network, security, sockopt, tlsSettings, xtlsSettings, tcpSettings, kcpSettings, wsSettings, httpSettings, dsSettings,
-                         quicSettings, grpcSettings);
-        QJS_JSON(P(network, security, sockopt, tlsSettings, xtlsSettings, tcpSettings, kcpSettings, wsSettings, httpSettings, dsSettings, quicSettings, grpcSettings))
+        QJS_COMPARE(StreamSettingsObject, network, security, sockopt, tlsSettings, tcpSettings, kcpSettings, wsSettings, httpSettings, dsSettings, quicSettings,
+                    grpcSettings);
+        QJS_JSON(P(network, security, sockopt, tlsSettings, tcpSettings, kcpSettings, wsSettings, httpSettings, dsSettings, quicSettings, grpcSettings))
         static auto fromJson(const QJsonObject &o)
         {
             StreamSettingsObject stream;
@@ -285,7 +282,6 @@ namespace Qv2ray::Models
         QJS_JSON(P(user, pass, level))
     };
 
-    //
     // ShadowSocks Server
     struct ShadowSocksClientObject
     {
@@ -294,7 +290,6 @@ namespace Qv2ray::Models
         QJS_JSON(P(method, password))
     };
 
-    //
     // VLESS Server
     struct VLESSClientObject
     {
@@ -304,7 +299,6 @@ namespace Qv2ray::Models
         QJS_JSON(P(id, encryption, flow))
     };
 
-    //
     // VMess Server
     constexpr auto VMESS_USER_ALTERID_DEFAULT = 0;
     struct VMessClientObject
@@ -314,5 +308,4 @@ namespace Qv2ray::Models
         Bindable<QString> security{ QStringLiteral("auto") };
         QJS_JSON(F(id, alterId, security))
     };
-
-} // namespace Qv2ray::models
+} // namespace Qv2ray::Models

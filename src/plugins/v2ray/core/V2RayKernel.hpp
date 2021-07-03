@@ -16,7 +16,7 @@ class V2RayKernel : public Qv2rayPlugin::Kernel::PluginKernel
 
   public:
     virtual void SetConnectionSettings(const QMap<Qv2rayPlugin::Kernel::KernelOptionFlags, QVariant> &, const IOConnectionSettings &) override{};
-    virtual void SetProfileContent(const ProfileContent &, const RoutingObject &) override;
+    virtual void SetProfileContent(const ProfileContent &) override;
     virtual bool PrepareConfigurations() override;
     virtual void Start() override;
     virtual bool Stop() override;

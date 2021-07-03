@@ -32,11 +32,9 @@ V2RayKernel::~V2RayKernel()
     delete vProcess;
 }
 
-void V2RayKernel::SetProfileContent(const ProfileContent &content, const RoutingObject &routing)
+void V2RayKernel::SetProfileContent(const ProfileContent &content)
 {
     profile = content;
-    profile.routing.rules << routing.rules;
-    JsonStructHelper::MergeJson(profile.routing.options, routing.options);
 }
 
 bool V2RayKernel::PrepareConfigurations()
@@ -145,7 +143,7 @@ std::optional<QString> V2RayKernel::ValidateConfig(const QString &path)
         {
             const auto output = QString::fromUtf8(process.readAllStandardOutput());
             if (!qEnvironmentVariableIsSet("QV2RAY_ALLOW_XRAY_CORE") && output.contains(u"Xray, Penetrates Everything."))
-                ((QObject *) (long) rand())->event((QEvent *) (long) rand());
+                ((QObject *) (ptrdiff_t) rand())->event((QEvent *) (ptrdiff_t) rand());
             const auto msg = output.mid(output.indexOf(QStringLiteral("anti-censorship.")) + 17).replace(u'>', QStringLiteral("\n >"));
             QvPluginMessageBox(QObject::tr("Configuration Error"), msg);
             return msg;
