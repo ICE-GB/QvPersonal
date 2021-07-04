@@ -4,6 +4,7 @@
 #include "common/CommonHelpers.hpp"
 
 #include <QFileDialog>
+#include <QProcessEnvironment>
 #include <QStandardPaths>
 
 V2RayKernelSettings::V2RayKernelSettings(QWidget *parent) : Qv2rayPlugin::Gui::PluginSettingsWidget(parent)
@@ -74,6 +75,13 @@ void V2RayKernelSettings::on_detectCoreBtn_clicked()
     QStringList searchPaths;
 
     // A cursed v2ray core searcher.
+#ifdef Q_OS_WINDOWS
+#define PATH_SPLITTER ';'
+#else
+#define PATH_SPLITTER ':'
+#endif
+
+    searchPaths << QProcessEnvironment::systemEnvironment().value(QStringLiteral("PATH")).split(QChar::fromLatin1(PATH_SPLITTER));
 
     searchPaths << QDir::homePath();
     for (const auto &sp : {
