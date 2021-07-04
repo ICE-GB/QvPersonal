@@ -107,7 +107,19 @@ void V2RayKernelSettings::on_detectCoreBtn_clicked()
             searchPaths << dl.absolutePath() + dn;
 #elif defined(Q_OS_MACOS)
 #elif defined(Q_OS_LINUX)
+    searchPaths << QStringLiteral("/bin");
+    searchPaths << QStringLiteral("/usr/bin");
+    searchPaths << QStringLiteral("/usr/local/bin");
+    searchPaths << QStringLiteral("/usr/share/v2ray");
+    searchPaths << QStringLiteral("/usr/local/share/v2ray");
+    searchPaths << QStringLiteral("/usr/lib/v2ray");
+    searchPaths << QStringLiteral("/usr/local/lib/v2ray");
+    searchPaths << QStringLiteral("/opt/bin");
+    searchPaths << QStringLiteral("/opt/v2ray");
+    searchPaths << QStringLiteral("/opt/v2ray-core");
 #endif
+
+    searchPaths << settings.AssetsPath;
 
     searchPaths.removeDuplicates();
 
