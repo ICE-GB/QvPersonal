@@ -25,10 +25,6 @@ class PluginManageWindow
             const auto c = commands.takeFirst();
             if (c == "plugindir")
                 on_openPluginFolder_clicked();
-            if (c == "metadata")
-                tabWidget->setCurrentIndex(0);
-            if (c == "settings")
-                tabWidget->setCurrentIndex(1);
         }
     }
     QvMessageBusSlotDecl override;
@@ -37,10 +33,7 @@ class PluginManageWindow
     void on_pluginListWidget_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous);
     void on_pluginListWidget_itemClicked(QListWidgetItem *item);
     void on_pluginListWidget_itemChanged(QListWidgetItem *item);
-    void on_pluginEditSettingsJsonBtn_clicked();
-    void on_pluginListWidget_itemSelectionChanged();
     void on_openPluginFolder_clicked();
-    void on_toolButton_clicked();
 
   private:
     void updateColorScheme() override{};

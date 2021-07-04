@@ -137,19 +137,12 @@ void MainWindow::CheckSubscriptionsUpdate()
         // The update is ignored.
         if (info.subscription_config.updateInterval == 0.0f)
             continue;
-        //
-        const auto lastRenewDate = QDateTime::fromSecsSinceEpoch(system_clock::to_time_t(info.updated));
-        const auto renewTime = lastRenewDate.addSecs(info.subscription_config.updateInterval * 86400);
 
-        if (renewTime <= QDateTime::currentDateTime())
+        if (info.updated + 24h <= system_clock::now())
         {
             updateList << std::pair{ info.name, entry };
             updateNamesList << info.name;
-            QvLog() << QString("Subscription update \"%1\": L=%2 R=%3 I=%4")
-                           .arg(info.name)
-                           .arg(lastRenewDate.toString())
-                           .arg(info.subscription_config.updateInterval)
-                           .arg(renewTime.toString());
+            QvLog() << QString("Subscription update \"%1\": L=%2 R=%3").arg(info.name).arg(TimeToString(info.updated)).arg(info.subscription_config.updateInterval);
         }
     }
 

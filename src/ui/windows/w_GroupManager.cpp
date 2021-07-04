@@ -8,12 +8,9 @@
 #include "ui/widgets/editors/DnsSettingsWidget.hpp"
 #include "ui/widgets/editors/RouteSettingsMatrix.hpp"
 
-#include <QDesktopServices>
 #include <QFileDialog>
-#include <QListWidgetItem>
 
-const static auto RemoveInvalidFileName = [](QString fileName)
-{
+const static auto RemoveInvalidFileName = [](QString fileName) {
     const static QString pattern = R"("/\?%&^*;:|><)";
     std::replace_if(
         fileName.begin(), fileName.end(), [](const QChar &c) { return pattern.contains(c); }, '_');
@@ -56,7 +53,6 @@ GroupManager::GroupManager(QWidget *parent) : QvDialog("GroupManager", parent)
     routeSettingsGB->setLayout(new QGridLayout(routeSettingsGB));
     routeSettingsGB->layout()->addWidget(routeSettingsWidget);
 
-    updateColorScheme();
     connectionListRCMenu->addSection(tr("Connection Management"));
     connectionListRCMenu->addAction(exportConnectionAction);
     connectionListRCMenu->addAction(deleteConnectionAction);
@@ -71,6 +67,8 @@ GroupManager::GroupManager(QWidget *parent) : QvDialog("GroupManager", parent)
     connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnGroupCreated, this, &GroupManager::reloadGroupRCMActions);
     connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnGroupDeleted, this, &GroupManager::reloadGroupRCMActions);
     connect(QvBaselib->ProfileManager(), &Qv2rayBase::Profile::ProfileManager::OnGroupRenamed, this, &GroupManager::reloadGroupRCMActions);
+
+    GroupManager::updateColorScheme();
 
     for (const auto &group : QvBaselib->ProfileManager()->GetGroups())
     {
@@ -136,7 +134,6 @@ void GroupManager::onRCMExportConnectionTriggered()
             for (const auto &connId : list)
             {
 #pragma message("TODO")
-                QvBaselib->ProfileManager()->ClearConnectionUsage({});
                 //                ConnectionId id(connId);
                 //                auto root = RouteManager->GenerateFinalConfig({ id, currentGroupId });
                 //                //
@@ -147,7 +144,7 @@ void GroupManager::onRCMExportConnectionTriggered()
                 //                const auto fileName = RemoveInvalidFileName(GetDisplayName(id)) + ".json";
                 //                StringToFile(JsonToString(root), path + "/" + fileName);
             }
-            QDesktopServices::openUrl(QUrl::fromLocalFile(path));
+            QvBaselib->OpenURL(QUrl::fromLocalFile(path));
             break;
         }
     }
@@ -331,10 +328,19 @@ void GroupManager::on_buttonBox_accepted()
 {
     if (!currentGroupId.isNull())
     {
-        const auto routeId = QvBaselib->ProfileManager()->GetGroupRoutingId(currentGroupId);
+
+        const auto routingId = QvBaselib->ProfileManager()->GetGroupObject(currentGroupId).route_id;
+        auto routing = QvBaselib->ProfileManager()->GetRouting(routingId);
+
         const auto &[dns, fakedns] = dnsSettingsWidget->GetDNSObject();
-        //        RouteManager->SetDNSSettings(routeId, dnsSettingsGB->isChecked(), dns, fakedns);
-        //        RouteManager->SetAdvancedRouteSettings(routeId, routeSettingsGB->isChecked(), routeSettingsWidget->GetRouteConfig());
+        routing.overrideDNS = dnsSettingsGB->isChecked();
+        routing.dns = dns.toJson();
+        routing.fakedns = fakedns.toJson();
+
+        const auto routematrix = routeSettingsWidget->GetRouteConfig();
+        routing.extraOptions.insert(RouteMatrixConfig::EXTRA_OPTIONS_ID, routematrix.toJson());
+
+        QvBaselib->ProfileManager()->UpdateRouting(routingId, routing);
     }
     // Nothing?
 }
@@ -442,7 +448,6 @@ void GroupManager::on_groupList_currentItemChanged(QListWidgetItem *current, QLi
 {
     if (priv)
     {
-
         const auto routingId = QvBaselib->ProfileManager()->GetGroupObject(currentGroupId).route_id;
         auto routing = QvBaselib->ProfileManager()->GetRouting(routingId);
 
@@ -455,8 +460,6 @@ void GroupManager::on_groupList_currentItemChanged(QListWidgetItem *current, QLi
         routing.extraOptions.insert(RouteMatrixConfig::EXTRA_OPTIONS_ID, routematrix.toJson());
 
         QvBaselib->ProfileManager()->UpdateRouting(routingId, routing);
-        //        RouteManager->SetDNSSettings(group.route_id, dnsSettingsGB->isChecked(), dns, fakedns);
-        //        RouteManager->SetAdvancedRouteSettings(group.route_id, routeSettingsGB->isChecked(), routeSettingsWidget->GetRouteConfig());
     }
     if (current)
     {

@@ -39,11 +39,11 @@ class GuiInterface : public Qv2rayPlugin::Gui::PluginGUIInterface
 
 const QvPluginMetadata BuiltinV2RayCorePlugin::GetMetadata() const
 {
-    return { QStringLiteral("Qv2rayBase Builtin V2Ray Core Plugin"),                             //
-             QStringLiteral("Qv2rayBase Development Team"),                                      //
-             PluginId{ QStringLiteral("builtin_v2ray_support") },                                //
-             QStringLiteral("Builtin Latency Test Engine. Provides basic V2Ray kernel support"), //
-             QStringLiteral(""),                                                                 //
+    return { QStringLiteral("V2Ray Core Plugin"),                 //
+             QStringLiteral("Moody"),                             //
+             PluginId{ QStringLiteral("builtin_v2ray_support") }, //
+             QStringLiteral("Basic V2Ray kernel support"),        //
+             QStringLiteral(""),                                  //
              { COMPONENT_KERNEL, COMPONENT_GUI } };
 }
 
