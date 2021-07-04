@@ -111,20 +111,36 @@ void V2RayKernelSettings::on_detectCoreBtn_clicked()
 
     searchPaths.removeDuplicates();
 
+    QString corePath = settings.CorePath;
+    QString assetsPath = settings.AssetsPath;
+
+    bool assetsFound = false;
+    bool coreFound = false;
+
     const auto result = QStandardPaths::findExecutable(QStringLiteral("v2ray"), searchPaths);
-    if (result.isEmpty())
+    if (!result.isEmpty())
     {
-        QvPluginMessageBox(QStringLiteral("V2Ray Core Detection"), QStringLiteral("Cannot find v2ray core."));
-        return;
+        corePath = result;
+        coreFound = true;
     }
 
-    QvPluginMessageBox(QStringLiteral("V2Ray Core Detection"), QStringLiteral("Found v2ray.exe at: ") + result);
-    settings.CorePath = result;
-    const auto assetsPath = QFileInfo(result).dir();
-    const auto dir = assetsPath.entryList();
-    if (dir.contains(QStringLiteral("geosite.dat")) && dir.contains(QStringLiteral("geoip.dat")))
+    for (const auto &d : searchPaths)
     {
-        QvPluginMessageBox(QStringLiteral("V2Ray Core Detection"), QStringLiteral("Found assets at: ") + assetsPath.path());
-        settings.AssetsPath = assetsPath.path();
+        const QDir assetsdir{ d };
+        if (assetsdir.entryList().contains(QStringLiteral("geosite.dat")) && assetsdir.entryList().contains(QStringLiteral("geoip.dat")))
+        {
+            assetsFound = true;
+            assetsPath = assetsdir.path();
+            break;
+        }
     }
+
+    QStringList messages;
+    messages << (coreFound ? QStringLiteral("Found v2ray core at: ") + corePath : QStringLiteral("Cannot find v2ray core."));
+    messages << (assetsFound ? QStringLiteral("Found v2ray assets at: ") + assetsPath : QStringLiteral("Cannot find v2ray assets."));
+
+    QvPluginMessageBox(QStringLiteral("V2Ray Core Detection"), messages.join(QChar::fromLatin1('\n')));
+
+    settings.CorePath = corePath;
+    settings.AssetsPath = assetsPath;
 }
