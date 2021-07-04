@@ -62,7 +62,7 @@ void V2RayKernelSettings::on_checkVCoreSettings_clicked()
     {
         const auto content = tr("V2Ray path configuration check passed.") + //
                              QStringLiteral("\n\n") +                       //
-                             tr("Current version of V2Ray is: ") +          //
+                             tr("Kernel Output: ") +                        //
                              QStringLiteral("\n") +                         //
                              *msg;
         QvPluginMessageBox(tr("V2Ray Core Settings"), content);
@@ -95,7 +95,8 @@ void V2RayKernelSettings::on_detectCoreBtn_clicked()
 
 #ifdef Q_OS_WINDOWS
     searchPaths << QDir::homePath() + QStringLiteral("/scoop/apps/v2ray/current/");
-    searchPaths << QDir::homePath() + QStringLiteral("/source/repos/");
+    searchPaths << QDir::homePath() + QStringLiteral("/source/repos/v2ray-core/");
+    searchPaths << QDir::homePath() + QStringLiteral("/source/repos/v2ray/");
 
     for (const auto &dl : QDir::drives())
         for (const auto &dn : {
