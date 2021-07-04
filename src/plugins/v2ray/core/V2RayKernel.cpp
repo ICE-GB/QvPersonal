@@ -131,7 +131,7 @@ std::optional<QString> V2RayKernel::ValidateConfig(const QString &path)
         // Append assets location env.
         auto env = QProcessEnvironment::systemEnvironment();
         env.insert(QStringLiteral("v2ray.location.asset"), settings.AssetsPath);
-        //
+
         QProcess process;
         process.setProcessEnvironment(env);
         process.setProcessChannelMode(QProcess::MergedChannels);

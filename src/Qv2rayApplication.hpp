@@ -60,8 +60,8 @@ const static inline QMap<Qv2rayBase::MessageOpt, QMessageBox::StandardButton> Me
 enum Qv2rayExitReason
 {
     EXIT_NORMAL = 0,
-    EXIT_NEW_VERSION_TRIGGER = EXIT_NORMAL,
-    EXIT_SECONDARY_INSTANCE = EXIT_NORMAL,
+    EXIT_NEW_VERSION_TRIGGER = EXIT_NORMAL + 1,
+    EXIT_SECONDARY_INSTANCE = EXIT_NORMAL + 2,
     EXIT_INITIALIZATION_FAILED = -1,
     EXIT_PRECONDITION_FAILED = -2,
 };
@@ -98,7 +98,7 @@ class Qv2rayApplication
     void quitInternal();
     bool parseCommandLine(QString *errorMessage, bool *canContinue);
     void onMessageReceived(quint32 clientId, const QByteArray &msg);
-    Qv2rayExitReason exitReason;
+    Qv2rayExitReason exitReason = EXIT_NORMAL;
     QSystemTrayIcon *hTray;
     MainWindow *mainWindow;
     Qv2rayBase::Qv2rayBaseLibrary *baseLibrary;

@@ -24,6 +24,8 @@ class V2RayKernelSettings
   private slots:
     void on_selectVCoreBtn_clicked();
     void on_selectVAssetBtn_clicked();
+    void on_checkVCoreSettings_clicked();
+    void on_detectCoreBtn_clicked();
 
   private:
     V2RayCorePluginSettings settings;

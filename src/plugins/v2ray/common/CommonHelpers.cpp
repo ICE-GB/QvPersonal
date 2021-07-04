@@ -1,5 +1,8 @@
 #include "CommonHelpers.hpp"
 
+#include <QDir>
+#include <QFile>
+#include <QProcess>
 #include <QRegularExpression>
 
 std::pair<bool, std::optional<QString>> ValidateKernel(const QString &corePath, const QString &assetsPath)
@@ -34,8 +37,7 @@ std::pair<bool, std::optional<QString>> ValidateKernel(const QString &corePath, 
     // Check if V2Ray core returns a version number correctly.
     QProcess proc;
 #ifdef Q_OS_WIN32
-    // nativeArguments are required for Windows platform, without a
-    // reason...
+    // nativeArguments are required for Windows platform, without a reason...
     proc.setProcessChannelMode(QProcess::MergedChannels);
     proc.setProgram(corePath);
     proc.setNativeArguments(QStringLiteral("--version"));

@@ -75,7 +75,9 @@ void PluginManageWindow::on_pluginListWidget_currentItemChanged(QListWidgetItem 
 
     pluginUnloadLabel->setVisible(!hasSettings);
     if (!hasSettings)
-        pluginUnloadLabel->setText(tr("This plugin does not have tunable options." NEWLINE "Try something else?"));
+        pluginUnloadLabel->setText(currentPluginInfo->metadata().Name + NEWLINE NEWLINE +       //
+                                   tr("This plugin does not have tunable options.") + NEWLINE + //
+                                   tr("Try something else?"));
 
     pluginComponentsLabel->setText(components.join('\n'));
 }
