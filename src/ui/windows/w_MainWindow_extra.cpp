@@ -138,7 +138,7 @@ void MainWindow::CheckSubscriptionsUpdate()
         if (info.subscription_config.updateInterval == 0.0f)
             continue;
         //
-        const auto lastRenewDate = QDateTime::fromMSecsSinceEpoch(system_clock::to_time_t(info.updated));
+        const auto lastRenewDate = QDateTime::fromSecsSinceEpoch(system_clock::to_time_t(info.updated));
         const auto renewTime = lastRenewDate.addSecs(info.subscription_config.updateInterval * 86400);
 
         if (renewTime <= QDateTime::currentDateTime())
