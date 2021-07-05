@@ -192,16 +192,16 @@ namespace Qv2ray::components::autolaunch
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             ts.setCodec("UTF-8");
 #endif
-            ts << u"[Desktop Entry]" << NEWLINE                               //
-               << u"Name=" << appName << NEWLINE                              //
-               << u"GenericName=" << u"V2Ray Frontend" << NEWLINE             //
-               << u"Exec=" << appCmdList.join(QStringLiteral(" ")) << NEWLINE //
-               << u"Terminal=" << "false" << NEWLINE                          //
-               << u"Icon=" << "qv2ray" << NEWLINE                             //
-               << u"Categories=" << "Network" << NEWLINE                      //
-               << u"Type=" << "Application" << NEWLINE                        //
-               << u"StartupNotify=" << "false" << NEWLINE                     //
-               << u"X-GNOME-Autostart-enabled=" << "true" << NEWLINE;
+            ts << QStringLiteral("[Desktop Entry]") << NEWLINE                                  //
+               << QStringLiteral("Name=") << appName << NEWLINE                                 //
+               << QStringLiteral("GenericName=") << QStringLiteral("V2Ray Frontend") << NEWLINE //
+               << QStringLiteral("Exec=") << appCmdList.join(' ') << NEWLINE                    //
+               << QStringLiteral("Terminal=") << QStringLiteral("false") << NEWLINE             //
+               << QStringLiteral("Icon=") << QStringLiteral("qv2ray") << NEWLINE                //
+               << QStringLiteral("Categories=") << QStringLiteral("Network") << NEWLINE         //
+               << QStringLiteral("Type=") << QStringLiteral("Application") << NEWLINE           //
+               << QStringLiteral("StartupNotify=") << QStringLiteral("false") << NEWLINE        //
+               << QStringLiteral("X-GNOME-Autostart-enabled=") << QStringLiteral("true") << NEWLINE;
             ts.flush();
             iniFile.close();
         }
