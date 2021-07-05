@@ -164,3 +164,13 @@ void V2RayKernelSettings::on_detectCoreBtn_clicked()
     settings.CorePath = corePath;
     settings.AssetsPath = assetsPath;
 }
+
+void V2RayKernelSettings::on_resetVCoreBtn_clicked()
+{
+    settings.CorePath = QStringLiteral(QV2RAY_DEFAULT_VCORE_PATH);
+}
+
+void V2RayKernelSettings::on_resetVAssetBtn_clicked()
+{
+    settings.AssetsPath = QStringLiteral(QV2RAY_DEFAULT_VASSETS_PATH);
+}

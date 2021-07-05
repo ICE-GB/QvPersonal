@@ -190,8 +190,6 @@ target_link_libraries(qv2ray PRIVATE
     Qv2ray::Qv2rayBase
     Qv2ray::QvPluginInterface
     NodeEditor::nodes
-    #    OpenSSL::SSL
-    #    OpenSSL::Crypto
     SingleApplication
     )
 
@@ -203,6 +201,7 @@ if(USE_SYSTEM_LIBUV)
         add_library(Qv2ray::libuv ALIAS unofficial::libuv::libuv)
     endif()
 endif()
+# END SPECIAL CASE
 
 # ==================================================================================
 # Platform-dependent installation process and deployment

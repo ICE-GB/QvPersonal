@@ -100,6 +100,13 @@
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QPushButton" name="resetVCoreBtn">
+          <property name="text">
+           <string>Reset</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
       <item row="2" column="0">
@@ -121,6 +128,13 @@
          <widget class="QPushButton" name="selectVAssetBtn">
           <property name="text">
            <string>Select</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="resetVAssetBtn">
+          <property name="text">
+           <string>Reset</string>
           </property>
          </widget>
         </item>

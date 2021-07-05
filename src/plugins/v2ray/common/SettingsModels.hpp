@@ -3,6 +3,14 @@
 #include "QvPlugin/Utils/BindableProps.hpp"
 #include "QvPlugin/Utils/JsonConversion.hpp"
 
+#ifndef QV2RAY_DEFAULT_VCORE_PATH
+#define QV2RAY_DEFAULT_VCORE_PATH ""
+#endif
+
+#ifndef QV2RAY_DEFAULT_VASSETS_PATH
+#define QV2RAY_DEFAULT_VASSETS_PATH ""
+#endif
+
 struct BrowserForwarderConfig
 {
     Bindable<QString> listenAddr;
@@ -28,8 +36,8 @@ struct V2RayCorePluginSettings
     };
 
     Bindable<V2RayLogLevel> LogLevel;
-    Bindable<QString> CorePath;
-    Bindable<QString> AssetsPath;
+    Bindable<QString> CorePath{ QStringLiteral(QV2RAY_DEFAULT_VCORE_PATH) };
+    Bindable<QString> AssetsPath{ QStringLiteral(QV2RAY_DEFAULT_VASSETS_PATH) };
     Bindable<int> OutboundMark{ 255 };
 
     Bindable<bool> APIEnabled{ true };

@@ -26,6 +26,8 @@ class V2RayKernelSettings
     void on_selectVAssetBtn_clicked();
     void on_checkVCoreSettings_clicked();
     void on_detectCoreBtn_clicked();
+    void on_resetVCoreBtn_clicked();
+    void on_resetVAssetBtn_clicked();
 
   private:
     V2RayCorePluginSettings settings;
