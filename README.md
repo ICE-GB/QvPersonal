@@ -2,7 +2,7 @@
 
 Qv2ray is a cross-platform Qt frontend for V2Ray.
 
-This repo is my personal rewrite of Qv2ray using [Qv2rayBase](https://github.com/moodyhunter/Qv2rayBase), hard forked from `Shadowsocks-NET/Qv2ray`
+This repo is personal rewrite of Qv2ray using [Qv2rayBase](https://github.com/moodyhunter/Qv2rayBase), hard forked from `Shadowsocks-NET/Qv2ray`
 
 ## Compatibility
 
